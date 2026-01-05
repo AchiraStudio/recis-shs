@@ -26,7 +26,7 @@ function LandingPage() {
 
 function App() {
   return (
-    <BrowserRouter basename="/r-shs">
+    <BrowserRouter>
       <div className="app-wrapper">
         <DynamicIsland />
 

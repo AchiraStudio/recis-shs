@@ -26,7 +26,7 @@ function LandingPage() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <div className="app-wrapper">
         <DynamicIsland />
 
@@ -37,7 +37,7 @@ function App() {
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       </div>
-    </BrowserRouter>
+    </Router>
   );
 }
 

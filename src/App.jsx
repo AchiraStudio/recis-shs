@@ -26,17 +26,18 @@ function LandingPage() {
 
 function App() {
   return (
-    <Router>
+    <BrowserRouter basename="/r-shs">
       <div className="app-wrapper">
-        <DynamicIsland></DynamicIsland>
+        <DynamicIsland />
+
         <Routes>
-          <Route path="/r-shs" element={<LandingPage />} />
-          <Route path="/r-shs/gallery" element={<Gallery />} />
-          <Route path="/r-shs/ascension-cup" element={<Recup />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/ascension-cup" element={<Recup />} />
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       </div>
-    </Router>
+    </BrowserRouter>
   );
 }
 

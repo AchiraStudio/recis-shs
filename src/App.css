@@ -1,0 +1,9 @@
+::-webkit-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* For WebKit browsers (Chrome, Safari, Opera) */
+::-webkit-scrollbar {
+  display: none;
+}

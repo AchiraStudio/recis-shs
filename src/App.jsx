@@ -6,6 +6,7 @@ import Timeline from './components/Timeline';
 import About from './components/About';
 import Crew from './components/Crew';
 import Footer from './components/Footer';
+import './App.css'
 
 import Recup from './events/ascension/recup';
 import Gallery from './events/gallery/Gallery';

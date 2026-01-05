@@ -1,77 +1,291 @@
+/* =========================================
+   DYNAMIC ISLAND WRAPPER
+   ========================================= */
+.di-wrapper {
+  position: fixed;
+  top: max(20px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  
+  /* Wrapper width accommodates the 320px search box + padding */
+  width: 340px; 
+  max-width: calc(100vw - 40px);
+  
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.di-wrapper.scrolled {
+  top: 10px; 
+}
+
+/* =========================================
+   THE PILL (CORE UI)
+   ========================================= */
+.di-pill {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  
+  border-radius: 50px;
+  height: 44px; 
+  width: 140px; 
+  
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  margin: 0 auto; /* Center pill within the wrapper */
+  
+  transition: 
+    width 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    height 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    border-radius 0.5s ease;
+}
+
+.di-pill.expanded {
+  width: 280px; 
+  height: 64px; 
+}
+
+/* Hover Effect */
+@media (hover: hover) {
+  .di-pill:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+}
+
+/* =========================================
+   CONTENT LAYERS (SMOOTH TRANSITIONS)
+   ========================================= */
+.di-content-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.di-content-idle, 
+.di-content-active {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Idle Specifics */
+.di-content-idle {
+  gap: 12px; 
+  opacity: 1;
+  transform: scale(1);
+}
+
+.di-content-idle.fade-out {
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
+}
+
+/* Active Specifics */
+.di-content-active {
+  justify-content: space-evenly;
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+}
+
+.di-content-active.fade-in {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+/* =========================================
+   PILL ELEMENTS
+   ========================================= */
+.di-signal-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #4ADE80;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.9);
+  flex-shrink: 0; 
+}
+
+.di-label {
+  color: #fff;
+  font-size: 1.1rem; 
+  font-weight: 700; 
+  letter-spacing: 1.1px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  white-space: nowrap;
+}
+
+.di-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.25rem; 
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.di-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.di-separator {
+  width: 1px;
+  height: 24px;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent);
+}
+
+/* =========================================
+   SEARCH CONTAINER & POSITIONING
+   ========================================= */
+
 /* Container Positioned Relative to Wrapper */
 .di-search-container {
   position: absolute;
-  top: 70px; /* Just below the pill */
+  
+  /* Positioning below the expanded island (64px height + 14px gap) */
+  top: 78px; 
+  
   width: 320px;
   left: 50%;
-  transform: translateX(-50%);
+  
+  /* Centering mechanism */
+  transform: translateX(-50%); 
+  
+  z-index: 9998;
+  pointer-events: none; /* Disabled by default until active */
   perspective: 1000px;
 }
 
 /* Animation States */
 .di-search-container.opening {
-  animation: searchPopIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  pointer-events: auto; /* Enable clicks when visible */
+  animation: searchPopIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 .di-search-container.closing {
+  pointer-events: none; /* Disable clicks immediately on close */
   animation: searchPopOut 0.25s ease-in forwards;
 }
 
+/* 
+   Keyframes MUST include translateX(-50%) to maintain centering 
+   while animating translateY and scale.
+*/
 @keyframes searchPopIn {
-  0% { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(0.9); }
-  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  0% { 
+    opacity: 0; 
+    transform: translateX(-50%) translateY(-15px) scale(0.95); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateX(-50%) translateY(0) scale(1); 
+  }
 }
 
 @keyframes searchPopOut {
-  0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.95); }
+  0% { 
+    opacity: 1; 
+    transform: translateX(-50%) translateY(0) scale(1); 
+  }
+  100% { 
+    opacity: 0; 
+    transform: translateX(-50%) translateY(-10px) scale(0.95); 
+  }
 }
 
 /* The Search Box Card */
 .di-search-box {
-  background: rgba(20, 20, 25, 0.9);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  background: rgba(20, 20, 25, 0.95);
+  backdrop-filter: blur(30px) saturate(120%);
+  -webkit-backdrop-filter: blur(30px) saturate(120%);
   
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 
-    0 15px 40px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 20px 50px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
     
-  border-radius: 24px;
-  padding: 16px;
+  border-radius: 20px;
+  padding: 4px; /* Padding inside the card, allows child radius */
   overflow: hidden;
 }
 
-/* Header (Input Area) */
+/* =========================================
+   HEADER (INPUT AREA) - CENTERING FIX
+   ========================================= */
 .search-header {
   display: flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 0 12px;
-  height: 44px;
+  align-items: center; /* This centers everything vertically */
+  justify-content: space-between;
+  
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  
+  /* Height is explicit to ensure alignment */
+  height: 46px; 
+  padding: 0 6px; /* Minimal outer padding, handled by margins inside */
+  
   border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .search-header:focus-within {
-  border-color: rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
 }
 
 .search-icon-input {
   color: rgba(255, 255, 255, 0.5);
-  margin-right: 10px;
+  margin: 0 8px; /* Spacing from edges */
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Prevents icon from squishing */
 }
 
 .search-header input {
   flex: 1;
+  height: 100%; /* Force input to take full header height */
   background: transparent;
   border: none;
   color: #fff;
   font-size: 0.95rem;
   outline: none;
+  padding: 0; /* Remove default input padding */
+  line-height: 1; /* Reset line-height */
+  font-family: inherit;
 }
 
 .search-header input::placeholder {
@@ -79,53 +293,61 @@
 }
 
 .close-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  margin-left: 8px;
+  display: none;
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
   color: #fff;
+  transform: scale(1.05);
 }
 
-/* Results List */
+/* =========================================
+   RESULTS LIST
+   ========================================= */
 .search-results-list {
-  margin-top: 12px;
-  max-height: 200px;
+  margin-top: 8px;
+  max-height: 240px;
   overflow-y: auto;
+  padding: 0 4px 4px 4px; /* Internal padding for list items */
   scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
+/* Custom Scrollbar Styling */
 .search-results-list::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
+}
+.search-results-list::-webkit-scrollbar-track {
+  background: transparent;
 }
 .search-results-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+.search-results-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .result-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
+  padding: 12px;
   border-radius: 12px;
   text-decoration: none;
-  transition: background 0.2s;
-  margin-bottom: 4px;
+  transition: all 0.2s ease;
+  margin-bottom: 2px;
+  cursor: pointer;
 }
 
 .result-item:hover {
   background: rgba(255, 255, 255, 0.08);
+  transform: translateX(2px);
+}
+
+.result-item:active {
+  transform: scale(0.98);
 }
 
 .result-info {
@@ -134,47 +356,92 @@
 }
 
 .result-title {
-  color: #fff;
+  color: #f1f5f9;
   font-size: 0.9rem;
   font-weight: 500;
+  margin-bottom: 2px;
 }
 
 .result-cat {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 0.75rem;
-  margin-top: 2px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 .result-date {
-  font-family: monospace;
-  font-size: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.7rem;
   color: #4ADE80;
-  background: rgba(74, 222, 128, 0.1);
-  padding: 2px 6px;
+  background: rgba(74, 222, 128, 0.12);
+  padding: 3px 8px;
   border-radius: 6px;
+  font-weight: 500;
 }
 
 .no-results {
   text-align: center;
   color: rgba(255, 255, 255, 0.4);
   font-size: 0.85rem;
-  padding: 20px 0;
+  padding: 24px 0;
+  font-weight: 400;
 }
 
 /* ============================
-   MOBILE RESPONSIVENESS (Search)
+   MOBILE RESPONSIVENESS
    ============================ */
 @media (max-width: 480px) {
+  /* Wrapper Width */
+  .di-wrapper {
+    width: 100%;
+    max-width: none;
+    padding: 0 20px;
+    box-sizing: border-box;
+  }
+
+  /* Pill Width */
+  .di-pill {
+    width: 100%;
+    height: 40px;
+  }
+  
+  .di-pill.expanded {
+    height: 56px;
+  }
+
+  /* Search Container */
   .di-search-container {
-    width: 90vw; /* Wider on phone */
-    top: 65px;
+    /* Adjust top position for smaller pill height (56px + 14px gap) */
+    top: 70px;
+    width: 92%; /* Use % width for better fit on varying mobile widths */
+    /* Keep left: 50% and transform: translateX(-50%) to maintain center */
+  }
+
+  /* Adjust animations for mobile since transform changes */
+  @keyframes searchPopIn {
+    0% { opacity: 0; transform: translateY(-15px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
   }
   
+  @keyframes searchPopOut {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-10px) scale(0.95); }
+  }
+
+  /* Search Box Inner */
   .di-search-box {
-    padding: 12px;
+    padding: 3px;
   }
   
+  /* Input Header */
+  .search-header {
+    height: 44px;
+    padding: 0 12px;
+  }
+  
+  /* Result Items */
   .result-item {
-    padding: 12px; /* Bigger tap target */
+    padding: 14px 12px; /* Larger touch target */
   }
 }

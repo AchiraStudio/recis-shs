@@ -1,442 +1,251 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import './Gallery.css';
 import DynamicIsland from '../../components/DynamicI';
-
-// Sample data - in a real app, you would fetch this from an API
 import galleryData from '../../data/events.json';
+
+// Lightweight Icon Component
+const Icon = ({ name, size = 20, className = '' }) => {
+  const icons = {
+    search: <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />,
+    arrowLeft: <path d="M10 19l-7-7m0 0l7-7m-7 7h18" />,
+    arrowRight: <path d="M5 12h14M12 5l7 7-7 7" />,
+    close: <path d="M6 18L18 6M6 6l12 12" />,
+    play: <path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />,
+    pause: <path d="M10 9v6m4-6v6" />,
+    image: <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  };
+
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width={size} height={size} 
+      fill="none" viewBox="0 0 24 24" 
+      stroke="currentColor" strokeWidth={2}
+      strokeLinecap="round" strokeLinejoin="round"
+      className={className}
+    >
+      {icons[name]}
+    </svg>
+  );
+};
 
 function Gallery() {
   const [currentView, setCurrentView] = useState('albums'); 
-  const [selectedAlbum, setSelectedAlbum] = useState(null);
+  const [selectedAlbumKey, setSelectedAlbumKey] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('name');
+  
   const audioRef = useRef(null);
 
-  // Debug: Check if data is loading
-  useEffect(() => {
-    console.log('Gallery Data:', galleryData);
-    console.log('Events:', galleryData.events);
-  }, []);
+  // Memoize album selection to prevent recalc
+  const selectedAlbum = useMemo(() => {
+    return (selectedAlbumKey && galleryData?.events) ? galleryData.events[selectedAlbumKey] : null;
+  }, [selectedAlbumKey]);
 
-  const openAlbum = (albumKey) => {
-    const album = galleryData.events[albumKey];
-    console.log('Opening album:', albumKey, album);
-    
-    if (album && album.galleryImages) {
-      setSelectedAlbum(album);
-      setCurrentView('album');
-      setSelectedImageIndex(0);
-      setIsPlaying(false);
-    } else {
-      console.error('Album not found or no images:', albumKey);
-    }
+  // Scroll to top when view changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentView, selectedAlbumKey]);
+
+  // Audio Handler
+  useEffect(() => {
+    if (!audioRef.current) return;
+    const playAudio = async () => {
+      try {
+        if (isPlaying) await audioRef.current.play();
+        else audioRef.current.pause();
+      } catch (err) {
+        console.log("Audio autoplay prevented by browser");
+        setIsPlaying(false);
+      }
+    };
+    playAudio();
+  }, [isPlaying]);
+
+  const handleOpenAlbum = (key) => {
+    setSelectedAlbumKey(key);
+    setCurrentView('album');
   };
 
+  const handleBack = () => {
+    setCurrentView('albums');
+    // Small timeout to allow transition before clearing state
+    setTimeout(() => setSelectedAlbumKey(null), 300);
+    setIsPlaying(false);
+  };
+
+  // Lightbox Handlers
   const openLightbox = (index) => {
     setSelectedImageIndex(index);
     setIsLightboxOpen(true);
+    document.body.style.overflow = 'hidden';
   };
 
-  const closeLightbox = () => {
+  const closeLightbox = useCallback(() => {
     setIsLightboxOpen(false);
-  };
+    document.body.style.overflow = '';
+  }, []);
 
-  const navigateImage = (direction) => {
-    if (!selectedAlbum) return;
-    
-    if (direction === 'next') {
-      setSelectedImageIndex((prev) => 
-        prev === selectedAlbum.galleryImages.length - 1 ? 0 : prev + 1
-      );
-    } else {
-      setSelectedImageIndex((prev) => 
-        prev === 0 ? selectedAlbum.galleryImages.length - 1 : prev - 1
-      );
-    }
-  };
+  const navigateImage = useCallback((direction) => {
+    if (!selectedAlbum?.galleryImages) return;
+    const len = selectedAlbum.galleryImages.length;
+    setSelectedImageIndex(prev => direction === 'next' ? (prev + 1) % len : (prev - 1 + len) % len);
+  }, [selectedAlbum]);
 
-  const toggleAudio = () => {
-    if (!audioRef.current) return;
-    
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play().catch(error => {
-        console.error('Audio playback failed:', error);
-      });
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  const backToAlbums = () => {
-    setCurrentView('albums');
-    setSelectedAlbum(null);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    }
-  };
-
-  // Filter and sort albums
-  const filteredAndSortedAlbums = Object.entries(galleryData.events)
-    .filter(([key, album]) => 
-      album.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      album.description.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort(([keyA, albumA], [keyB, albumB]) => {
-      switch (sortBy) {
-        case 'name':
-          return albumA.title.localeCompare(albumB.title);
-        case 'date':
-          return (albumB.date || 0) - (albumA.date || 0);
-        case 'size':
-          return (albumB.galleryImages?.length || 0) - (albumA.galleryImages?.length || 0);
-        default:
-          return 0;
-      }
-    });
-
+  // Keyboard support for lightbox
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (!isLightboxOpen) return;
-      
+    if (!isLightboxOpen) return;
+    const handleKey = (e) => {
       if (e.key === 'ArrowRight') navigateImage('next');
       if (e.key === 'ArrowLeft') navigateImage('prev');
       if (e.key === 'Escape') closeLightbox();
     };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [isLightboxOpen, navigateImage, closeLightbox]);
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isLightboxOpen, selectedAlbum]);
+  const filteredAlbums = Object.entries(galleryData?.events || {}).filter(([_, album]) => 
+    album.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  // Check if we have data
-  if (!galleryData || !galleryData.events) {
-    return (
-      <div className="gallery-app">
-        <div className="loading-state">
-          <div className="glass-card">
-            <h2>Loading Gallery...</h2>
-            <p>No gallery data found</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (!galleryData?.events) return <div className="loader">Loading Archive...</div>;
 
   return (
     <>
-    <DynamicIsland></DynamicIsland>
-    <div className="gallery-app">
-      {/* Liquid Glass Background Elements */}
-      <div className="liquid-background">
-        <div className="liquid-blob blob-1"></div>
-        <div className="liquid-blob blob-2"></div>
-        <div className="liquid-blob blob-3"></div>
-        <div className="glass-morph"></div>
-      </div>
-
-      {currentView === 'albums' ? (
-        <div className="explorer-container">
-          {/* Explorer Header */}
-          <header className="explorer-header">
-            <div className="header-left">
-              <div className="folder-icon">
-                <div className="folder-tab"></div>
-                <div className="folder-body"></div>
-              </div>
-              <h1>R-SHS Album</h1>
-            </div>
-            <div className="header-right">
-              <div className="search-box glass-input">
-                <span className="search-icon">🔍</span>
-                <input
-                  type="text"
-                  placeholder="Search albums..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              {/* <select 
-                className="sort-select glass-input"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <option value="name">Sort by Name</option>
-                <option value="date">Sort by Date</option>
-                <option value="size">Sort by Size</option>
-              </select> */}
-            </div>
-          </header>
-
-          {/* Explorer Content */}
-          <div className="explorer-content">
-            <div className="sidebar glass-card">
-              <div className="sidebar-section">
-                <h3>Quick Access</h3>
-                <div className="sidebar-item active">
-                  <span className="sidebar-icon">📁</span>
-                  All Albums
-                </div>
-                {/* <div className="sidebar-item">
-                  <span className="sidebar-icon">⭐</span>
-                  Favorites
-                </div>
-                <div className="sidebar-item">
-                  <span className="sidebar-icon">🕒</span>
-                  Recent
-                </div> */}
-              </div>
-              {/* <div className="sidebar-section">
-                <h3>Categories</h3>
-                <div className="sidebar-item">
-                  <span className="sidebar-icon">🎉</span>
-                  Events
-                </div>
-                <div className="sidebar-item">
-                  <span className="sidebar-icon">🏞️</span>
-                  Landscapes
-                </div>
-                <div className="sidebar-item">
-                  <span className="sidebar-icon">👥</span>
-                  Portraits
-                </div>
-              </div> */}
-            </div>
-
-            <div className="main-content">
-              <div className="content-header">
-                <div className="breadcrumb">
-                  <span>R-SHS Album</span>
-                  <span className="separator">/</span>
-                  <span className="current">All Albums</span>
-                </div>
-                <div className="view-stats">
-                  {filteredAndSortedAlbums.length} items
-                </div>
-              </div>
-
-              <div className="files-grid">
-                {filteredAndSortedAlbums.map(([key, album]) => (
-                  <div 
-                    key={key} 
-                    className="file-item glass-card"
-                    onClick={() => openAlbum(key)}
-                  >
-                    <div className="file-icon">
-                      <div className="folder-preview">
-                        <img 
-                          src={album.coverImage} 
-                          alt={album.title}
-                          onError={(e) => {
-                            e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIE5vdCBGb3VuZDwvdGV4dD48L3N2Zz4=';
-                          }}
-                        />
-                        <div className="folder-overlay">
-                          <div className="file-type">ALBUM</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="file-info">
-                      <h3 className="file-name">{album.title}</h3>
-                      <p className="file-desc">{album.description}</p>
-                      <div className="file-meta">
-                        <span className="file-size">{album.galleryImages?.length || 0} items</span>
-                        <span className="file-date">{album.date || 'Unknown date'}</span>
-                      </div>
-                    </div>
-                    <div className="file-actions">
-                      <button className="action-btn">···</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+      <DynamicIsland />
+      
+      <div className="gallery-layout">
+        <div className="ambient-background">
+          <div className="gradient-orb orb-1"></div>
+          <div className="gradient-orb orb-2"></div>
+          {/* Noise overlay removed on mobile via CSS for performance */}
+          <div className="noise-overlay"></div>
         </div>
-      ) : (
-        <div className="album-explorer">
-          {/* Album Explorer Header */}
-          <header className="explorer-header">
-            <div className="header-left">
-              <button className="back-button glass-button" onClick={backToAlbums}>
-                <span className="back-arrow">←</span>
-                Back
-              </button>
-              <div className="breadcrumb">
-                <span onClick={backToAlbums} className="clickable">R-SHS Album</span>
-                <span className="separator">/</span>
-                <span className="current">{selectedAlbum?.title}</span>
-              </div>
-            </div>
-            <div className="header-right">
-              {selectedAlbum?.audioSrc && (
-                <button 
-                  className={`audio-toggle glass-button ${isPlaying ? 'playing' : ''}`}
-                  onClick={toggleAudio}
-                >
-                  <span className="audio-icon">{isPlaying ? '⏸' : '▶'}</span>
-                  {isPlaying ? 'Pause Soundtrack' : 'Play Soundtrack'}
-                </button>
-              )}
-              <div className="view-controls">
-                <button className="view-btn active">🖼️</button>
-                <button className="view-btn">📄</button>
-              </div>
-            </div>
-          </header>
 
-          {/* Album Info Panel */}
-          <div className="album-info-panel glass-card">
-            <div className="album-cover-large">
-              <img 
-                src={selectedAlbum?.coverImage} 
-                alt={selectedAlbum?.title}
+        {/* --- ALBUMS LIST --- */}
+        <main className={`view-container ${currentView === 'albums' ? 'active' : 'hidden'}`}>
+          <header className="gallery-header">
+            <div>
+              <span className="brand-subtitle">R-SHS ARCHIVE</span>
+              <h1 className="brand-title">Collections</h1>
+            </div>
+            
+            <div className="search-wrapper">
+              <Icon name="search" className="search-icon" />
+              <input
+                type="text"
+                placeholder="Find a memory..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
               />
             </div>
-            <div className="album-details">
-              <h1>{selectedAlbum?.title}</h1>
-              <p className="album-subtitle">{selectedAlbum?.subtitle}</p>
-              <p className="album-description">{selectedAlbum?.description}</p>
-              <div className="album-stats">
-                <div className="stat">
-                  <span className="stat-number">{selectedAlbum?.galleryImages?.length || 0}</span>
-                  <span className="stat-label">Images</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-number">{selectedAlbum?.date || 'N/A'}</span>
-                  <span className="stat-label">Date</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          </header>
 
-          {/* Images Grid */}
-          {selectedAlbum?.galleryImages && selectedAlbum.galleryImages.length > 0 ? (
-            <div className="images-grid">
-              {selectedAlbum.galleryImages.map((image, index) => (
-                <div 
-                  key={index} 
-                  className="image-item glass-card"
-                  onClick={() => openLightbox(index)}
-                >
-                  <div className="image-container">
-                    <img 
-                      src={image.src} 
-                      alt={image.alt || `Image ${index + 1}`} 
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIE5vdCBGb3VuZDwvdGV4dD48L3N2Zz4=';
-                      }}
-                    />
-                    <div className="image-overlay">
-                      <div className="image-actions">
-                        <button className="action-btn">👁️</button>
-                        <button className="action-btn">⭐</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="image-info">
-                    <span className="image-name">{image.alt || `Image ${index + 1}`}</span>
-                    <span className="image-type">JPEG</span>
+          <div className="albums-grid">
+            {filteredAlbums.map(([key, album]) => (
+              <article 
+                key={key} 
+                className="album-card"
+                onClick={() => handleOpenAlbum(key)}
+              >
+                <div className="card-media-wrapper">
+                  <img 
+                    src={album.coverImage} 
+                    alt={album.title} 
+                    loading="lazy"
+                    onError={(e) => e.target.src = 'https://placehold.co/600x400/1a1a2e/FFF?text=No+Image'}
+                  />
+                  <div className="card-overlay">
+                    <span>Open Album</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="no-images glass-card">
-              <div className="empty-state">
-                <div className="empty-icon">📁</div>
-                <h3>No images found</h3>
-                <p>This album doesn't contain any images yet.</p>
-              </div>
-            </div>
-          )}
-          
-          {selectedAlbum?.audioSrc && (
-            <audio 
-              ref={audioRef} 
-              src={selectedAlbum.audioSrc} 
-              loop
-              onError={(e) => console.error('Audio loading error:', e)}
-            />
-          )}
-        </div>
-      )}
-      
-      {/* Enhanced Lightbox */}
-      {isLightboxOpen && selectedAlbum && selectedAlbum.galleryImages && (
-        <div className="lightbox-overlay" onClick={closeLightbox}>
-          <div className="lightbox-container" onClick={(e) => e.stopPropagation()}>
-            <div className="lightbox-header">
-              <div className="lightbox-info">
-                <h3>{selectedAlbum.title}</h3>
-                <span className="image-counter">
-                  {selectedImageIndex + 1} of {selectedAlbum.galleryImages.length}
-                </span>
-              </div>
-              <div className="lightbox-controls">
-                {/* <button className="control-btn">⭐</button>
-                <button className="control-btn">📥</button> */}
-                <button className="control-btn close-btn" onClick={closeLightbox}>✕</button>
-              </div>
-            </div>
-            
-            <div className="lightbox-content">
-              <button 
-                className="nav-button prev" 
-                onClick={() => navigateImage('prev')}
-              >
-                ‹
-              </button>
-              
-              <div className="image-viewer">
-                <img 
-                  src={selectedAlbum.galleryImages[selectedImageIndex]?.src} 
-                  alt={selectedAlbum.galleryImages[selectedImageIndex]?.alt || `Image ${selectedImageIndex + 1}`} 
-                />
-              </div>
-              
-              <button 
-                className="nav-button next" 
-                onClick={() => navigateImage('next')}
-              >
-                ›
-              </button>
-            </div>
-            
-            <div className="lightbox-footer">
-              <div className="image-caption glass-card">
-                {selectedAlbum.galleryImages[selectedImageIndex]?.alt || `Image ${selectedImageIndex + 1}`}
-              </div>
-              <div className="navigation-dots">
-                {selectedAlbum.galleryImages.map((_, index) => (
-                  <button
-                    key={index}
-                    className={`dot ${index === selectedImageIndex ? 'active' : ''}`}
-                    onClick={() => setSelectedImageIndex(index)}
-                  />
+                <div className="card-content">
+                  <div className="card-meta">
+                    <span className="date-badge">{album.date || 'Archives'}</span>
+                    <span className="count-badge">{album.galleryImages?.length || 0} Items</span>
+                  </div>
+                  <h2 className="card-title">{album.title}</h2>
+                  <p className="card-desc">{album.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </main>
+
+        {/* --- SINGLE ALBUM --- */}
+        <main className={`view-container ${currentView === 'album' ? 'active' : 'hidden'}`}>
+          {selectedAlbum && (
+            <>
+              <nav className="sticky-nav">
+                <button onClick={handleBack} className="glass-btn back-btn">
+                  <Icon name="arrowLeft" /> Back
+                </button>
+                
+                {selectedAlbum.audioSrc && (
+                  <button 
+                    className={`glass-btn audio-btn ${isPlaying ? 'active' : ''}`}
+                    onClick={() => setIsPlaying(!isPlaying)}
+                  >
+                    <Icon name={isPlaying ? "pause" : "play"} size={16} />
+                    <span className="desktop-only">{isPlaying ? 'Playing...' : 'Soundtrack'}</span>
+                    {isPlaying && <div className="mini-eq"><span></span><span></span><span></span></div>}
+                  </button>
+                )}
+              </nav>
+
+              <header className="album-header">
+                <h1 className="album-title">{selectedAlbum.title}</h1>
+                <p className="album-meta">{selectedAlbum.description}</p>
+              </header>
+
+              <div className="masonry-grid">
+                {selectedAlbum.galleryImages?.map((img, index) => (
+                  <div key={index} className="masonry-item" onClick={() => openLightbox(index)}>
+                    <img 
+                      src={img.src} 
+                      alt={img.alt || `Photo ${index}`}
+                      loading="lazy" 
+                    />
+                  </div>
                 ))}
               </div>
+
+              {selectedAlbum.audioSrc && (
+                <audio ref={audioRef} src={selectedAlbum.audioSrc} loop />
+              )}
+            </>
+          )}
+        </main>
+
+        {/* --- LIGHTBOX --- */}
+        {isLightboxOpen && selectedAlbum && (
+          <div className="lightbox" onClick={closeLightbox}>
+            <button className="lb-close"><Icon name="close" size={24} /></button>
+            
+            <div className="lb-content" onClick={e => e.stopPropagation()}>
+              <img 
+                src={selectedAlbum.galleryImages[selectedImageIndex]?.src} 
+                alt="Full screen"
+                className="lb-img"
+              />
+              <div className="lb-controls">
+                <button className="lb-arrow" onClick={() => navigateImage('prev')}>
+                  <Icon name="arrowLeft" size={28} />
+                </button>
+                <div className="lb-text">
+                  {selectedImageIndex + 1} / {selectedAlbum.galleryImages.length}
+                </div>
+                <button className="lb-arrow" onClick={() => navigateImage('next')}>
+                  <Icon name="arrowRight" size={28} />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Status Bar */}
-      <footer className="status-bar">
-        <div className="status-left">
-          <span>{filteredAndSortedAlbums.length} items</span>
-          <span className="status-separator">|</span>
-          <span>R-SHS Album Explorer v1.0</span>
-        </div>
-        <div className="status-right">
-          <span>Ready</span>
-        </div>
-      </footer>
-    </div>
+        )}
+      </div>
     </>
   );
 }

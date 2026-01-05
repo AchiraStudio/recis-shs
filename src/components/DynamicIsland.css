@@ -1,0 +1,322 @@
+/* =========================================
+   DYNAMIC ISLAND WRAPPER
+   ========================================= */
+.dynamic-island-wrapper {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  top: max(20px, env(safe-area-inset-top));
+  transition: top 0.3s ease;
+}
+
+.dynamic-island-wrapper.scrolled {
+  top: 10px; 
+}
+
+/* =========================================
+   THE PILL (CORE UI)
+   ========================================= */
+.di-pill {
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  
+  border-radius: 50px;
+  height: 44px; 
+  min-width: 140px; 
+  
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  
+  transition: 
+    width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+    height 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    border-radius 0.5s ease;
+}
+
+@media (hover: hover) {
+  .di-pill:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* =========================================
+   STATES: IDLE vs EXPANDED
+   ========================================= */
+
+/* 1. IDLE STATE (The "Closed" Pill) */
+.di-content-idle {
+  display: flex;
+  align-items: center; 
+  justify-content: center; 
+  gap: 12px; 
+  padding: 0 20px;
+  width: 100%;
+  height: 100%;
+  
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.di-signal-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #4ADE80;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.8);
+  flex-shrink: 0; 
+}
+
+.di-label {
+  color: #fff;
+  font-size: 1.1rem; 
+  font-weight: 700; 
+  letter-spacing: 1px;
+  line-height: 1; 
+  white-space: nowrap;
+  text-shadow: 0 0 10px rgba(0,0,0,0.5);
+  display: inline-block;
+}
+
+/* 2. EXPANDED STATE (The "Open" Menu) */
+.di-pill.expanded {
+  width: 280px; 
+  height: 64px; 
+}
+
+.di-content-active {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100%;
+  height: 100%;
+  
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.9);
+  transition: all 0.3s ease;
+}
+
+.di-pill.expanded .di-content-idle {
+  display: none;
+}
+
+.di-pill.expanded .di-content-active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+  transition-delay: 0.1s;
+}
+
+.di-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.3rem; 
+  padding: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.di-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.di-separator {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* =========================================
+   ANIMATION: SHRINKING
+   ========================================= */
+.di-pill.shrinking {
+  animation: bounceBack 0.4s forwards;
+}
+
+@keyframes bounceBack {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+/* =========================================
+   MOBILE RESPONSIVENESS
+   ========================================= */
+@media (max-width: 480px) {
+  .di-pill {
+    height: 40px;
+    min-width: 120px;
+  }
+  
+  .di-pill.expanded {
+    width: 250px;
+    height: 58px;
+  }
+  
+  .di-label {
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+  }
+  
+  .di-signal-dot {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .di-btn {
+    font-size: 1.2rem;
+    padding: 10px;
+  }
+}
+
+/* =========================================
+   SEARCH BOX STYLES
+   ========================================= */
+.di-search-container {
+  position: absolute;
+  top: 65px; /* Position below the pill */
+  left: 0;
+  width: 320px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  z-index: 9998;
+  transform-origin: top center;
+}
+
+.di-search-container.opening {
+  animation: fadeInDown 0.3s forwards;
+}
+
+.di-search-container.closing {
+  animation: fadeOutUp 0.2s forwards;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fadeOutUp {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-10px) scale(0.95); }
+}
+
+.di-search-box {
+  padding: 16px;
+}
+
+.search-header {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.search-icon-input {
+  color: var(--text-secondary, #94a3b8);
+  margin-right: 10px;
+}
+
+.search-header input {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.9rem;
+  width: 100%;
+  outline: none;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.close-btn:hover {
+  color: #fff;
+}
+
+.search-results-list {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+/* Scrollbar for results */
+.search-results-list::-webkit-scrollbar { width: 4px; }
+.search-results-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-radius: 8px;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.result-item:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.result-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.result-title {
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.result-cat {
+  font-size: 0.75rem;
+  color: var(--accent-blue, #38bdf8);
+}
+
+.result-date {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-family: monospace;
+}
+
+.no-results {
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+  padding: 20px;
+}

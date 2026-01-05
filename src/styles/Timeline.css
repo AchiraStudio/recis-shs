@@ -1,0 +1,365 @@
+/* =========================================
+   1. DESKTOP DEFAULT LAYOUT
+   ========================================= */
+
+.timeline-section {
+  padding: 120px 0;
+  position: relative;
+  overflow: hidden; /* Prevents scrollbar flash */
+}
+
+.timeline-layout {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 60px;
+  align-items: start;
+}
+
+/* Sidebar */
+.sidebar-sticky {
+  position: sticky;
+  top: 120px;
+  padding-right: 20px;
+}
+
+.section-tag {
+  color: var(--accent-blue);
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.section-heading {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.sidebar-desc {
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Desktop Controls */
+.timeline-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.glass-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.glass-btn:hover:not(:disabled) {
+  background: var(--text-primary);
+  color: #000;
+  transform: scale(1.1);
+}
+
+.glass-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.nav-indicator {
+  font-family: monospace;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.nav-indicator span {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.divider {
+  margin: 0 5px;
+  color: var(--text-secondary);
+}
+
+/* Track Wrapper (The Scrollable Area) */
+.timeline-track-wrapper {
+  height: 600px; /* Fixed height for desktop vertical scroll */
+  overflow-y: auto;
+  position: relative;
+  padding: 40px 20px 40px 40px;
+  /* Hide scrollbars but keep functionality */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* Fade effect at top/bottom */
+  mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+
+.timeline-track-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 36px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.timeline-node {
+  position: relative;
+  margin-bottom: 60px;
+  padding-left: 60px;
+  opacity: 0.4;
+  transform: scale(0.96);
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: pointer;
+}
+
+.timeline-node.is-active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* The Dot */
+.node-dot {
+  position: absolute;
+  left: 29px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #000; /* Contrast against line */
+  z-index: 2;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  transition: all 0.3s;
+}
+
+.timeline-node.is-active .node-dot {
+  width: 22px;
+  height: 22px;
+  left: 26px;
+  box-shadow: 0 0 25px rgba(255,255,255,0.4);
+}
+
+/* Card Styling */
+.event-card {
+  position: relative;
+  overflow: hidden;
+  height: 220px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.3s ease;
+  background: #1a1a1a; /* Fallback */
+}
+
+.timeline-node.is-active .event-card {
+  border-color: rgba(255,255,255,0.4);
+}
+
+.card-bg-layer {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.6s ease;
+  z-index: 0;
+}
+
+.timeline-node:hover .card-bg-layer,
+.timeline-node.is-active .card-bg-layer {
+  transform: scale(1.05);
+}
+
+.card-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%);
+  z-index: 1;
+}
+
+.card-content-wrapper {
+  position: relative;
+  z-index: 2;
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.event-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.event-date-badge {
+  font-family: monospace;
+  font-size: 0.75rem;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  padding: 6px 12px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fbbf24;
+}
+
+.event-type {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.card-body h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.card-body p {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.8);
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Truncate text to 2 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+
+/* =========================================
+   2. MOBILE & TABLET LAYOUT (Responsive)
+   ========================================= */
+
+@media (max-width: 900px) {
+  
+  .timeline-section {
+    padding: 60px 0;
+  }
+
+  /* Stack layout vertically */
+  .timeline-layout {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  /* Center the Header */
+  .sidebar-sticky {
+    position: relative;
+    top: 0;
+    text-align: center;
+    padding-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .section-heading {
+    font-size: 2.5rem; /* Smaller Font */
+  }
+
+  .sidebar-desc {
+    max-width: 80%;
+    margin: 0 auto 20px auto;
+    font-size: 0.9rem;
+  }
+
+  /* Hide Desktop Nav Buttons */
+  .timeline-controls {
+    display: none;
+  }
+
+  /* Switch Track to Horizontal Scroll */
+  .timeline-track-wrapper {
+    height: auto;
+    width: 100vw; /* Full viewport width */
+    margin-left: -24px; /* Counteract container padding */
+    padding: 20px 24px 40px 24px; /* Padding for shadows */
+    
+    display: flex; /* Horizontal Layout */
+    overflow-x: auto;
+    overflow-y: hidden;
+    
+    /* Native Snap Scrolling */
+    scroll-snap-type: x mandatory; 
+    
+    /* Remove vertical fade masks */
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  /* Hide the vertical line and dots on mobile */
+  .timeline-line, 
+  .node-dot {
+    display: none;
+  }
+
+  .timeline-nodes {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    padding: 0;
+  }
+
+  /* Mobile Card Layout */
+  .timeline-node {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0;
+    width: 85vw; /* Card takes 85% of screen width */
+    max-width: 350px;
+    
+    opacity: 1; /* Always fully visible on mobile */
+    transform: none !important; /* Disable scaling logic on mobile for simpler UX */
+    
+    /* Snap Logic */
+    scroll-snap-align: center;
+  }
+
+  .event-card {
+    height: 350px; /* Taller cards on mobile for impact */
+  }
+
+  .card-body p {
+    -webkit-line-clamp: 3; /* Allow more text on mobile vertical cards */
+  }
+}

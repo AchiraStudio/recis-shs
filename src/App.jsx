@@ -10,6 +10,8 @@ import Footer from './components/Footer';
 import Recup from './events/ascension/recup';
 import Gallery from './events/gallery/Gallery';
 
+import ErrorPage from './ErrorPage';
+
 function LandingPage() {
   return (
     <>
@@ -31,6 +33,7 @@ function App() {
           <Route path="/r-shs" element={<LandingPage />} />
           <Route path="/r-shs/gallery" element={<Gallery />} />
           <Route path="/r-shs/ascension-cup" element={<Recup />} />
+          <Route path="*" element={<ErrorPage />} />
         </Routes>
       </div>
     </Router>

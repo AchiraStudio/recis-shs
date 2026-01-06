@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import DynamicIsland from "../../components/DynamicI";
 import "./css/recup-scroll.css"; 
 // Keeping column css for other sections if needed
-import "./css/recup-column.css"; 
+import "./css/recup-column.css";
+import { GrSchedules } from "react-icons/gr";
 
 // Sections
 import RecupGuestStar from "./recup-jiband";
@@ -91,8 +92,8 @@ function Recup() {
         <div className="sidebar-left-greek">
           <div className="ancient-widget-greek">
             <div className="widget-header-greek">
-              <span className="wax-seal-greek">LIVE</span>
-              <span className="header-text-greek">OLYMPUS GAMES</span>
+              {/* <span className="wax-seal-greek">LIVE</span> */}
+              <span className="header-text-greek">ASCENSION GAMES</span>
             </div>
             
             {matchSchedules.length > 0 ? (
@@ -178,7 +179,7 @@ function Recup() {
         aria-label="Open Schedule"
       >
         <div className="seal-inner-greek">
-           <span className="seal-icon-greek">🏆</span>
+           <span className="seal-icon-greek"><GrSchedules /></span>
         </div>
         {matchSchedules.length > 0 && <span className="seal-badge-greek">{matchSchedules.length}</span>}
       </button>

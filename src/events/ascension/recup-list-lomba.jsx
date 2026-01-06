@@ -15,11 +15,97 @@ const RecupCompetitions = () => {
   ];
   
   // Mock data for display logic
-  const competitions = [
-     { id: 1, title: "Basketball", category: "sports", img: "./assets/recup/comps/basket.jpg", desc: "Prove your might on the court." },
-     { id: 2, title: "Modern Dance", category: "arts", img: "./assets/recup/comps/md.jpg", desc: "Rhythm of the gods." },
-     { id: 3, title: "Science Fair", category: "academic", img: "./assets/recup/comps/kir.jpg", desc: "Knowledge is power." },
-     // ... add rest of data
+const competitions = [
+    {
+      id: 1,
+      title: "Basket",
+      category: "sports",
+      desc: "Kompetisi basket untuk tim putra dan putri tingkat pelajar.",
+      img: "./assets/recup/comps/basket.jpg",
+      date: "Hari ke-1",
+      participants: "Tim",
+      fee: "Rp 50.000 / tim"
+    },
+    {
+      id: 2,
+      title: "Futsal (SMP & SMA)",
+      category: "sports",
+      desc: "Turnamen futsal untuk siswa SMP dan SMA.",
+      img: "./assets/recup/comps/futsal.jpg",
+      date: "Hari ke-2",
+      participants: "Tim",
+      fee: "Rp 75.000 / tim"
+    },
+    {
+      id: 3,
+      title: "Voli",
+      category: "sports",
+      desc: "Lomba voli antar tim pelajar putra dan putri.",
+      img: "./assets/recup/comps/voli.jpg",
+      date: "Hari ke-2",
+      participants: "Tim",
+      fee: "Rp 50.000 / tim"
+    },
+    {
+      id: 4,
+      title: "Modern Dance",
+      category: "arts",
+      desc: "Tunjukkan kreativitas dan kekompakan melalui tarian modern.",
+      img: "./assets/recup/comps/md.jpg",
+      date: "Hari ke-1",
+      participants: "Grup",
+      fee: "Rp 40.000 / grup"
+    },
+    {
+      id: 5,
+      title: "E-Sport (Mobile Legends)",
+      category: "sports",
+      desc: "Turnamen Mobile Legends untuk tim pelajar.",
+      img: "./assets/recup/comps/mole.jpeg",
+      date: "Hari ke-3",
+      participants: "Tim (5 orang)",
+      fee: "Rp 100.000 / tim"
+    },
+    {
+      id: 6,
+      title: "Band",
+      category: "arts",
+      desc: "Kompetisi band untuk menampilkan bakat bermusik.",
+      img: "./assets/recup/comps/band.jpg",
+      date: "Hari ke-1",
+      participants: "Grup",
+      fee: "Rp 50.000 / band"
+    },
+    {
+      id: 7,
+      title: "Film Pendek",
+      category: "arts",
+      desc: "Lomba film pendek dengan tema bebas dan kreatif.",
+      img: "./assets/recup/comps/sfilm.jpg",
+      date: "Hari ke-3",
+      participants: "Tim",
+      fee: "Rp 30.000 / tim"
+    },
+    {
+      id: 8,
+      title: "KIR IPA",
+      category: "academic",
+      desc: "Kompetisi karya ilmiah remaja bidang IPA.",
+      img: "./assets/recup/comps/kir.jpg",
+      date: "Hari ke-2",
+      participants: "Tim",
+      fee: "Rp 25.000 / tim"
+    },
+    {
+      id: 9,
+      title: "Debat Bahasa Inggris",
+      category: "academic",
+      desc: "Lomba debat Bahasa Inggris untuk melatih berpikir kritis.",
+      img: "./assets/recup/comps/debate.jpg",
+      date: "Hari ke-3",
+      participants: "Tim (3 orang)",
+      fee: "Rp 30.000 / tim"
+    }
   ];
 
   const filtered = activeCat === 'all' ? competitions : competitions.filter(c => c.category === activeCat);

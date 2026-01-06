@@ -1,56 +1,212 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import DynamicIsland from "../../components/DynamicI";
 import "./css/recup-scroll.css"; 
-// Keeping column css for other sections if needed
+// Pastikan file css column tetap ada jika digunakan komponen lain
 import "./css/recup-column.css";
-import { GrSchedules } from "react-icons/gr";
 
-// Sections
+// Icons
+import { GrSchedules } from "react-icons/gr";
+import { IoMdClose } from "react-icons/io"; 
+import { GiScrollQuill, GiLaurels } from "react-icons/gi";
+
+// Sections (Sesuaikan path import ini dengan struktur folder Anda)
 import RecupGuestStar from "./recup-jiband";
 import RecupCompetitions from "./recup-list-lomba";
 import RecupMerch from "./recup-merch";
 import RecupFooter from "./recup-footer";
 import RecupSpecialPerformance from "./recup-tulus";
 
-const SCHEDULE_API =
-  "https://script.google.com/macros/s/AKfycbxcR39xEqBTH8Rq8lAE2hLvZXKzwWOdG8LK0qqWm7m7kjyYlrm2QAHx2L2XxE-TRJQ3/exec";
+const SCHEDULE_API = "https://script.google.com/macros/s/AKfycbxcR39xEqBTH8Rq8lAE2hLvZXKzwWOdG8LK0qqWm7m7kjyYlrm2QAHx2L2XxE-TRJQ3/exec";
+
+// --- TEMPLATES BERITA (INDONESIA - 50+ VARIASI) ---
+const NEWS_TEMPLATES = {
+  // 1. Menang dengan Skor (Fokus Pemenang)
+  withScore: [
+    (w, l, s) => `${w} melibas ${l} dengan skor telak ${s}!`,
+    (w, l, s) => `Dominasi total! ${w} membungkam ${l} (${s}).`,
+    (w, l, s) => `Pertandingan sengit berakhir: ${w} ${s} - ${l}.`,
+    (w, l, s) => `Papan skor berbicara: ${w} menang ${s} atas ${l}.`,
+    (w, l, s) => `Tak terbendung! ${w} mengunci kemenangan ${s}.`,
+    (w, l, s) => `Sejarah tercipta: ${w} mengungguli ${l} (${s}).`,
+    (w, l, s) => `Gemuruh penonton menyambut kemenangan ${w} (${s})!`,
+    (w, l, s) => `${w} tampil memukau kontra ${l}, skor akhir ${s}.`,
+    (w, l, s) => `Peluit panjang berbunyi. ${w} ${s}, ${l} tumbang.`,
+    (w, l, s) => `Kemenangan manis ${s} diraih oleh ${w}.`
+  ],
+
+  // 2. Menang Tanpa Skor (Fokus Pemenang)
+  noScore: [
+    (w, l) => `${w} berhasil mengamankan kemenangan atas ${l}!`,
+    (w, l) => `Kemenangan krusial bagi ${w} dalam laga kontra ${l}.`,
+    (w, l) => `${l} gagal membendung serangan bertubi-tubi dari ${w}.`,
+    (w, l) => `Kejayaan milik ${w} hari ini setelah mengalahkan ${l}.`,
+    (w, l) => `${w} melaju mulus setelah menundukkan ${l}.`,
+    (w, l) => `Dewi Fortuna berpihak pada ${w} saat melawan ${l}.`,
+    (w, l) => `Satu lagi kemenangan dikantongi oleh ${w}!`,
+    (w, l) => `${w} berdiri tegak sebagai pemenang melawan ${l}.`,
+    (w, l) => `Mahkota kemenangan jatuh kepada ${w}.`,
+    (w, l) => `Sorak sorai untuk ${w} yang berhasil menang!`
+  ],
+
+  // 3. Kalah (Fokus Tim yang Kalah - Passive Voice)
+  lossPerspective: [
+    (w, l, s) => `${l} harus mengakui keunggulan ${w}${s ? ` (${s})` : ''}.`,
+    (w, l, s) => `Nasib kurang beruntung bagi ${l}, takluk di tangan ${w}.`,
+    (w, l, s) => `${l} dipaksa menyerah oleh permainan apik ${w}.`,
+    (w, l, s) => `Perjuangan keras ${l} belum cukup untuk menahan ${w}.`,
+    (w, l, s) => `${l} pulang dengan tangan hampa setelah ditekuk ${w}.`,
+    (w, l, s) => `Pertahanan ${l} runtuh di hadapan ${w}.`,
+    (w, l, s) => `${l} gagal mencuri poin dari ${w} hari ini.`,
+    (w, l, s) => `Hari yang berat bagi ${l} setelah dikalahkan ${w}.`
+  ],
+
+  // 4. Draw / Seri / Imbang
+  draw: [
+    (t1, t2, s) => `Sama kuat! ${t1} dan ${t2} berbagi angka ${s ? `(${s})` : ''}.`,
+    (t1, t2, s) => `Pertarungan sengit antara ${t1} vs ${t2} berakhir imbang.`,
+    (t1, t2, s) => `Tidak ada pemenang! Skor kacamata untuk ${t1} dan ${t2}.`,
+    (t1, t2, s) => `Damai di Colosseum? ${t1} dan ${t2} main seri.`,
+    (t1, t2, s) => `Jual beli serangan, namun ${t1} vs ${t2} berakhir sama kuat.`,
+    (t1, t2, s) => `Hasil imbang yang adil bagi ${t1} dan ${t2}.`,
+    (t1, t2, s) => `Skor imbang menutup laga panas ${t1} kontra ${t2}.`,
+    (t1, t2, s) => `Kedua tim bermain hati-hati. ${t1} seri lawan ${t2}.`,
+    (t1, t2, s) => `Berbagi poin! ${t1} ${s ? s : '-'} ${t2}.`,
+    (t1, t2, s) => `Kebuntuan tak terpecahkan antara ${t1} dan ${t2}.`
+  ],
+
+  // 5. Teasers / Fun Facts (Jika data kosong/TBD)
+  teasers: [
+    { title: "Segera Dimulai", desc: "Upacara Pembukaan menanti pada 24 Januari." },
+    { title: "Para Pejuang Siap", desc: "Tim-tim sedang mematangkan strategi mereka." },
+    { title: "Ascension Cup", desc: "Siapa yang akan naik ke Olympus tahun ini?" },
+    { title: "Catat Tanggalnya", desc: "24 Jan: Hari di mana bumi bergoncang." },
+    { title: "Bintang Tamu", desc: "Desas-desus mengatakan bard spesial akan datang." },
+    { title: "Bersiaplah", desc: "Siapkan yel-yel kalian. Pertandingan makin dekat." },
+    { title: "Registrasi", desc: "Bagan pertandingan sedang ditentukan oleh takdir." },
+    { title: "Pantauan Dewa", desc: "Zeus mengawasi persiapan dari langit." },
+    { title: "Ramalan Cuaca", desc: "Badai talenta muda sedang terbentuk... 2026." },
+    { title: "Keheningan", desc: "Arena masih sunyi... sebelum peluit pertama." }
+  ]
+};
 
 function Recup() {
   const [matchSchedules, setMatchSchedules] = useState([]);
+  const [news, setNews] = useState(NEWS_TEMPLATES.teasers); 
+  
+  // UI States
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
-  const [activeMatchIndex, setActiveMatchIndex] = useState(0);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [activeNewsIndex, setActiveNewsIndex] = useState(0);
 
-  // Change Title and logo
+  // --- 1. SETUP & FETCH ---
   useEffect(() => {
     document.title = "Ascension Cup - Official Website";
-
     const favicon = document.querySelector("link[rel='icon']");
-    if (favicon) {
-      favicon.href = "/assets/recup/favicon-recucp.png";
-    }
+    if (favicon) favicon.href = "/assets/recup/favicon-recucp.png";
   }, []);
 
+  // Logic Generator Berita
+  const generateNewsFromData = (data) => {
+    // Filter: Winner terisi ATAU Score terisi (abaikan status TBD)
+    const completedMatches = data.filter(m => {
+      const winner = m.winner ? m.winner.toLowerCase().trim() : '';
+      const score = m.score ? m.score.toString().trim() : '';
+      return (winner !== '' && winner !== 'tbd') || (score !== '' && score !== '-');
+    });
 
-  // --- 1. DATA FETCHING ---
+    if (completedMatches.length === 0) {
+      setNews(NEWS_TEMPLATES.teasers);
+      return;
+    }
+
+    // Ambil 7 match TERBARU (Data sudah di-sort ID descending)
+    const recentMatches = completedMatches.slice(0, 7);
+    
+    const generatedNews = recentMatches.map(match => {
+      const rawWinner = match.winner ? match.winner.toLowerCase().trim() : '';
+      const score = match.score;
+      const t1 = match.team1;
+      const t2 = match.team2;
+
+      let newsItem = {};
+
+      // A. SERI / DRAW
+      if (rawWinner === 'draw') {
+        const idx = Math.floor(Math.random() * NEWS_TEMPLATES.draw.length);
+        newsItem = {
+          title: "Hasil Imbang",
+          desc: NEWS_TEMPLATES.draw[idx](t1, t2, score)
+        };
+      } 
+      // B. ADA PEMENANG
+      else {
+        let winnerName = rawWinner;
+        let loserName = 'Lawan';
+
+        // Konversi 'team1'/'team2' ke Nama Tim
+        if (rawWinner === 'team1') { winnerName = t1; loserName = t2; }
+        else if (rawWinner === 'team2') { winnerName = t2; loserName = t1; }
+        else {
+            // Fallback nama manual
+            if (rawWinner === t1.toLowerCase()) { winnerName = t1; loserName = t2; }
+            else if (rawWinner === t2.toLowerCase()) { winnerName = t2; loserName = t1; }
+        }
+
+        // Tentukan Tipe Berita secara Acak (0: Score, 1: Kalah, 2: Umum)
+        const variantType = Math.floor(Math.random() * 3); 
+        
+        if (variantType === 0 && score && score !== "-" && score !== "") {
+          const idx = Math.floor(Math.random() * NEWS_TEMPLATES.withScore.length);
+          newsItem = {
+            title: "Laporan Laga",
+            desc: NEWS_TEMPLATES.withScore[idx](winnerName, loserName, score)
+          };
+        } else if (variantType === 1) {
+          const idx = Math.floor(Math.random() * NEWS_TEMPLATES.lossPerspective.length);
+          newsItem = {
+            title: "Pasca Laga",
+            desc: NEWS_TEMPLATES.lossPerspective[idx](winnerName, loserName, score)
+          };
+        } else {
+          const idx = Math.floor(Math.random() * NEWS_TEMPLATES.noScore.length);
+          newsItem = {
+            title: "Kabar Kemenangan",
+            desc: NEWS_TEMPLATES.noScore[idx](winnerName, loserName)
+          };
+        }
+      }
+      return newsItem;
+    });
+
+    // Isi sisa slot dengan teaser jika kurang dari 4
+    if (generatedNews.length < 4) {
+      const needed = 4 - generatedNews.length;
+      generatedNews.push(...NEWS_TEMPLATES.teasers.slice(0, needed));
+    }
+    setNews(generatedNews);
+  };
+
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
-        const res = await fetch(SCHEDULE_API, { cache: "no-store" });
+        const res = await fetch(SCHEDULE_API);
         const data = await res.json();
-        if (Array.isArray(data)) setMatchSchedules(data);
-      } catch (err) {
-        console.error("Fetch error", err);
-      }
+        if (Array.isArray(data)) {
+          // Sort ID Descending (Terbaru di atas)
+          const sortedData = data.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+          setMatchSchedules(sortedData);
+          generateNewsFromData(sortedData); 
+        }
+      } catch (err) { console.error("API Error", err); }
     };
     fetchSchedule();
-    const interval = setInterval(fetchSchedule, 20000);
+    const interval = setInterval(fetchSchedule, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // --- 2. PARALLAX LOGIC (Simplified for Performance) ---
+  // --- 2. ANIMASI & INTERAKSI ---
   const handleMouseMove = (e) => {
     if (window.innerWidth <= 768) return; 
-
     const { clientX, clientY } = e;
     const moveX = clientX - window.innerWidth / 2;
     const moveY = clientY - window.innerHeight / 2;
@@ -59,23 +215,27 @@ function Recup() {
     const clouds = document.querySelectorAll('.cloud-greek');
 
     if(title) title.style.transform = `translate(${moveX * 0.01}px, ${moveY * 0.01}px)`;
-    
     clouds.forEach((cloud, i) => {
       const speed = (i + 1) * 0.02;
       cloud.style.transform = `translate(${moveX * speed}px, ${moveY * speed}px)`;
     });
   };
 
-  // --- 3. AUTO CYCLE WIDGET ---
   useEffect(() => {
-    if (matchSchedules.length === 0) return;
     const interval = setInterval(() => {
-      setActiveMatchIndex((prev) => (prev + 1) % matchSchedules.length);
-    }, 5000);
+      setActiveNewsIndex((prev) => (prev + 1) % news.length);
+    }, 5000); 
     return () => clearInterval(interval);
-  }, [matchSchedules]);
+  }, [news]);
 
-  const activeMatch = matchSchedules[activeMatchIndex];
+  const openMatchDetails = (match) => setSelectedMatch(match);
+  const closeMatchDetails = () => setSelectedMatch(null);
+  
+  const getStatusClass = (match) => {
+    if (match.status?.toLowerCase() === 'live') return 'live';
+    if ((match.winner && match.winner !== 'tbd') || match.score) return 'finished';
+    return '';
+  };
 
   return (
     <>
@@ -83,78 +243,73 @@ function Recup() {
 
       {/* === HERO WRAPPER === */}
       <div className="recup-scroll-wrapper-greek" onMouseMove={handleMouseMove}>
-        
-        {/* Parchment Texture Layer */}
         <div className="parchment-texture-greek"></div>
         <div className="vignette-greek"></div>
 
-        {/* --- LEFT SIDEBAR: THE SCROLL WIDGET (Desktop) --- */}
+        {/* --- LEFT: TICKER DESKTOP --- */}
         <div className="sidebar-left-greek">
-          <div className="ancient-widget-greek">
+          <div className="ancient-widget-greek ticker-widget-greek">
             <div className="widget-header-greek">
-              {/* <span className="wax-seal-greek">LIVE</span> */}
-              <span className="header-text-greek">ASCENSION GAMES</span>
+              <span className="header-text-greek">JADWAL LAGA</span>
             </div>
-            
-            {matchSchedules.length > 0 ? (
-              <div className="active-match-card-greek">
-                <div className="am-bg-greek"></div>
-                <div className="am-category-greek">{activeMatch?.category}</div>
-                <div className="am-teams-greek">
-                  <div className="am-team-greek">{activeMatch?.team1}</div>
-                  <div className="am-vs-greek">
-                    <span>VS</span>
-                  </div>
-                  <div className="am-team-greek">{activeMatch?.team2}</div>
+            <div className="ticker-container-greek">
+              {matchSchedules.length > 0 ? (
+                <div className="ticker-track-greek">
+                  {[...matchSchedules, ...matchSchedules].map((m, i) => (
+                    <div key={i} className={`ticker-item-greek ${getStatusClass(m)}`} onClick={() => { setIsScheduleOpen(true); openMatchDetails(m); }}>
+                      <div className="ti-time-greek">{m.time}</div>
+                      <div className="ti-match-greek">
+                        <span className="ti-team">{m.team1}</span>
+                        <span className="ti-vs">VS</span>
+                        <span className="ti-team">{m.team2}</span>
+                      </div>
+                      <div className="ti-status-greek">
+                        {m.status?.toLowerCase() === 'live' ? '🔥 LIVE' : m.category}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="am-status-greek">
-                   {activeMatch?.status === 'live' ? '🔥 BATTLE IN PROGRESS' : '⏳ UPCOMING BATTLE'}
-                </div>
-              </div>
-            ) : (
-              <div className="loading-text-greek">Awaiting Scribes...</div>
-            )}
-
-            <div className="upcoming-list-greek">
-              {matchSchedules.slice(0, 3).map((m, i) => (
-                <div key={i} className="paper-row-greek">
-                  <span className="pr-time-greek">{m.time}</span>
-                  <span className="pr-match-greek">{m.team1} vs {m.team2}</span>
-                </div>
-              ))}
+              ) : (
+                <div className="loading-text-greek">Memanggil Penulis...</div>
+              )}
             </div>
-            
-            <button className="read-more-btn-greek" onClick={() => setIsScheduleOpen(true)}>
-              UNFURL SCHEDULE
-            </button>
+            <button className="read-more-btn-greek" onClick={() => setIsScheduleOpen(true)}>LIHAT SEMUA</button>
           </div>
         </div>
 
-        {/* --- CENTER: THE STAGE --- */}
+        {/* --- CENTER STAGE --- */}
         <section className="center-stage-greek">
-          
-          {/* Clouds */}
           <div className="clouds-container-greek">
             <img src="./assets/recup/cloud.webp" className="cloud-greek c1-greek" alt="" />
             <img src="./assets/recup/cloud.webp" className="cloud-greek c2-greek" alt="" />
           </div>
 
-          {/* Title Area */}
           <div className="title-area-greek">
             <img src="./assets/recup/title.webp" className="hero-title-greek" alt="RECUP Title" />
             <div className="hero-year-greek">EST. MMXXVI</div>
           </div>
 
-          {/* Building (Forcefully Anchored to Bottom) */}
           <div className="building-anchor-greek">
             <img src="./assets/recup/building.webp" className="hero-building-greek" alt="Pantheon" />
           </div>
 
-          {/* Scroll Buttons (Floating above building) */}
+          {/* === [NEW] MOBILE NEWS WIDGET (Town Crier) === */}
+          <div className="mobile-news-widget-greek">
+            <div className="mn-inner-greek">
+              <div className="mn-icon-greek"><GiScrollQuill /></div>
+              <div className="mn-content-greek">
+                <div key={activeNewsIndex} className="mn-text-animate">
+                  <span className="mn-title-greek">{news[activeNewsIndex].title}:</span>
+                  <span className="mn-desc-greek"> {news[activeNewsIndex].desc}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="scroll-buttons-container-greek">
             <a href="#merch" className="scroll-btn-greek">
               <span className="scroll-handle-left"></span>
-              <span className="scroll-content">GET MERCH</span>
+              <span className="scroll-content">BELI MERCH</span>
               <span className="scroll-handle-right"></span>
             </a>
             <a href="#special-perf" className="scroll-btn-greek secondary-scroll-greek">
@@ -165,37 +320,47 @@ function Recup() {
           </div>
         </section>
 
-        {/* --- RIGHT SIDEBAR: DECOR --- */}
+        {/* --- RIGHT: NEWS DESKTOP --- */}
         <div className="sidebar-right-greek">
-          <div className="ornamental-border-greek"></div>
-          <div className="vertical-text-greek">RECIS CUP 2026</div>
+           <div className="news-widget-greek">
+              <div className="news-header-greek">
+                <GiScrollQuill className="news-icon-greek" />
+                <span>KABAR OLYMPUS</span>
+              </div>
+              <div className="news-content-area-greek">
+                 {news.map((item, index) => (
+                   <div key={index} className={`news-item-greek ${index === activeNewsIndex ? 'active' : ''}`}>
+                     <h4 className="news-title-greek">{item.title}</h4>
+                     <p className="news-desc-greek">{item.desc}</p>
+                   </div>
+                 ))}
+              </div>
+              <div className="news-indicators-greek">
+                {news.map((_, i) => (
+                  <span key={i} className={`dot-greek ${i === activeNewsIndex ? 'active' : ''}`}></span>
+                ))}
+              </div>
+           </div>
         </div>
       </div>
 
-      {/* === MOBILE: WAX SEAL FAB & MODAL === */}
-      <button 
-        className="wax-fab-greek"
-        onClick={() => setIsScheduleOpen(true)}
-        aria-label="Open Schedule"
-      >
-        <div className="seal-inner-greek">
-           <span className="seal-icon-greek"><GrSchedules /></span>
-        </div>
-        {matchSchedules.length > 0 && <span className="seal-badge-greek">{matchSchedules.length}</span>}
+      {/* === MOBILE FAB === */}
+      <button className="wax-fab-greek" onClick={() => setIsScheduleOpen(true)}>
+        <div className="seal-inner-greek"><span className="seal-icon-greek"><GrSchedules /></span></div>
       </button>
 
-      {/* Modal Overlay */}
-      <div className={`parchment-modal-overlay-greek ${isScheduleOpen ? 'open-greek' : ''}`}>
-        <div className="parchment-modal-greek">
+      {/* === MODAL LIST JADWAL === */}
+      <div className={`parchment-modal-overlay-greek ${isScheduleOpen ? 'open-greek' : ''}`} onClick={() => setIsScheduleOpen(false)}>
+        <div className="parchment-modal-greek" onClick={e => e.stopPropagation()}>
           <div className="pm-header-greek">
-            <h2>OFFICIAL DECREE</h2>
-            <button className="pm-close-greek" onClick={() => setIsScheduleOpen(false)}>×</button>
+            <h2>TITAH RESMI</h2>
+            <button className="pm-close-greek" onClick={() => setIsScheduleOpen(false)}><IoMdClose /></button>
           </div>
-          <div className="pm-subheader-greek">SCHEDULE OF MATCHES</div>
+          <div className="pm-subheader-greek">KLIK PERTANDINGAN UNTUK DETAIL</div>
           
           <div className="pm-body-greek">
              {matchSchedules.map((match, idx) => (
-               <div key={idx} className={`decree-card-greek ${match.status}`}>
+               <div key={idx} className={`decree-card-greek ${getStatusClass(match)}`} onClick={() => openMatchDetails(match)}>
                   <div className="dc-left-greek">
                     <span className="dc-time-greek">{match.time}</span>
                     <span className="dc-cat-greek">{match.category}</span>
@@ -204,15 +369,66 @@ function Recup() {
                     <div className="dc-team-greek">{match.team1}</div>
                     <div className="dc-vs-greek">VS</div>
                     <div className="dc-team-greek">{match.team2}</div>
+                    {getStatusClass(match) === 'finished' && (
+                        <div className="dc-result-greek">
+                           {match.winner === 'draw' ? 'SERI' : `Pemenang: ${match.winner === 'team1' ? match.team1 : match.winner === 'team2' ? match.team2 : match.winner}`} 
+                           {match.score ? ` (${match.score})` : ''}
+                        </div>
+                    )}
                   </div>
                   <div className="dc-right-greek">
-                    {match.status === 'live' ? <span className="live-tag-greek">LIVE</span> : <span className="date-tag-greek">{match.date}</span>}
+                    {match.status?.toLowerCase() === 'live' ? <span className="live-tag-greek">LIVE</span> : <span className="date-tag-greek">{match.date}</span>}
                   </div>
                </div>
              ))}
           </div>
         </div>
       </div>
+
+      {/* === POPUP DETAIL MATCH === */}
+      {selectedMatch && (
+        <div className="match-detail-overlay-greek" onClick={closeMatchDetails}>
+          <div className="match-detail-scroll-greek" onClick={(e) => e.stopPropagation()}>
+            <button className="md-close-btn-greek" onClick={closeMatchDetails}><IoMdClose /></button>
+            <div className="md-header-greek">
+              <GiLaurels className="laurels-left" /><span>DETAIL LAGA</span><GiLaurels className="laurels-right" />
+            </div>
+            <div className="md-status-pill-greek">
+              {selectedMatch.status === 'live' ? '🔥 SEDANG BERLANGSUNG' : (getStatusClass(selectedMatch) === 'finished' ? 'SELESAI' : 'AKAN DATANG')}
+            </div>
+            <div className="md-versus-section-greek">
+              {/* TEAM 1 */}
+              <div className="md-team-block">
+                <div className={`md-team-logo-placeholder ${selectedMatch.winner === 'team1' || selectedMatch.winner === selectedMatch.team1.toLowerCase() ? 'winner-glow' : ''}`}>
+                  {selectedMatch.team1.charAt(0)}
+                </div>
+                <div className="md-team-name">{selectedMatch.team1}</div>
+                {(selectedMatch.winner === 'team1' || selectedMatch.winner === selectedMatch.team1.toLowerCase()) && <span className="winner-label">MENANG</span>}
+              </div>
+              {/* SCORE / VS */}
+              <div className="md-vs-divider">
+                {selectedMatch.score ? <span className="score-big">{selectedMatch.score}</span> : <span>VS</span>}
+              </div>
+              {/* TEAM 2 */}
+              <div className="md-team-block">
+                <div className={`md-team-logo-placeholder ${selectedMatch.winner === 'team2' || selectedMatch.winner === selectedMatch.team2.toLowerCase() ? 'winner-glow' : ''}`}>
+                  {selectedMatch.team2.charAt(0)}
+                </div>
+                <div className="md-team-name">{selectedMatch.team2}</div>
+                {(selectedMatch.winner === 'team2' || selectedMatch.winner === selectedMatch.team2.toLowerCase()) && <span className="winner-label">MENANG</span>}
+              </div>
+            </div>
+            {selectedMatch.winner === 'draw' && <div className="md-draw-text">PERTANDINGAN SERI</div>}
+            <div className="md-info-grid-greek">
+              <div className="md-info-item"><span className="label">KATEGORI</span><span className="value">{selectedMatch.category}</span></div>
+              <div className="md-info-item"><span className="label">TANGGAL</span><span className="value">{selectedMatch.date}</span></div>
+              <div className="md-info-item"><span className="label">PUKUL</span><span className="value">{selectedMatch.time} WIB</span></div>
+              <div className="md-info-item"><span className="label">LOKASI</span><span className="value">Arena Utama</span></div>
+            </div>
+            <div className="md-footer-greek">Semoga tim terbaik yang menang.</div>
+          </div>
+        </div>
+      )}
 
       <RecupSpecialPerformance />
       <RecupGuestStar />

@@ -1,5 +1,5 @@
 /* --- FONTS & VARS --- */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Lato:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Lato:wght@400;700;900&display=swap');
 
 :root {
   /* Theme: Modern Ancient Scroll */
@@ -19,7 +19,6 @@
   position: relative;
   width: 100vw;
   height: 100vh;
-  /* Dynamic height for mobile browsers */
   height: 100dvh; 
   overflow: hidden;
   background-color: var(--parchment-dark-greek);
@@ -30,7 +29,6 @@
 /* --- TEXTURES --- */
 .parchment-texture-greek {
   position: absolute; inset: 0;
-  /* Subtle paper grain noise + warm gradient */
   background: 
     radial-gradient(circle at center, var(--parchment-light-greek), var(--parchment-dark-greek)),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
@@ -50,17 +48,13 @@
   z-index: 10;
   width: 100%;
   height: 100%;
-  
-  /* FLEXBOX LAYOUT TO FIX BUILDING POSITION */
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Key: This pushes content to fill space, building goes to bottom */
   justify-content: flex-end; 
   padding-bottom: 0;
 }
 
-/* 1. Clouds (Background decoration) */
 .clouds-container-greek {
   position: absolute;
   top: 10%;
@@ -73,20 +67,18 @@
 .c1-greek { left: 10%; width: 250px; }
 .c2-greek { right: 10%; top: 40px; width: 220px; transform: scaleX(-1); }
 
-/* 2. Title Area (Floating Top/Center) */
 .title-area-greek {
-  /* Absolute position relative to container, usually top third */
   position: absolute;
   top: 15%;
   text-align: center;
   z-index: 10;
+  transition: top 0.3s;
 }
 
 .hero-title-greek {
   width: 600px;
   max-width: 85vw;
   filter: drop-shadow(0 10px 10px rgba(44, 30, 16, 0.3));
-  /* Subtle float animation */
   animation: floatSimpleGreek 5s ease-in-out infinite;
   translate: 12px;
 }
@@ -106,39 +98,35 @@
   50% { transform: translateY(-10px); }
 }
 
-/* 3. Building (The Anchor) */
 .building-anchor-greek {
-  /* Flex item that sits at the bottom */
   position: relative;
   z-index: 5;
   width: 100%;
   display: flex;
   justify-content: center;
-  pointer-events: none; /* Let clicks pass through if needed */
+  pointer-events: none;
 }
 
 .hero-building-greek {
   width: 850px;
   max-width: 100vw;
   height: auto;
-  /* Ensure it looks grounded */
   filter: drop-shadow(0 20px 30px rgba(0,0,0,0.4));
-  /* Mobile tweak: slightly overlap bottom edge */
   margin-bottom: -10px; 
+  transition: opacity 0.3s, transform 0.3s;
 }
 
-/* 4. Scroll Buttons (Floating over building) */
 .scroll-buttons-container-greek {
   position: absolute;
-  bottom: 20%; /* Adjusts based on building height usually */
+  bottom: 20%; 
   z-index: 20;
   display: flex;
   flex-direction: column;
   gap: 20px;
   align-items: center;
+  transition: bottom 0.3s;
 }
 
-/* THE SCROLL BUTTON STYLE */
 .scroll-btn-greek {
   position: relative;
   display: flex;
@@ -147,10 +135,8 @@
   transition: transform 0.2s;
   cursor: pointer;
 }
-
 .scroll-btn-greek:hover { transform: scale(1.05); }
 
-/* The paper part */
 .scroll-content {
   background: linear-gradient(to bottom, #fdfbf7, #e6dcc3);
   padding: 12px 40px;
@@ -166,45 +152,37 @@
   text-align: center;
 }
 
-/* The rolled handles (Left & Right) */
 .scroll-handle-left, .scroll-handle-right {
-  width: 20px;
-  height: 54px; /* Slightly taller than content */
+  width: 20px; height: 54px; 
   background: linear-gradient(90deg, #5c4033, #8a6e4b, #5c4033);
   border-radius: 4px;
   position: relative;
   box-shadow: 2px 0 5px rgba(0,0,0,0.3);
 }
-
 .scroll-handle-left::after, .scroll-handle-right::after {
   content: ''; position: absolute;
   top: 5px; bottom: 5px; left: 6px; right: 6px;
-  background: #c5a059; /* Gold inner */
-  border-radius: 2px;
+  background: #c5a059; border-radius: 2px;
 }
-
-/* Secondary button variant */
 .secondary-scroll-greek .scroll-content {
   background: linear-gradient(to bottom, #333, #111);
   color: #d4af37;
 }
 
-/* --- DESKTOP SIDEBARS --- */
+/* =========================================
+   LEFT SIDEBAR: INFINITE TICKER 
+   ========================================= */
 .sidebar-left-greek {
   position: absolute; left: 40px; top: 50%; transform: translateY(-50%);
-  z-index: 30; width: 320px;
+  z-index: 30; width: 300px;
 }
-
 .ancient-widget-greek {
-  background: rgba(253, 246, 227, 0.9);
+  background: rgba(253, 246, 227, 0.95);
   border: 4px double var(--gold-greek);
-  padding: 20px;
-  border-radius: 4px;
-  box-shadow: 10px 10px 30px rgba(0,0,0,0.2);
+  padding: 15px; border-radius: 4px;
+  box-shadow: 10px 10px 30px rgba(0,0,0,0.3);
   position: relative;
 }
-
-/* Wax Seal decoration */
 .ancient-widget-greek::before {
   content: ''; position: absolute; top: -15px; left: -15px;
   width: 50px; height: 50px;
@@ -212,86 +190,147 @@
   border-radius: 50%;
   box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
   border: 2px dashed rgba(255,255,255,0.2);
+  z-index: 2;
 }
-
 .widget-header-greek {
   border-bottom: 2px solid var(--ink-greek);
-  padding-bottom: 10px; margin-bottom: 15px;
+  padding-bottom: 10px; margin-bottom: 5px;
   display: flex; justify-content: center;
 }
 .header-text-greek {
   font-family: var(--font-heading-greek); font-weight: 700; font-size: 1.1rem;
 }
-
-.active-match-card-greek {
-  background: #fff; border: 1px solid #ccc;
-  padding: 15px; text-align: center; margin-bottom: 20px;
-  position: relative;
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+.ticker-widget-greek { height: 400px; display: flex; flex-direction: column; }
+.ticker-container-greek {
+  flex: 1; overflow: hidden; position: relative; margin: 10px 0;
+  mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
 }
-.am-category-greek { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-.am-teams-greek { font-family: var(--font-heading-greek); font-size: 1.2rem; font-weight: 700; margin: 10px 0; }
-.am-vs-greek { font-size: 0.8rem; color: var(--gold-greek); margin: 5px 0; }
-.am-status-greek { font-size: 0.7rem; font-weight: bold; color: var(--red-seal-greek); }
-
-.paper-row-greek {
-  display: flex; justify-content: space-between;
-  padding: 8px 0; border-bottom: 1px dashed #ccc;
-  font-size: 0.85rem;
+.ticker-track-greek {
+  animation: scrollUpGreek 30s linear infinite;
+  display: flex; flex-direction: column; gap: 15px;
 }
-.pr-time-greek { font-weight: bold; color: var(--gold-greek); }
+.ticker-track-greek:hover { animation-play-state: paused; }
+@keyframes scrollUpGreek { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+
+.ticker-item-greek {
+  background: #fff; border: 1px solid #d4af37;
+  padding: 10px; cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+}
+.ticker-item-greek:hover { background: var(--parchment-light-greek); transform: scale(1.02); }
+.ticker-item-greek.live { border-left: 4px solid #d00; background: #fff5f5; }
+
+.ti-time-greek { font-size: 0.7rem; color: #777; font-weight: bold; }
+.ti-match-greek { font-family: var(--font-heading-greek); font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; justify-content: space-between; margin: 4px 0;}
+.ti-vs { font-size: 0.7rem; color: var(--gold-greek); margin: 0 5px; }
+.ti-status-greek { font-size: 0.65rem; text-transform: uppercase; color: var(--bronze-greek); text-align: right; letter-spacing: 1px; }
 
 .read-more-btn-greek {
-  width: 100%; margin-top: 15px;
-  background: transparent; border: 2px solid var(--ink-greek);
+  width: 100%; background: transparent; border: 2px solid var(--ink-greek);
   color: var(--ink-greek); padding: 8px; font-family: var(--font-heading-greek);
-  cursor: pointer; transition: 0.2s;
+  cursor: pointer; transition: 0.2s; font-weight: 700;
 }
 .read-more-btn-greek:hover { background: var(--ink-greek); color: #fff; }
 
+/* =========================================
+   RIGHT SIDEBAR: NEWS WIDGET 
+   ========================================= */
 .sidebar-right-greek {
-  position: absolute; right: 40px; top: 0; bottom: 0;
-  display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10;
+  position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
+  z-index: 30; width: 280px;
 }
-.vertical-text-greek {
-  writing-mode: vertical-rl; font-family: var(--font-heading-greek);
-  font-size: 1.5rem; letter-spacing: 10px; color: var(--ink-greek); opacity: 0.4;
+.news-widget-greek {
+  background: linear-gradient(135deg, #2c1e10, #3d2b1f);
+  color: var(--parchment-light-greek);
+  padding: 20px; border-radius: 8px;
+  border: 2px solid var(--gold-greek);
+  box-shadow: -10px 10px 30px rgba(0,0,0,0.4);
+  position: relative; min-height: 250px;
+  display: flex; flex-direction: column;
 }
+.news-widget-greek::after {
+  content: ''; position: absolute; bottom: -5px; right: -5px;
+  width: 40px; height: 40px;
+  border-bottom: 4px solid var(--gold-greek);
+  border-right: 4px solid var(--gold-greek);
+}
+.news-header-greek {
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 10px; margin-bottom: 15px;
+  font-family: var(--font-heading-greek); color: var(--gold-greek); font-weight: 700;
+}
+.news-icon-greek { font-size: 1.5rem; }
+.news-content-area-greek { flex: 1; position: relative; }
+.news-item-greek {
+  position: absolute; inset: 0;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none;
+}
+.news-item-greek.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.news-title-greek { margin: 0 0 10px 0; font-family: var(--font-heading-greek); font-size: 1.1rem; color: #fff; }
+.news-desc-greek { font-size: 0.9rem; line-height: 1.4; opacity: 0.8; }
+.news-indicators-greek { display: flex; gap: 8px; justify-content: center; margin-top: 15px; }
+.dot-greek { width: 6px; height: 6px; background: rgba(255,255,255,0.3); border-radius: 50%; transition: 0.3s; }
+.dot-greek.active { background: var(--gold-greek); transform: scale(1.3); }
 
-/* --- MOBILE LAYOUT FIXES --- */
+/* =========================================
+   MOBILE NEWS WIDGET (Town Crier Style)
+   ========================================= */
+.mobile-news-widget-greek { display: none; } /* Default Desktop: Hidden */
+
 @media (max-width: 1024px) {
   .sidebar-left-greek, .sidebar-right-greek { display: none; }
-  
-  .title-area-greek {
-    top: 10%; /* Move title up on tablets */
-  }
+  .title-area-greek { top: 10%; }
 }
 
 @media (max-width: 768px) {
-  /* Title Sizing */
   .hero-title-greek { width: 85vw; }
   .hero-year-greek { font-size: 1rem; }
-  
-  /* Building Positioning - CRITICAL FIX */
-  .building-anchor-greek {
-    top: 0;
-    translate: 5px -200px;
-  }
-  .hero-building-greek {
-    width: 110%; /* Zoom slightly */
-    max-height: 45vh; /* Don't let it take over the whole screen */
-    object-fit: contain;
-    object-position: bottom center;
-  }
-  
-  /* Button Positioning - CRITICAL FIX */
-  .scroll-buttons-container-greek {
-    bottom: 10%; /* Move buttons higher so they are clickable above building */
-    gap: 15px;
-  }
-  
-  /* Cloud adjustments */
+  .building-anchor-greek { top: 0; translate: 5px -200px; }
   .clouds-container-greek { top: 15%; opacity: 0.4; }
+
+  /* Adjust Layout for Mobile News */
+  .title-area-greek { top: 12% !important; }
+  .hero-building-greek { 
+    width: 110%; max-height: 45vh; 
+    object-fit: contain; object-position: bottom center;
+    opacity: 0.5; /* Fade out building to make text readable */
+    transform: translateY(60px); 
+  }
+  .scroll-buttons-container-greek { bottom: 15% !important; gap: 15px; }
+
+  /* === SHOW MOBILE NEWS === */
+  .mobile-news-widget-greek {
+    display: flex; justify-content: center;
+    position: absolute; top: 46%; left: 0; width: 100%;
+    z-index: 25; pointer-events: none;
+  }
+  .mn-inner-greek {
+    background: rgba(253, 246, 227, 0.95);
+    border: 2px solid var(--gold-greek);
+    border-radius: 8px;
+    padding: 12px 15px;
+    width: 85%; max-width: 350px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    display: flex; align-items: center; gap: 12px;
+    pointer-events: auto;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+    position: relative;
+  }
+  .mn-inner-greek::before, .mn-inner-greek::after {
+    content: ''; position: absolute; top: 5px; bottom: 5px; width: 4px; border-radius: 2px; background: var(--bronze-greek);
+  }
+  .mn-inner-greek::before { left: 4px; }
+  .mn-inner-greek::after { right: 4px; }
+  .mn-icon-greek { font-size: 1.5rem; color: var(--red-seal-greek); flex-shrink: 0; border-right: 1px solid rgba(0,0,0,0.1); padding-right: 10px; display: flex; align-items: center; }
+  .mn-content-greek { flex: 1; overflow: hidden; font-size: 0.85rem; line-height: 1.3; color: var(--ink-greek); }
+  .mn-title-greek { font-family: var(--font-heading-greek); font-weight: 800; color: var(--red-seal-greek); text-transform: uppercase; margin-right: 5px; }
+  .mn-desc-greek { font-family: var(--font-body-greek); font-weight: 600; }
+  .mn-text-animate { animation: fadeSlideUp 0.5s ease-out forwards; }
+  @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 }
 
 /* --- MOBILE FAB (Wax Seal) --- */
@@ -302,38 +341,21 @@
   border: 4px solid #800000;
   border-radius: 50%;
   box-shadow: 2px 5px 15px rgba(0,0,0,0.4);
-  z-index: 100;
-  cursor: pointer;
+  z-index: 100; cursor: pointer;
   display: flex; justify-content: center; align-items: center;
-  /* Irregular shape for wax look */
   border-radius: 45% 55% 50% 50% / 50% 45% 55% 50%;
   animation: sealPulseGreek 2s infinite;
 }
+.seal-icon-greek { font-size: 1.5rem; color: #fff; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.5)); }
+@keyframes sealPulseGreek { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-.seal-icon-greek { font-size: 1.5rem; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.5)); }
-.seal-badge-greek {
-  position: absolute; top: 0; right: 0;
-  background: #fff; color: #800; font-weight: bold;
-  width: 20px; height: 20px; border-radius: 50%;
-  font-size: 0.75rem; display: flex; justify-content: center; align-items: center;
-  border: 1px solid #800;
-}
-
-@keyframes sealPulseGreek {
-  0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); }
-}
-
-/* --- MOBILE MODAL (The Scroll Unfurled) --- */
+/* --- MAIN SCHEDULE MODAL --- */
 .parchment-modal-overlay-greek {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(4px);
-  z-index: 200;
-  display: flex; justify-content: center; align-items: flex-end; /* Sheet comes from bottom */
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+  z-index: 200; display: flex; justify-content: center; align-items: flex-end; 
   opacity: 0; pointer-events: none; transition: opacity 0.3s;
 }
 .parchment-modal-overlay-greek.open-greek { opacity: 1; pointer-events: auto; }
-
 .parchment-modal-greek {
   width: 100%; max-width: 600px; height: 85vh;
   background: var(--parchment-light-greek);
@@ -341,45 +363,101 @@
   box-shadow: 0 -10px 50px rgba(0,0,0,0.5);
   transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1);
   display: flex; flex-direction: column;
-  border: 8px solid var(--parchment-dark-greek); /* Thick border like a mat */
+  border: 8px solid var(--parchment-dark-greek); 
 }
 .parchment-modal-overlay-greek.open-greek .parchment-modal-greek { transform: translateY(0); }
-
 .pm-header-greek {
   padding: 20px; border-bottom: 2px solid var(--gold-greek);
   display: flex; justify-content: space-between; align-items: center;
-  background: var(--parchment-dark-greek);
-  border-radius: 12px 12px 0 0;
+  background: var(--parchment-dark-greek); border-radius: 12px 12px 0 0;
 }
 .pm-header-greek h2 { margin: 0; font-family: var(--font-heading-greek); font-size: 1.2rem; color: var(--ink-greek); }
-.pm-close-greek { background: none; border: none; font-size: 2rem; color: var(--ink-greek); }
-
+.pm-close-greek { background: none; border: none; font-size: 1.5rem; color: var(--ink-greek); cursor: pointer; }
 .pm-subheader-greek {
   text-align: center; font-size: 0.75rem; letter-spacing: 2px;
   color: var(--bronze-greek); padding: 10px; text-transform: uppercase;
+  background: rgba(0,0,0,0.03);
 }
-
 .pm-body-greek {
   flex: 1; overflow-y: auto; padding: 15px;
-  background-image: repeating-linear-gradient(#fdf6e3 0, #fdf6e3 24px, #eaddcf 25px);
+  background-color: #fdf6e3;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
 }
 
-/* Modal Decree Cards */
+/* Decree Cards */
 .decree-card-greek {
+  background: #fff; border: 1px solid #d4c5b0;
+  border-left: 4px solid var(--bronze-greek);
+  border-radius: 4px; padding: 12px 15px; margin-bottom: 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   display: flex; align-items: center; justify-content: space-between;
-  padding: 15px 0; border-bottom: 2px solid var(--ink-greek);
-  margin-bottom: 10px;
+  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
 }
-.decree-card-greek.live { background: rgba(138, 42, 42, 0.05); }
-
+.decree-card-greek:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--gold-greek); }
+.decree-card-greek.live { border-left-color: #d00; background: linear-gradient(to right, #fff5f5, #fff); }
+.decree-card-greek.finished { border-left-color: var(--gold-greek); background: #fdfdfd; }
 .dc-left-greek { display: flex; flex-direction: column; width: 60px; }
-.dc-time-greek { font-weight: bold; font-family: var(--font-heading-greek); }
-.dc-cat-greek { font-size: 0.65rem; color: #777; }
-
+.dc-time-greek { font-weight: 800; font-family: var(--font-body-greek); color: #222; font-size: 0.9rem; }
+.dc-cat-greek { font-size: 0.7rem; color: #666; text-transform: uppercase; font-weight: 600; }
 .dc-center-greek { flex: 1; text-align: center; }
-.dc-team-greek { font-weight: 700; font-size: 1rem; }
-.dc-vs-greek { font-size: 0.7rem; color: var(--gold-greek); margin: 2px 0; }
-
+.dc-team-greek { font-family: var(--font-heading-greek); font-weight: 700; color: #1a1a1a; font-size: 1.05rem; }
+.dc-vs-greek { font-size: 0.7rem; color: var(--gold-greek); font-weight: bold; margin: 2px 0; }
+.dc-result-greek { font-size: 0.75rem; color: var(--red-seal-greek); font-weight: bold; margin-top: 4px; }
 .dc-right-greek { width: 60px; text-align: right; }
 .live-tag-greek { background: var(--red-seal-greek); color: #fff; font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; }
 .date-tag-greek { font-size: 0.7rem; color: #888; }
+
+/* =========================================
+   DETAILED MATCH POPUP
+   ========================================= */
+.match-detail-overlay-greek {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+  z-index: 300; display: flex; justify-content: center; align-items: center; padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.match-detail-scroll-greek {
+  width: 100%; max-width: 500px;
+  background: var(--parchment-light-greek);
+  border: 4px double var(--ink-greek); border-radius: 8px;
+  position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  padding: 30px 20px; text-align: center;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E");
+}
+.md-close-btn-greek {
+  position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.5rem; color: var(--ink-greek); cursor: pointer;
+}
+.md-header-greek {
+  display: flex; justify-content: center; align-items: center; gap: 10px;
+  font-family: var(--font-heading-greek); font-size: 1.5rem; font-weight: 700; color: var(--ink-greek); margin-bottom: 10px;
+}
+.laurels-left { transform: scaleX(-1); color: var(--gold-greek); }
+.laurels-right { color: var(--gold-greek); }
+.md-status-pill-greek {
+  display: inline-block; padding: 5px 15px; background: var(--ink-greek); color: #fff;
+  font-size: 0.7rem; letter-spacing: 2px; border-radius: 20px; margin-bottom: 30px;
+}
+.md-versus-section-greek { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
+.md-team-block { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.md-team-logo-placeholder {
+  width: 80px; height: 80px; background: var(--parchment-dark-greek);
+  border: 2px dashed var(--bronze-greek); border-radius: 50%;
+  display: flex; justify-content: center; align-items: center;
+  font-size: 2rem; font-family: var(--font-heading-greek); color: var(--bronze-greek); margin-bottom: 10px;
+}
+.md-team-name { font-family: var(--font-heading-greek); font-weight: 700; font-size: 1.1rem; }
+.md-vs-divider { width: 50px; text-align: center; font-family: var(--font-heading-greek); font-style: italic; color: var(--gold-greek); font-size: 1.2rem; }
+.md-info-grid-greek {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+  background: rgba(0,0,0,0.05); padding: 20px; border-radius: 8px; margin-bottom: 20px;
+}
+.md-info-item { display: flex; flex-direction: column; gap: 4px; }
+.md-info-item .label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: #777; }
+.md-info-item .value { font-size: 0.9rem; font-weight: bold; color: var(--ink-greek); }
+.md-footer-greek { font-size: 0.8rem; font-style: italic; color: #888; }
+.md-draw-text { text-align: center; color: #888; margin-bottom: 20px; font-weight: bold; }
+
+/* Special Winner Styles */
+.score-big { font-size: 2rem; font-weight: 900; color: var(--red-seal-greek); }
+.winner-glow { border-color: var(--gold-greek) !important; box-shadow: 0 0 15px rgba(197, 160, 89, 0.4); color: var(--gold-greek) !important; }
+.winner-label { font-size: 0.6rem; background: var(--gold-greek); color: #fff; padding: 2px 6px; border-radius: 4px; margin-top: 4px; letter-spacing: 1px; }

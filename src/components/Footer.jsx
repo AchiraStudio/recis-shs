@@ -1,58 +1,60 @@
+// / src/components/Footer.jsx /
 import React from 'react';
 import { FaInstagram, FaTiktok } from 'react-icons/fa';
+import { FiArrowUp, FiMapPin, FiMail } from 'react-icons/fi';
 import '../styles/Footer.css';
 
 const Footer = () => {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <footer className="footer">
-      <div className="container footer-content">
-        
-        {/* Brand Column */}
-        <div className="footer-section brand-section">
-          <h2>RSHS</h2>
-          <p>Excellence in Education.</p>
+      {/* Decorative Background Text */}
+      <div className="footer-bg-text">RECIS</div>
+
+      <div className="container footer-container">
+        <div className="footer-col brand-col">
+          <h2 className="footer-logo">RSHS.</h2>
+          <p className="brand-tagline">Shaping character, defining futures.</p>
+          <div className="contact-info">
+            <div className="contact-item"><FiMapPin className="c-icon" /><span>Jl. Ir. H. Juanda No.2, Bogor</span></div>
+            <div className="contact-item"><FiMail className="c-icon" /><span>admissions@recis.sch.id</span></div>
+          </div>
         </div>
 
-        {/* Socials Column */}
-        <div className="footer-section social-section">
+        <div className="footer-col links-col">
+          <h4>Explore</h4>
+          <ul className="footer-links">
+            <li><a href="#hero">Home</a></li>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#timeline">History</a></li>
+            <li><a href="#crew">Organization</a></li>
+          </ul>
+        </div>
+
+        <div className="footer-col social-col">
           <h4>Connect</h4>
           <div className="social-icons">
-            <a 
-              href="https://www.instagram.com/recisshs/#" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="social-link"
-              aria-label="Instagram"
-            >
-              <FaInstagram />
-            </a>
-            <a 
-              href="https://www.tiktok.com/@recisshs" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="social-link"
-              aria-label="TikTok"
-            >
-              <FaTiktok />
-            </a>
+            <a href="https://www.instagram.com/recisshs/#" target="_blank" rel="noreferrer" aria-label="Instagram" className="social-btn"><FaInstagram /></a>
+            <a href="https://www.tiktok.com/@recisshs" target="_blank" rel="noreferrer" aria-label="TikTok" className="social-btn"><FaTiktok /></a>
+          </div>
+          <div className="legal-links">
+            <a href="/privacy">Privacy Policy</a>
+            <span className="dot">•</span>
+            <a href="/terms">Terms</a>
           </div>
         </div>
-
-        {/* Links Column */}
-        <div className="footer-section links-section">
-          <h4>Quick Links</h4>
-          <div className="links-wrapper">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
-            <a href="#">Contact Us</a>
-          </div>
-        </div>
-
       </div>
-      
-      {/* Bottom Copyright Bar */}
+
       <div className="footer-bottom">
-        <p>© 2026 Achira Studios. All rights reserved.</p>
+        <div className="container bottom-content">
+          <p>© {new Date().getFullYear()} RECIS Senior High School.</p>
+          <button onClick={scrollToTop} className="btn btn-secondary" style={{ padding: '8px 20px', height: 'auto', fontSize: '0.8rem' }} aria-label="Scroll to top">
+            Back to Top <FiArrowUp />
+          </button>
+        </div>
       </div>
     </footer>
   );

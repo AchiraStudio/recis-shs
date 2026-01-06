@@ -1,0 +1,32 @@
+.footer-greek {
+  position: relative;
+  background-color: #1a1a1a;
+  color: #888;
+  padding: 80px 20px 20px;
+  border-top: 5px solid var(--gold-greek);
+}
+
+.footer-container-greek {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  flex-wrap: wrap; gap: 40px;
+}
+
+.fb-logo-greek {
+  font-family: var(--font-heading-greek); font-size: 3rem; color: #fff; margin: 0;
+}
+.fb-tag-greek { font-style: italic; color: var(--gold-greek); }
+
+.footer-cols-greek { display: flex; gap: 50px; }
+.fc-col-greek h4 { color: #fff; margin-bottom: 15px; font-family: var(--font-heading-greek); }
+.fc-col-greek a { display: block; color: #888; text-decoration: none; margin-bottom: 8px; transition: 0.2s; }
+.fc-col-greek a:hover { color: var(--gold-greek); }
+
+.footer-base-greek {
+  text-align: center; margin-top: 60px; padding-top: 20px;
+  border-top: 1px solid #333; font-size: 0.7rem; letter-spacing: 2px;
+}
+
+@media (max-width: 768px) {
+  .footer-container-greek { flex-direction: column; align-items: center; text-align: center; }
+}

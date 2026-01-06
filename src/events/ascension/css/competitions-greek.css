@@ -1,0 +1,92 @@
+.comp-section-greek {
+  padding: 80px 20px;
+  background-color: var(--parchment-light-greek);
+  position: relative;
+}
+
+.comp-header-greek {
+  text-align: center; margin-bottom: 40px;
+}
+.ch-title-greek {
+  font-family: var(--font-heading-greek); font-size: 3rem; color: var(--ink-greek);
+}
+.ch-line-greek {
+  width: 100px; height: 4px; background: var(--gold-greek); margin: 10px auto;
+}
+
+/* Tabs */
+.comp-tabs-greek {
+  display: flex; justify-content: center; gap: 15px; margin-bottom: 50px;
+  flex-wrap: wrap;
+}
+.tab-btn-greek {
+  background: transparent; border: 2px solid var(--bronze-greek);
+  color: var(--bronze-greek); padding: 10px 25px;
+  font-family: var(--font-heading-greek); font-weight: bold; cursor: pointer;
+  transition: 0.3s;
+}
+.tab-btn-greek:hover, .tab-btn-greek.active {
+  background: var(--ink-greek); color: var(--gold-greek); border-color: var(--ink-greek);
+}
+
+/* Grid */
+.comp-grid-greek {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 40px; max-width: 1200px; margin: 0 auto;
+}
+
+.decree-card-greek {
+  background: #fdfbf7;
+  border: 1px solid #dcd3c1;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  position: relative; overflow: hidden;
+  transition: transform 0.3s;
+}
+.decree-card-greek:hover { transform: translateY(-5px); }
+
+/* Tape effect at top center */
+.decree-card-greek::before {
+  content:''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  width: 40px; height: 25px; background: rgba(200, 180, 140, 0.6);
+  z-index: 5; backdrop-filter: blur(2px);
+}
+
+.decree-img-box-greek {
+  height: 200px; overflow: hidden; position: relative;
+  filter: sepia(0.4) contrast(1.1);
+}
+.decree-img-box-greek img { width: 100%; height: 100%; object-fit: cover; }
+
+.decree-cat-badge-greek {
+  position: absolute; top: 10px; right: 10px;
+  background: var(--ink-greek); color: var(--gold-greek);
+  padding: 4px 12px; font-size: 0.7rem; font-weight: bold;
+  text-transform: uppercase;
+}
+
+.decree-body-greek { padding: 25px; text-align: center; }
+
+.decree-title-greek {
+  font-family: var(--font-heading-greek); font-size: 1.5rem;
+  color: var(--ink-greek); margin-bottom: 10px;
+}
+.decree-desc-greek {
+  font-family: var(--font-body-greek); font-size: 0.95rem; color: #555;
+  margin-bottom: 25px;
+}
+
+/* Wax Seal Button */
+.decree-seal-btn-greek {
+  display: inline-flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--ink-greek); font-weight: bold;
+  font-family: var(--font-heading-greek);
+  transition: 0.2s;
+}
+.decree-seal-btn-greek:hover { color: var(--red-seal-greek); }
+
+.seal-wax-greek {
+  width: 35px; height: 35px; background: var(--red-seal-greek);
+  border-radius: 50%; display: flex; justify-content: center; align-items: center;
+  color: #fff; font-size: 1rem;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}

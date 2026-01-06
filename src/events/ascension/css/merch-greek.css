@@ -1,0 +1,51 @@
+.merch-section-greek {
+  padding: 80px 20px;
+  background-color: var(--parchment-dark-greek);
+  position: relative;
+}
+
+.merch-header-greek { text-align: center; margin-bottom: 50px; }
+.mh-title-greek { font-family: var(--font-heading-greek); font-size: 3rem; color: var(--ink-greek); margin: 0; }
+.mh-sub-greek { font-family: var(--font-body-greek); color: #666; margin-top: 5px; letter-spacing: 1px; }
+
+.merch-grid-greek {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px; max-width: 1200px; margin: 0 auto;
+}
+
+.item-card-greek {
+  background: #fff; border: 1px solid #ccc;
+  padding: 15px; position: relative;
+}
+
+.featured-flag-greek {
+  position: absolute; top: 0; left: 0;
+  background: var(--gold-greek); color: var(--ink-greek);
+  padding: 5px 10px; font-size: 0.7rem; font-weight: bold; z-index: 5;
+}
+
+.ic-img-box-greek {
+  height: 250px; position: relative; overflow: hidden; margin-bottom: 15px;
+  background: #f0f0f0;
+}
+.ic-img-box-greek img {
+  width: 100%; height: 100%; object-fit: cover; transition: 0.3s;
+}
+.item-card-greek:hover img { transform: scale(1.05); }
+
+/* Quick Add Button appears on hover */
+.quick-add-greek {
+  position: absolute; bottom: -50px; left: 0; right: 0;
+  background: var(--ink-greek); color: #fff; border: none;
+  padding: 12px; font-family: var(--font-heading-greek);
+  cursor: pointer; transition: 0.3s;
+}
+.item-card-greek:hover .quick-add-greek { bottom: 0; }
+
+.ic-name-greek {
+  font-family: var(--font-heading-greek); font-size: 1rem;
+  color: var(--ink-greek); margin: 0 0 5px;
+}
+.ic-price-greek {
+  font-weight: bold; color: var(--gold-greek); font-size: 1.1rem;
+}

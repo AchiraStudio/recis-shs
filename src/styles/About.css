@@ -1,60 +1,65 @@
-/* About.css */
-.about-section { padding: var(--section-spacing) 0; }
-.about-header { margin-bottom: 50px; }
-.about-header h2 { font-size: 3rem; font-weight: 700; margin: 0; }
+/* / src/styles/About.css / */
+.about-section { padding: var(--section-spacing) 0; position: relative; overflow: hidden; background: transparent; }
+.about-header { margin-bottom: 50px; max-width: 600px; }
+.pill-badge { display: inline-block; padding: 6px 14px; background: rgba(56, 189, 248, 0.1); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 50px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 16px; text-transform: uppercase; }
+.about-header h2 { font-size: 3rem; font-weight: 800; color: #fff; line-height: 1; }
 
 /* Grid */
-.bento-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 300px); gap: 24px;
-}
+.bento-grid { display: grid; grid-template-columns: 1.5fr 1fr; grid-template-rows: auto; gap: var(--grid-gap); width: 100%; }
+.bento-item { position: relative; background: rgba(30, 41, 59, 0.4); border: 1px solid var(--glass-border); border-radius: 24px; padding: 40px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.3s var(--ease-smooth), border-color 0.3s var(--ease-smooth), box-shadow 0.3s var(--ease-smooth); will-change: transform; }
+.bento-item:hover { border-color: var(--glass-hover); transform: translateY(-4px); box-shadow: 0 10px 30px -5px rgba(0,0,0,0.3); }
 
-.bento-item {
-  padding: 40px; border-radius: 24px;
-  position: relative; overflow: hidden; display: flex; flex-direction: column;
-  /* Spotlight Gradient */
-}
-.bento-item::before {
-  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
-  background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.06), transparent 40%);
-  opacity: 0; transition: opacity 0.5s;
-}
-.bento-item:hover::before { opacity: 1; }
-.bento-content-inner { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+/* Spotlight */
+.spotlight-overlay { pointer-events: none; position: absolute; inset: 0; z-index: 1; background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.08), transparent 40%); opacity: 0; transition: opacity 0.5s var(--ease-smooth); }
+.bento-item:hover .spotlight-overlay { opacity: 1; }
+.content-inner { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; }
 
-/* Specific Items */
-.main { grid-column: span 2; grid-row: span 2; background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(56, 189, 248, 0.05) 100%); }
-.bento-label { font-size: 0.8rem; color: var(--accent); text-transform: uppercase; font-weight: 700; margin-bottom: 20px; }
-.bento-heading { font-size: 3rem; line-height: 1.1; font-weight: 800; margin-bottom: 20px; letter-spacing: -2px; }
-.outline-text { color: transparent; -webkit-text-stroke: 1px var(--text-muted); }
-.bento-text { font-size: 1.1rem; color: var(--text-muted); line-height: 1.6; max-width: 90%; }
+/* Cards */
+.main-card { grid-row: span 2; background: linear-gradient(145deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.3) 100%); justify-content: space-between; min-height: 500px; }
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.card-label { color: var(--text-muted); font-family: monospace; letter-spacing: 1px; }
+.icon-badge { color: var(--accent); font-size: 1.5rem; }
+.bento-heading { font-size: 3.5rem; font-weight: 800; line-height: 0.95; margin-bottom: 24px; color: #fff; }
+.text-highlight { color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5); }
+.bento-text { font-size: 1.1rem; color: var(--text-muted); line-height: 1.6; max-width: 90%; margin-bottom: auto; }
+.stat-row { display: flex; gap: 40px; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--glass-border); }
+.stat { display: flex; flex-direction: column; }
+.stat b { font-size: 1.5rem; color: #fff; }
+.stat span { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; }
 
-.vision { grid-column: span 1; grid-row: span 2; justify-content: space-between; }
-.icon-box { font-size: 3rem; margin-bottom: 1rem; }
-.vision-quote { font-style: italic; color: var(--text-muted); line-height: 1.5; flex-grow: 1; }
-.tags-row { display: flex; gap: 8px; margin-top: 2rem; flex-wrap: wrap; }
-.tags-row span { font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px; color: var(--accent); border: 1px solid var(--border); }
+.vision-card { min-height: 240px; }
+.card-icon { font-size: 2rem; color: var(--accent); margin-bottom: 16px; background: rgba(56, 189, 248, 0.1); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+.vision-card h3 { font-size: 1.5rem; margin: 0 0 10px 0; color: #fff; }
+.vision-quote { font-style: italic; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; }
+.tags-container { display: flex; gap: 8px; margin-top: auto; }
+.tag { font-size: 0.75rem; padding: 4px 10px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border); }
 
-.mission { grid-column: span 1; grid-row: span 2; justify-content: flex-start; }
-.card-header { margin-bottom: 30px; }
-.header-line { width: 40px; height: 3px; background: var(--accent); margin-top: 10px; border-radius: 2px; }
-.mission-stack { list-style: none; display: flex; flex-direction: column; gap: 20px; padding: 0; margin: 0; }
-.mission-stack li { display: flex; align-items: center; gap: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border); font-size: 1rem; color: var(--text-muted); }
-.idx { font-family: monospace; font-size: 1.1rem; color: var(--accent); font-weight: 700; }
+.mission-card { min-height: 240px; }
+.mission-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.mission-header h3 { font-size: 1.25rem; margin: 0; color: #fff; }
+.divider-line { flex-grow: 1; height: 1px; background: var(--glass-border); margin-left: 16px; }
+.mission-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 16px; }
+.mission-list li { display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.95rem; }
+.li-icon { color: var(--accent); display: flex; align-items: center; }
 
-/* --- MOBILE --- */
+/* Mobile */
 @media (max-width: 1024px) {
-  .bento-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: auto; }
-  .main { grid-column: span 2; min-height: 350px; }
-  .vision, .mission { grid-column: span 1; min-height: 300px; }
+  .bento-grid { grid-template-columns: 1fr 1fr; }
+  .main-card { grid-column: span 2; min-height: 400px; }
+  .vision-card { grid-column: span 1; }
+  .mission-card { grid-column: span 1; }
 }
 @media (max-width: 768px) {
-  .about-header h2 { font-size: 2.5rem; }
-  .bento-grid { grid-template-columns: 1fr; gap: 16px; }
-  .bento-item { padding: 24px; backdrop-filter: none; background: rgba(30, 41, 59, 0.95); }
-  .bento-item::before { display: none; } /* Disable spotlight */
-  .bento-item:hover { transform: none; }
-  .bento-heading { font-size: 2.2rem; }
-  .bento-text { font-size: 1rem; }
-  .vision-quote { font-size: 1rem; }
-  .mission-stack li { font-size: 0.95rem; padding-bottom: 12px; }
+  .about-section { padding: 60px 0; }
+  .about-header h2 { font-size: 2.25rem; }
+  .bento-grid { display: flex; flex-direction: column; gap: 16px; }
+  .bento-item { padding: 24px; border-radius: 20px; min-height: auto; backdrop-filter: none; background: rgba(30, 41, 59, 0.95); box-shadow: none; }
+  .bento-item:hover { transform: none; border-color: var(--glass-border); }
+  .spotlight-overlay { display: none; }
+  .main-card { min-height: auto; gap: 24px; }
+  .bento-heading { font-size: 2.5rem; margin-bottom: 16px; }
+  .stat-row { margin-top: 24px; padding-top: 20px; }
+  .card-icon { width: 40px; height: 40px; font-size: 1.5rem; }
+  .vision-quote { font-size: 0.95rem; }
+  .mission-list { gap: 12px; }
 }

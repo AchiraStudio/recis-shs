@@ -1,0 +1,107 @@
+/* --- GREEK THEME OVERRIDES --- */
+
+/* 1. Wrapper & Positioning */
+.di-wrapper.greek {
+  font-family: 'Cinzel', serif; /* Use your existing Greek header font */
+}
+
+/* 2. The Pill (Now a Scroll/Tablet) */
+.di-wrapper.greek .di-pill {
+  background: #fdf6e3; /* Parchment Light */
+  border: 2px solid #8b4513; /* Bronze/Ink */
+  box-shadow: 
+    0 4px 15px rgba(44, 30, 16, 0.4),
+    inset 0 0 10px rgba(139, 69, 19, 0.1);
+  border-radius: 12px; /* Less rounded, more like a tablet */
+}
+
+.di-wrapper.greek .di-pill.active {
+  background: #f5e7d8; /* Slightly darker parchment when active */
+  box-shadow: 0 8px 30px rgba(44, 30, 16, 0.5);
+}
+
+/* 3. Content Text & Icons */
+.di-wrapper.greek .di-label {
+  color: #2c1e10; /* Ink Color */
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.di-wrapper.greek .di-signal {
+  background: #8a2a2a; /* Wax Seal Red */
+  box-shadow: 0 0 5px rgba(138, 42, 42, 0.5);
+}
+
+.di-wrapper.greek .di-menu button {
+  color: #8b4513; /* Bronze Icons */
+}
+.di-wrapper.greek .di-menu button:hover {
+  color: #2c1e10; /* Dark Ink on hover */
+  transform: translateY(-2px) scale(1.1);
+}
+
+.di-wrapper.greek .di-divider {
+  background: rgba(139, 69, 19, 0.3); /* Bronze Divider */
+}
+
+/* 4. Search Panel (The Scroll) */
+.di-wrapper.greek .di-search-panel {
+  background: #fdf6e3;
+  border: 2px solid #8b4513;
+  border-radius: 8px; /* Rough paper edges */
+  box-shadow: 0 20px 50px rgba(44, 30, 16, 0.6);
+  /* Add texture overlay if desired via url() */
+  background-image: radial-gradient(#8b4513 0.5px, transparent 0.5px);
+  background-size: 10px 10px;
+}
+
+/* Input Field */
+.di-wrapper.greek .di-search-input-wrap {
+  background: rgba(139, 69, 19, 0.1);
+  border: 1px solid #8b4513;
+  border-radius: 4px;
+}
+.di-wrapper.greek .di-search-input-wrap:focus-within {
+  background: rgba(139, 69, 19, 0.15);
+  box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.2);
+}
+
+.di-wrapper.greek .search-icon {
+  color: #8b4513;
+}
+
+.di-wrapper.greek .di-search-input-wrap input {
+  color: #2c1e10;
+  font-family: 'Lato', sans-serif;
+  font-weight: bold;
+}
+.di-wrapper.greek .di-search-input-wrap input::placeholder {
+  color: rgba(44, 30, 16, 0.5);
+}
+
+/* Results */
+.di-wrapper.greek .di-result-row {
+  border-bottom: 1px dashed rgba(139, 69, 19, 0.2);
+  border-radius: 0;
+}
+.di-wrapper.greek .di-result-row:hover {
+  background: rgba(139, 69, 19, 0.1);
+}
+
+.di-wrapper.greek .res-name {
+  color: #2c1e10;
+  font-family: 'Cinzel', serif;
+}
+.di-wrapper.greek .res-cat {
+  color: #8b4513;
+}
+.di-wrapper.greek .res-date {
+  color: #fff;
+  background: #8a2a2a; /* Red background for date */
+  font-family: 'Lato', sans-serif;
+}
+
+.di-wrapper.greek .di-no-res {
+  color: #8b4513;
+  font-style: italic;
+}

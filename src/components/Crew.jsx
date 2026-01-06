@@ -37,25 +37,27 @@ const Crew = () => {
           {activeGroup && activeGroup.members.map((member, index) => (
             <div 
               key={`${activeTab}-${index}`} 
-              // We add a unique key based on tab so React treats them as new components
               className="liquid-card animate-enter"
-              // Staggered delay: 0ms, 100ms, 200ms, etc.
               style={{ animationDelay: `${index * 100}ms` }}
             >
               
               {/* Background Images */}
               <div className="card-bg-layer">
+                 {/* Performance: decoding="async" tells browser to decode images non-blocking */}
                  <img 
                   src={member.image} 
                   alt={member.title} 
                   className="bg-img main-img"
                   loading="lazy"
+                  decoding="async"
                 />
+                 {/* This second image is automatically hidden on mobile via CSS to save bandwidth */}
                  <img 
                   src={member.altImage} 
                   alt={`${member.title} Alt`} 
                   className="bg-img hover-img"
                   loading="lazy"
+                  decoding="async"
                 />
               </div>
 
@@ -64,7 +66,6 @@ const Crew = () => {
               
               {/* Content */}
               <div className="card-content">
-                {/* Logic: Use subtitle if available, else title */}
                 <h3 className="card-title">
                   {member.subtitle || member.title}
                 </h3>

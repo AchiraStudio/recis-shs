@@ -1,3 +1,4 @@
+// Hero.jsx
 import React from 'react';
 import { FiArrowRight, FiActivity, FiUsers, FiLayers } from 'react-icons/fi';
 import '../styles/Hero.css';
@@ -5,7 +6,7 @@ import '../styles/Hero.css';
 const Hero = () => {
   return (
     <section id="hero" className="hero-section">
-      {/* Liquid Background */}
+      {/* Liquid Background (Subtle Blobs) */}
       <div className="liquid-bg">
         <div className="blob blob-1"></div>
         <div className="blob blob-2"></div>
@@ -22,17 +23,17 @@ const Hero = () => {
             SHS.
           </h1>
           <p className="hero-desc">
-            RSHS bridges the gap between abstract theory and tangible reality. 
+            Bridging the gap between abstract theory and tangible reality. 
             We cultivate disciplined creativity.
           </p>
           
           <div className="hero-actions">
-            <button className="btn-primary-soft">
-              <a href="#crew">Meet Our Crew</a>
-            </button>
-            <button className="btn-secondary-soft">
-              <a href="#about">Our Mission <FiArrowRight /></a>
-            </button>
+            <a href="#crew" className="btn btn-primary">
+              Meet Our Crew
+            </a>
+            <a href="#about" className="btn btn-secondary">
+              Our Mission <FiArrowRight />
+            </a>
           </div>
         </div>
 
@@ -40,7 +41,7 @@ const Hero = () => {
           <div className="glass-widget main-widget">
             <div className="widget-icon"><FiActivity /></div>
             <h3>10+</h3>
-            <p>University Partnership</p>
+            <p>University Partners</p>
           </div>
           
           <div className="glass-widget float-1">

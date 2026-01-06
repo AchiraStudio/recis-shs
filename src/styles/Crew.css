@@ -77,6 +77,7 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  white-space: nowrap; /* Prevent text wrapping in nav */
 }
 
 .liquid-tab:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
@@ -96,30 +97,22 @@
   padding-bottom: 4rem;
 }
 
-/* --- COOL TRANSITION ANIMATIONS --- */
+/* --- ANIMATIONS --- */
 @keyframes cardEntrance {
-  0% {
-    opacity: 0;
-    transform: translateY(40px) scale(0.9);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  0% { opacity: 0; transform: translateY(40px) scale(0.9); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* This class is added in JSX */
 .liquid-card.animate-enter {
   opacity: 0; /* Hidden initially */
   animation: cardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* --- LIQUID CARD (Background Image Version) --- */
+/* --- CARD STYLES --- */
 .liquid-card {
   width: 100%;
   max-width: 380px; 
   margin: 0 auto;
-
   height: 480px;
   border-radius: 30px;
   position: relative;
@@ -132,7 +125,6 @@
   transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
-/* Inner Glint/Shine */
 .liquid-card::after {
   content: '';
   position: absolute;
@@ -149,7 +141,7 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* --- BACKGROUND IMAGES --- */
+/* --- IMAGES --- */
 .card-bg-layer {
   position: absolute;
   inset: 0;
@@ -291,16 +283,76 @@
   text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 
-.details-glass li:last-child { border-bottom: none; }
-
-/* Scrollbar for list */
+/* Scrollbar */
 .details-glass ul::-webkit-scrollbar { width: 4px; }
 .details-glass ul::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
-/* --- RESPONSIVE --- */
+
+/* --- MOBILE OPTIMIZATIONS --- */
 @media (max-width: 768px) {
   .main-title { font-size: 2.2rem; }
-  .crew-grid { grid-template-columns: 1fr; }
-  .liquid-nav { justify-content: flex-start; padding-left: 1rem; }
-  .liquid-card { height: 450px; }
+  
+  .liquid-nav { 
+    justify-content: flex-start; 
+    padding-left: 1rem; 
+    /* Allow scrolling within the nav bar */
+    overflow-x: auto; 
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+
+  .crew-grid { 
+    grid-template-columns: 1fr; 
+    gap: 30px;
+  }
+
+  .liquid-card { 
+    height: 400px; /* Slightly shorter for mobile */
+    max-width: 100%;
+    /* PERFORMANCE: Disable shadow re-painting */
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  }
+
+  /* PERFORMANCE: Disable Animation Delays (Instant Load) */
+  .liquid-card.animate-enter {
+    animation: none;
+    opacity: 1;
+  }
+
+  /* PERFORMANCE: Hide second image completely (Saves Bandwidth) */
+  .hover-img { display: none !important; }
+  
+  /* PERFORMANCE: Disable complex hover states */
+  .liquid-card:hover {
+    transform: none;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  }
+  .liquid-card:hover .main-img { transform: none; opacity: 1; }
+  .liquid-card:hover .card-overlay { background: linear-gradient(to top, rgba(15, 23, 42, 1) 0%, rgba(15, 23, 42, 0.8) 50%, rgba(15, 23, 42, 0.2) 100%); }
+  
+  /* PERFORMANCE: Force Details to be visible by default (No hover on mobile) */
+  .details-glass {
+    transform: translateY(0) !important;
+    /* PERFORMANCE: Remove Blur (Glassmorphism) */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(15, 23, 42, 0.95);
+    height: auto;
+    max-height: 40%; /* Occupy bottom 40% */
+    padding: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* Adjust content position to account for details panel */
+  .card-content {
+    bottom: auto;
+    top: 20px;
+  }
+  
+  .liquid-card:hover .card-content {
+    transform: none;
+  }
+
+  .card-title { font-size: 1.25rem; }
+  .division-name { font-size: 0.7rem; }
 }

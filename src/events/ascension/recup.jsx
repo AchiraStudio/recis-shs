@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import DynamicIsland from "../../components/DynamicI";
 import "./css/recup-scroll.css"; 
-// Pastikan file css column tetap ada jika digunakan komponen lain
 import "./css/recup-column.css";
 
 // Icons
@@ -9,7 +8,7 @@ import { GrSchedules } from "react-icons/gr";
 import { IoMdClose } from "react-icons/io"; 
 import { GiScrollQuill, GiLaurels } from "react-icons/gi";
 
-// Sections (Sesuaikan path import ini dengan struktur folder Anda)
+// Sections
 import RecupGuestStar from "./recup-jiband";
 import RecupCompetitions from "./recup-list-lomba";
 import RecupMerch from "./recup-merch";
@@ -18,9 +17,9 @@ import RecupSpecialPerformance from "./recup-tulus";
 
 const SCHEDULE_API = "https://script.google.com/macros/s/AKfycbxcR39xEqBTH8Rq8lAE2hLvZXKzwWOdG8LK0qqWm7m7kjyYlrm2QAHx2L2XxE-TRJQ3/exec";
 
-// --- TEMPLATES BERITA (INDONESIA - 50+ VARIASI) ---
+// --- TEMPLATES BERITA ---
 const NEWS_TEMPLATES = {
-  // 1. Menang dengan Skor (Fokus Pemenang)
+  // 1. Menang dengan Skor
   withScore: [
     (w, l, s) => `${w} melibas ${l} dengan skor telak ${s}!`,
     (w, l, s) => `Dominasi total! ${w} membungkam ${l} (${s}).`,
@@ -34,7 +33,7 @@ const NEWS_TEMPLATES = {
     (w, l, s) => `Kemenangan manis ${s} diraih oleh ${w}.`
   ],
 
-  // 2. Menang Tanpa Skor (Fokus Pemenang)
+  // 2. Menang Tanpa Skor
   noScore: [
     (w, l) => `${w} berhasil mengamankan kemenangan atas ${l}!`,
     (w, l) => `Kemenangan krusial bagi ${w} dalam laga kontra ${l}.`,
@@ -48,7 +47,7 @@ const NEWS_TEMPLATES = {
     (w, l) => `Sorak sorai untuk ${w} yang berhasil menang!`
   ],
 
-  // 3. Kalah (Fokus Tim yang Kalah - Passive Voice)
+  // 3. Kalah (Loss Perspective)
   lossPerspective: [
     (w, l, s) => `${l} harus mengakui keunggulan ${w}${s ? ` (${s})` : ''}.`,
     (w, l, s) => `Nasib kurang beruntung bagi ${l}, takluk di tangan ${w}.`,
@@ -60,7 +59,7 @@ const NEWS_TEMPLATES = {
     (w, l, s) => `Hari yang berat bagi ${l} setelah dikalahkan ${w}.`
   ],
 
-  // 4. Draw / Seri / Imbang
+  // 4. Draw / Seri
   draw: [
     (t1, t2, s) => `Sama kuat! ${t1} dan ${t2} berbagi angka ${s ? `(${s})` : ''}.`,
     (t1, t2, s) => `Pertarungan sengit antara ${t1} vs ${t2} berakhir imbang.`,
@@ -74,55 +73,74 @@ const NEWS_TEMPLATES = {
     (t1, t2, s) => `Kebuntuan tak terpecahkan antara ${t1} dan ${t2}.`
   ],
 
-  // 5. Teasers / Fun Facts (Jika data kosong/TBD)
-  teasers: [
+  // 5. Upcoming Matches (Teaser Jadwal Nyata)
+  upcoming: [
+    (t1, t2) => `Nantikan laga panas antara ${t1} melawan ${t2}!`,
+    (t1, t2) => `Siapakah yang akan berjaya? ${t1} atau ${t2}?`,
+    (t1, t2) => `Jangan lewatkan! ${t1} akan berhadapan dengan ${t2}.`,
+    (t1, t2) => `Perseteruan di arena: ${t1} vs ${t2} segera hadir.`,
+    (t1, t2) => `Dukung tim jagoanmu! ${t1} kontra ${t2} menanti.`,
+    (t1, t2) => `Big Match! ${t1} bertemu ${t2} di jadwal berikutnya.`,
+    (t1, t2) => `Persiapan matang ${t1} akan diuji oleh ${t2}.`,
+    (t1, t2) => `Atmosfer memanas jelang laga ${t1} vs ${t2}.`,
+    (t1, t2) => `Saksikan aksi ${t1} menantang ${t2} di arena.`,
+    (t1, t2) => `Prediksi skor Anda untuk ${t1} vs ${t2}?`
+  ],
+
+  // 6. Fallback Static Teasers
+  staticTeasers: [
     { title: "Segera Dimulai", desc: "Upacara Pembukaan menanti pada 24 Januari." },
     { title: "Para Pejuang Siap", desc: "Tim-tim sedang mematangkan strategi mereka." },
     { title: "Ascension Cup", desc: "Siapa yang akan naik ke Olympus tahun ini?" },
     { title: "Catat Tanggalnya", desc: "24 Jan: Hari di mana bumi bergoncang." },
-    { title: "Bintang Tamu", desc: "Desas-desus mengatakan bard spesial akan datang." },
-    { title: "Bersiaplah", desc: "Siapkan yel-yel kalian. Pertandingan makin dekat." },
-    { title: "Registrasi", desc: "Bagan pertandingan sedang ditentukan oleh takdir." },
-    { title: "Pantauan Dewa", desc: "Zeus mengawasi persiapan dari langit." },
-    { title: "Ramalan Cuaca", desc: "Badai talenta muda sedang terbentuk... 2026." },
-    { title: "Keheningan", desc: "Arena masih sunyi... sebelum peluit pertama." }
+    { title: "Bersiaplah", desc: "Siapkan yel-yel kalian. Pertandingan makin dekat." }
   ]
 };
 
 function Recup() {
   const [matchSchedules, setMatchSchedules] = useState([]);
-  const [news, setNews] = useState(NEWS_TEMPLATES.teasers); 
+  const [news, setNews] = useState(NEWS_TEMPLATES.staticTeasers); 
   
   // UI States
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [activeNewsIndex, setActiveNewsIndex] = useState(0);
 
-  // --- 1. SETUP & FETCH ---
+  // --- 1. SETUP AWAL ---
   useEffect(() => {
     document.title = "Ascension Cup - Official Website";
     const favicon = document.querySelector("link[rel='icon']");
     if (favicon) favicon.href = "/assets/recup/favicon-recucp.png";
   }, []);
 
-  // Logic Generator Berita
+  // --- 2. LOGIC GENERATOR BERITA ---
   const generateNewsFromData = (data) => {
-    // Filter: Winner terisi ATAU Score terisi (abaikan status TBD)
+    let finalNews = [];
+
+    // Helper: Parse Date String ke Object Date untuk sorting lokal di fungsi news
+    const parseDate = (d, t) => new Date(`${d} ${t}`);
+
+    // A. Match Selesai (Winner/Score ada)
     const completedMatches = data.filter(m => {
       const winner = m.winner ? m.winner.toLowerCase().trim() : '';
       const score = m.score ? m.score.toString().trim() : '';
       return (winner !== '' && winner !== 'tbd') || (score !== '' && score !== '-');
     });
 
-    if (completedMatches.length === 0) {
-      setNews(NEWS_TEMPLATES.teasers);
-      return;
-    }
+    // B. Match Mendatang (Belum ada winner/score)
+    const upcomingMatches = data.filter(m => {
+      const winner = m.winner ? m.winner.toLowerCase().trim() : '';
+      const score = m.score ? m.score.toString().trim() : '';
+      return (winner === '' || winner === 'tbd') && (score === '' || score === '-');
+    });
 
-    // Ambil 7 match TERBARU (Data sudah di-sort ID descending)
-    const recentMatches = completedMatches.slice(0, 7);
-    
-    const generatedNews = recentMatches.map(match => {
+    // --- PROSES MATCH SELESAI (Ambil 5 TERBARU / Paling Akhir Selesai) ---
+    // Sort Descending (Waktu terbesar/terbaru di atas)
+    const recentCompleted = completedMatches
+      .sort((a, b) => parseDate(b.date, b.time) - parseDate(a.date, a.time))
+      .slice(0, 5);
+
+    const resultNews = recentCompleted.map(match => {
       const rawWinner = match.winner ? match.winner.toLowerCase().trim() : '';
       const score = match.score;
       const t1 = match.team1;
@@ -130,81 +148,92 @@ function Recup() {
 
       let newsItem = {};
 
-      // A. SERI / DRAW
       if (rawWinner === 'draw') {
         const idx = Math.floor(Math.random() * NEWS_TEMPLATES.draw.length);
-        newsItem = {
-          title: "Hasil Imbang",
-          desc: NEWS_TEMPLATES.draw[idx](t1, t2, score)
-        };
-      } 
-      // B. ADA PEMENANG
-      else {
+        newsItem = { title: "Hasil Imbang", desc: NEWS_TEMPLATES.draw[idx](t1, t2, score) };
+      } else {
         let winnerName = rawWinner;
         let loserName = 'Lawan';
 
-        // Konversi 'team1'/'team2' ke Nama Tim
         if (rawWinner === 'team1') { winnerName = t1; loserName = t2; }
         else if (rawWinner === 'team2') { winnerName = t2; loserName = t1; }
         else {
-            // Fallback nama manual
             if (rawWinner === t1.toLowerCase()) { winnerName = t1; loserName = t2; }
             else if (rawWinner === t2.toLowerCase()) { winnerName = t2; loserName = t1; }
         }
 
-        // Tentukan Tipe Berita secara Acak (0: Score, 1: Kalah, 2: Umum)
         const variantType = Math.floor(Math.random() * 3); 
-        
         if (variantType === 0 && score && score !== "-" && score !== "") {
           const idx = Math.floor(Math.random() * NEWS_TEMPLATES.withScore.length);
-          newsItem = {
-            title: "Laporan Laga",
-            desc: NEWS_TEMPLATES.withScore[idx](winnerName, loserName, score)
-          };
+          newsItem = { title: "Laporan Laga", desc: NEWS_TEMPLATES.withScore[idx](winnerName, loserName, score) };
         } else if (variantType === 1) {
           const idx = Math.floor(Math.random() * NEWS_TEMPLATES.lossPerspective.length);
-          newsItem = {
-            title: "Pasca Laga",
-            desc: NEWS_TEMPLATES.lossPerspective[idx](winnerName, loserName, score)
-          };
+          newsItem = { title: "Pasca Laga", desc: NEWS_TEMPLATES.lossPerspective[idx](winnerName, loserName, score) };
         } else {
           const idx = Math.floor(Math.random() * NEWS_TEMPLATES.noScore.length);
-          newsItem = {
-            title: "Kabar Kemenangan",
-            desc: NEWS_TEMPLATES.noScore[idx](winnerName, loserName)
-          };
+          newsItem = { title: "Kabar Kemenangan", desc: NEWS_TEMPLATES.noScore[idx](winnerName, loserName) };
         }
       }
       return newsItem;
     });
+    
+    finalNews = [...finalNews, ...resultNews];
 
-    // Isi sisa slot dengan teaser jika kurang dari 4
-    if (generatedNews.length < 4) {
-      const needed = 4 - generatedNews.length;
-      generatedNews.push(...NEWS_TEMPLATES.teasers.slice(0, needed));
+    // --- PROSES MATCH MENDATANG (Ambil yang PALING DEKAT waktunya) ---
+    // Sort Ascending (Waktu terkecil/terdekat di atas)
+    const nearestUpcoming = upcomingMatches
+      .sort((a, b) => parseDate(a.date, a.time) - parseDate(b.date, b.time));
+
+    // Isi slot berita sampai minimal 5 item
+    if (finalNews.length < 6 && nearestUpcoming.length > 0) {
+      const slotsNeeded = 6 - finalNews.length;
+      const teasers = nearestUpcoming.slice(0, slotsNeeded).map(match => {
+        const idx = Math.floor(Math.random() * NEWS_TEMPLATES.upcoming.length);
+        return {
+          title: "Segera Hadir",
+          desc: NEWS_TEMPLATES.upcoming[idx](match.team1, match.team2)
+        };
+      });
+      finalNews = [...finalNews, ...teasers];
     }
-    setNews(generatedNews);
+
+    // Fallback
+    if (finalNews.length === 0) {
+      setNews(NEWS_TEMPLATES.staticTeasers);
+    } else {
+      setNews(finalNews);
+    }
   };
 
+  // --- 3. FETCH DATA & SORTING UTAMA ---
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
         const res = await fetch(SCHEDULE_API);
         const data = await res.json();
+        
         if (Array.isArray(data)) {
-          // Sort ID Descending (Terbaru di atas)
-          const sortedData = data.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+          // --- SORTIR: TANGGAL AWAL & JAM AWAL (ASCENDING) ---
+          // Format dari API biasanya "D Month YYYY" (e.g., 7 January 2026) karena Apps Script
+          // Jadi kita gabung date + time string dan convert ke Date Object untuk komparasi akurat
+          const sortedData = data.sort((a, b) => {
+            const dateA = new Date(`${a.date} ${a.time}`);
+            const dateB = new Date(`${b.date} ${b.time}`);
+            return dateA - dateB; // Ascending: Tanggal lama di atas, tanggal baru di bawah
+          });
+          
           setMatchSchedules(sortedData);
           generateNewsFromData(sortedData); 
         }
       } catch (err) { console.error("API Error", err); }
     };
+    
     fetchSchedule();
     const interval = setInterval(fetchSchedule, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // --- 2. ANIMASI & INTERAKSI ---
+  // --- 4. ANIMASI ---
   const handleMouseMove = (e) => {
     if (window.innerWidth <= 768) return; 
     const { clientX, clientY } = e;
@@ -255,6 +284,7 @@ function Recup() {
             <div className="ticker-container-greek">
               {matchSchedules.length > 0 ? (
                 <div className="ticker-track-greek">
+                  {/* Duplikasi data untuk efek infinite scroll CSS */}
                   {[...matchSchedules, ...matchSchedules].map((m, i) => (
                     <div key={i} className={`ticker-item-greek ${getStatusClass(m)}`} onClick={() => { setIsScheduleOpen(true); openMatchDetails(m); }}>
                       <div className="ti-time-greek">{m.time}</div>
@@ -293,7 +323,7 @@ function Recup() {
             <img src="./assets/recup/building.webp" className="hero-building-greek" alt="Pantheon" />
           </div>
 
-          {/* === [NEW] MOBILE NEWS WIDGET (Town Crier) === */}
+          {/* === MOBILE NEWS WIDGET (Town Crier) === */}
           <div className="mobile-news-widget-greek">
             <div className="mn-inner-greek">
               <div className="mn-icon-greek"><GiScrollQuill /></div>

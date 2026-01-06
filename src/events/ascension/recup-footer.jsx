@@ -27,7 +27,7 @@ const RecupFooter = () => {
       </div>
       
       <div className="footer-base-greek">
-        &copy; 2026 RECIS ASCENSION. ALL RIGHTS RESERVED.
+        &copy; 2026 AchiraStudios. ALL RIGHTS RESERVED.
       </div>
     </footer>
   );

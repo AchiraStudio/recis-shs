@@ -50,7 +50,7 @@ const Footer = () => {
 
       <div className="footer-bottom">
         <div className="container bottom-content">
-          <p>© {new Date().getFullYear()} RECIS Senior High School.</p>
+          <p>© {new Date().getFullYear()} AchiraStudios.</p>
           <button onClick={scrollToTop} className="btn btn-secondary" style={{ padding: '8px 20px', height: 'auto', fontSize: '0.8rem' }} aria-label="Scroll to top">
             Back to Top <FiArrowUp />
           </button>

@@ -338,10 +338,14 @@ function Recup() {
 
           setGroupedSchedules(groups);
 
-          const dates = Object.keys(groups);
-          if (dates.length > 0 && !activeTabDate) {
-            setActiveTabDate(dates[0]);
-          }
+          // Only set initial date if none exists, preserving user selection on refresh
+          setActiveTabDate(prev => {
+            if (!prev) {
+              const dates = Object.keys(groups);
+              return dates.length > 0 ? dates[0] : '';
+            }
+            return prev;
+          });
         }
       } catch (err) { console.error("API Error", err); }
     };
@@ -409,7 +413,7 @@ function Recup() {
   const availableComps = getCompetitionsForDate(activeTabDate);
 
   // --- STYLE ANIMATION (INFINITE SCROLL) ---
-  // No auto-switch logic anymore. Just consistent scrolling speed.
+  // Logic: Calculate duration based on match count, but do not reset randomly.
   const animationDurationStyle = {
     animationDuration: `${Math.max(visibleMatches.length * 3, 5)}s`
   };
@@ -436,7 +440,7 @@ function Recup() {
                   {[...matchSchedules, ...matchSchedules]
                     .filter(m => !checkIsBlacklisted(m))
                     .map((m, i) => (
-                    <div key={i} className={`ticker-item-greek ${getStatusClass(m)}`} onClick={() => { setIsScheduleOpen(true); openMatchDetails(m); }}>
+                    <div key={`${m.team1}-${m.team2}-${i}`} className={`ticker-item-greek ${getStatusClass(m)}`} onClick={() => { setIsScheduleOpen(true); openMatchDetails(m); }}>
                       <div className="ti-time-greek">{m.time} - {m.competition}</div>
                       <div className="ti-match-greek">
                         <span className="ti-team">{m.team1}</span>
@@ -542,7 +546,7 @@ function Recup() {
           <SmartTabs activeId={activeTabDate}>
             {Object.keys(groupedSchedules).map((date, idx) => (
               <button
-                key={idx}
+                key={date}
                 className={`pm-tab-greek ${activeTabDate === date ? 'active' : ''}`}
                 onClick={() => { setActiveTabDate(date); setActiveTabComp('ALL'); }}
                 data-id={date}
@@ -562,7 +566,7 @@ function Recup() {
             </button>
             {availableComps.map((comp, idx) => (
               <button
-                key={idx}
+                key={comp}
                 className={`pm-subtab-greek ${activeTabComp === comp ? 'active' : ''}`}
                 onClick={() => setActiveTabComp(comp)}
                 data-id={comp}
@@ -577,7 +581,7 @@ function Recup() {
               <div className="pm-infinite-scroll-wrapper-greek">
                 <div 
                   className="pm-infinite-track-greek" 
-                  key={activeTabComp}
+                  // Removed key={activeTabComp} to prevent animation reset/jumping
                   style={animationDurationStyle}
                 >
                   {[...visibleMatches, ...visibleMatches].map((match, idx) => {
@@ -586,7 +590,7 @@ function Recup() {
                     const shouldShowScore = !isUpcoming && (isLive || (match.scoreteam1 && match.scoreteam2));
 
                     return (
-                      <div key={idx} className={`decree-card-greek ${getStatusClass(match)}`} onClick={() => openMatchDetails(match)}>
+                      <div key={`${match.team1}-${match.team2}-${idx}`} className={`decree-card-greek ${getStatusClass(match)}`} onClick={() => openMatchDetails(match)}>
                         <div className="dc-left-greek">
                           <div className="dc-top-info-greek">
                             <span className="dc-time-greek">{match.time}</span>

@@ -672,3 +672,70 @@
   }
   .parchment-modal-overlay-greek.open-greek .parchment-modal-greek { transform: translateY(0); }
 }
+
+/* --- Add these to your existing CSS file --- */
+
+/* 1. Sub Tabs (Competitions) */
+.pm-subtabs-container-greek {
+  display: flex;
+  overflow-x: auto;
+  background: #f1ebd8; /* Slightly darker than main tab bg */
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  padding: 5px 20px;
+  gap: 8px;
+  flex-shrink: 0;
+  scrollbar-width: none;
+}
+.pm-subtabs-container-greek::-webkit-scrollbar { display: none; }
+
+.pm-subtab-greek {
+  background: transparent;
+  border: 1px solid var(--bronze-greek);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-family: var(--font-body-greek);
+  font-size: 0.75rem;
+  color: var(--ink-greek);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.pm-subtab-greek.active {
+  background: var(--ink-greek);
+  color: #fff;
+  border-color: var(--ink-greek);
+}
+
+.pm-subtab-greek:hover {
+  background: rgba(44, 30, 16, 0.1);
+}
+.pm-subtab-greek.active:hover {
+  background: var(--ink-greek);
+}
+
+/* 2. Decree Card Stage Info */
+.dc-stage-greek {
+  font-size: 0.65rem;
+  color: var(--bronze-greek);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
+  border-top: 1px dotted #ccc;
+  padding-top: 2px;
+  display: inline-block;
+}
+
+/* 3. Modal Detail Stage Title */
+.md-stage-title-greek {
+  text-align: center;
+  font-family: var(--font-heading-greek);
+  font-size: 1rem;
+  color: var(--gold-greek);
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 2px;
+}

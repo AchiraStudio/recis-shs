@@ -240,7 +240,7 @@
    ========================================= */
 .sidebar-right-greek {
   position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
-  z-index: 30; width: 260px;
+  z-index: 999999999999999999990; width: 260px;
 }
 .news-widget-greek {
   background: linear-gradient(135deg, #2c1e10, #3d2b1f);
@@ -351,7 +351,7 @@
 @keyframes sealPulseGreek { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
 /* =========================================
-   MAIN SCHEDULE MODAL (FULL SCREEN + UPDATES)
+   MAIN SCHEDULE MODAL (SCORES + FASTER SCROLL)
    ========================================= */
 .parchment-modal-overlay-greek {
   position: fixed; inset: 0; 
@@ -360,7 +360,7 @@
   display: flex; 
   justify-content: center; 
   align-items: center; 
-  padding: 20px; /* Full screen padding */
+  padding: 20px; 
   opacity: 0; pointer-events: none; transition: opacity 0.3s;
 }
 
@@ -373,7 +373,7 @@
   height: 100%; 
   max-height: 95vh; 
   background: var(--parchment-light-greek);
-  border-radius: 12px; /* Rounded corners on all sides */
+  border-radius: 12px; 
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
   transform: scale(0.95); 
   transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1);
@@ -455,8 +455,8 @@
   flex-direction: column;
   gap: 15px;
   padding: 30px 20px;
-  /* Endless Scroll Animation */
-  animation: scrollEndlessVertical 45s linear infinite;
+  /* UPDATED: FASTER SCROLL (30s instead of 45s) */
+  animation: scrollEndlessVertical 30s linear infinite;
 }
 
 .pm-infinite-scroll-wrapper-greek:hover .pm-infinite-track-greek {
@@ -522,7 +522,7 @@
 .dc-score-greek {
   font-family: var(--font-heading-greek);
   font-weight: 900;
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   color: var(--ink-greek);
   line-height: 1;
   opacity: 0.8;

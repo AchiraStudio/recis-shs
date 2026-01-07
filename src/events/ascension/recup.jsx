@@ -185,7 +185,7 @@ function Recup() {
     }
   };
 
-  // --- 3. FETCH DATA & SORTING (UPDATED FOR LIVE PRIORITY) ---
+  // --- 3. FETCH DATA & SORTING ---
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
@@ -194,7 +194,7 @@ function Recup() {
         
         if (Array.isArray(data)) {
           const parseDate = (d, t) => new Date(`${d} ${t}`);
-          const sortedData = data.sort((a, b) => parseDate(a.date, a.time) - parseDate(b.date, a.time)); // Global sort
+          const sortedData = data.sort((a, b) => parseDate(a.date, a.time) - parseDate(b.date, a.time)); 
           
           setMatchSchedules(sortedData);
           generateNewsFromData(sortedData); 
@@ -213,12 +213,8 @@ function Recup() {
             groups[date].sort((a, b) => {
               const aLive = a.status?.toLowerCase() === 'live';
               const bLive = b.status?.toLowerCase() === 'live';
-
-              // Priority: Live > Finished > Upcoming
               if (aLive && !bLive) return -1;
               if (!aLive && bLive) return 1;
-
-              // Secondary sort: Time
               return a.time.localeCompare(b.time);
             });
           });
@@ -272,10 +268,9 @@ function Recup() {
     return '';
   };
 
-  // Helper to parse scores for display
+  // Helper to parse scores for display (e.g., "2-1" -> {t1: "2", t2: "1"})
   const parseScores = (scoreStr) => {
-    if(!scoreStr) return { t1: '-', t2: '-' };
-    // Assuming format "X-Y" or similar
+    if(!scoreStr) return { t1: '', t2: '' };
     const parts = scoreStr.split('-');
     return {
       t1: parts[0] || '',
@@ -395,11 +390,11 @@ function Recup() {
         <div className="seal-inner-greek"><span className="seal-icon-greek"><GrSchedules /></span></div>
       </button>
 
-      {/* === MODAL LIST JADWAL (FULL SCREEN + LIVE PRIORITY + SCORES) === */}
+      {/* === MODAL LIST JADWAL (UPDATED: SCORES ON SIDES + FASTER SCROLL) === */}
       <div className={`parchment-modal-overlay-greek ${isScheduleOpen ? 'open-greek' : ''}`} onClick={() => setIsScheduleOpen(false)}>
         <div className="parchment-modal-greek" onClick={e => e.stopPropagation()}>
           <div className="pm-header-greek">
-            <h2>TITAH RESMI</h2>
+            <h2>MATCH SCHEDULE</h2>
             <button className="pm-close-greek" onClick={() => setIsScheduleOpen(false)}><IoMdClose /></button>
           </div>
           
@@ -425,15 +420,17 @@ function Recup() {
                     const scores = parseScores(match.score);
                     return (
                       <div key={idx} className={`decree-card-greek ${getStatusClass(match)}`} onClick={() => openMatchDetails(match)}>
-                        {/* LEFT SIDE: INFO + SCORE T1 */}
+                        
+                        {/* LEFT SIDE: INFO + TEAM 1 SCORE */}
                         <div className="dc-left-greek">
                           <div className="dc-top-info-greek">
                             <span className="dc-time-greek">{match.time}</span>
                             <span className="dc-cat-greek">{match.category}</span>
                           </div>
+                          {/* Only show score if match is live or finished */}
                           {(match.status?.toLowerCase() === 'live' || match.score) && (
                             <span className={`dc-score-greek ${match.winner === 'team1' ? 'winner' : ''}`}>
-                              {scores.t1}
+                              {scores.t1 || '-'}
                             </span>
                           )}
                         </div>
@@ -445,7 +442,7 @@ function Recup() {
                           <div className="dc-team-greek">{match.team2}</div>
                         </div>
 
-                        {/* RIGHT SIDE: STATUS + SCORE T2 */}
+                        {/* RIGHT SIDE: STATUS + TEAM 2 SCORE */}
                         <div className="dc-right-greek">
                           <div className="dc-top-info-greek">
                             {match.status?.toLowerCase() === 'live' ? 
@@ -453,12 +450,14 @@ function Recup() {
                               <span className="date-tag-greek">{match.date}</span>
                             }
                           </div>
+                          {/* Only show score if match is live or finished */}
                           {(match.status?.toLowerCase() === 'live' || match.score) && (
                             <span className={`dc-score-greek ${match.winner === 'team2' ? 'winner' : ''}`}>
-                              {scores.t2}
+                              {scores.t2 || '-'}
                             </span>
                           )}
                         </div>
+
                       </div>
                     );
                   })}

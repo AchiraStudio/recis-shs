@@ -122,7 +122,7 @@
   z-index: 20;
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Mengurangi gap */
+  gap: 15px;
   align-items: center;
   transition: bottom 0.3s;
 }
@@ -139,7 +139,7 @@
 
 .scroll-content {
   background: linear-gradient(to bottom, #fdfbf7, #e6dcc3);
-  padding: 10px 30px; /* Padding tombol sedikit dikurangi */
+  padding: 10px 30px;
   color: var(--ink-greek);
   font-family: var(--font-heading-greek);
   font-weight: 700;
@@ -153,7 +153,7 @@
 }
 
 .scroll-handle-left, .scroll-handle-right {
-  width: 18px; height: 50px; /* Sedikit lebih kecil */
+  width: 18px; height: 50px;
   background: linear-gradient(90deg, #5c4033, #8a6e4b, #5c4033);
   border-radius: 4px;
   position: relative;
@@ -174,19 +174,19 @@
    ========================================= */
 .sidebar-left-greek {
   position: absolute; left: 40px; top: 50%; transform: translateY(-50%);
-  z-index: 30; width: 280px; /* Width dikurangi sedikit agar compact */
+  z-index: 30; width: 280px;
 }
 .ancient-widget-greek {
   background: rgba(253, 246, 227, 0.95);
   border: 4px double var(--gold-greek);
-  padding: 12px; /* Padding dikurangi */
+  padding: 12px;
   border-radius: 4px;
   box-shadow: 10px 10px 30px rgba(0,0,0,0.3);
   position: relative;
 }
 .ancient-widget-greek::before {
   content: ''; position: absolute; top: -12px; left: -12px;
-  width: 40px; height: 40px; /* Seal lebih kecil */
+  width: 40px; height: 40px;
   background: radial-gradient(circle, #8a2a2a, #500);
   border-radius: 50%;
   box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
@@ -208,14 +208,14 @@
 }
 .ticker-track-greek {
   animation: scrollUpGreek 30s linear infinite;
-  display: flex; flex-direction: column; gap: 10px; /* Gap dikurangi */
+  display: flex; flex-direction: column; gap: 10px;
 }
 .ticker-track-greek:hover { animation-play-state: paused; }
 @keyframes scrollUpGreek { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
 
 .ticker-item-greek {
   background: #fff; border: 1px solid #d4af37;
-  padding: 8px 10px; /* Padding item dikurangi */
+  padding: 8px 10px;
   cursor: pointer;
   transition: transform 0.2s, background 0.2s;
   box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
@@ -295,7 +295,6 @@
   .building-anchor-greek { top: 0; translate: 5px -200px; }
   .clouds-container-greek { top: 15%; opacity: 0.4; }
 
-  /* Adjust Layout for Mobile */
   .title-area-greek { top: 12% !important; }
   .hero-building-greek { 
     width: 110%; max-height: 45vh; 
@@ -305,7 +304,6 @@
   }
   .scroll-buttons-container-greek { bottom: 15% !important; gap: 12px; }
 
-  /* === SHOW MOBILE NEWS === */
   .mobile-news-widget-greek {
     display: flex; justify-content: center;
     position: absolute; top: 46%; left: 0; width: 100%;
@@ -315,7 +313,7 @@
     background: rgba(253, 246, 227, 0.95);
     border: 2px solid var(--gold-greek);
     border-radius: 8px;
-    padding: 10px 15px; /* Compact Padding */
+    padding: 10px 15px;
     width: 85%; max-width: 350px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     display: flex; align-items: center; gap: 10px;
@@ -339,7 +337,7 @@
 /* --- MOBILE FAB (Wax Seal) --- */
 .wax-fab-greek {
   position: fixed; bottom: 20px; right: 20px;
-  width: 56px; height: 56px; /* Sedikit dikecilkan */
+  width: 56px; height: 56px;
   background: radial-gradient(circle at 30% 30%, #a52a2a, #600);
   border: 3px solid #800000;
   border-radius: 50%;
@@ -352,146 +350,325 @@
 .seal-icon-greek { font-size: 1.4rem; color: #fff; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.5)); }
 @keyframes sealPulseGreek { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-/* --- MAIN SCHEDULE MODAL --- */
+/* =========================================
+   MAIN SCHEDULE MODAL (FULL SCREEN + UPDATES)
+   ========================================= */
 .parchment-modal-overlay-greek {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-  z-index: 200; display: flex; justify-content: center; align-items: flex-end; 
+  position: fixed; inset: 0; 
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+  z-index: 200; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  padding: 20px; /* Full screen padding */
   opacity: 0; pointer-events: none; transition: opacity 0.3s;
 }
+
 .parchment-modal-overlay-greek.open-greek { opacity: 1; pointer-events: auto; }
+
+/* Desktop: Fullscreen-ish Modal */
 .parchment-modal-greek {
-  width: 100%; max-width: 600px; height: 85vh;
+  width: 100%; 
+  max-width: 1000px; /* Limits width on huge screens */
+  height: 100%; 
+  max-height: 95vh; 
   background: var(--parchment-light-greek);
-  border-radius: 20px 20px 0 0;
-  box-shadow: 0 -10px 50px rgba(0,0,0,0.5);
-  transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1);
+  border-radius: 12px; /* Rounded corners on all sides */
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  transform: scale(0.95); 
+  transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1);
   display: flex; flex-direction: column;
-  border: 8px solid var(--parchment-dark-greek); 
+  border: 2px solid var(--parchment-dark-greek); 
+  position: relative;
+  overflow: hidden;
 }
-.parchment-modal-overlay-greek.open-greek .parchment-modal-greek { transform: translateY(0); }
+
+.parchment-modal-overlay-greek.open-greek .parchment-modal-greek { transform: scale(1); }
+
+/* Modal Header */
 .pm-header-greek {
-  padding: 15px; /* Padding dikurangi */
+  padding: 15px 20px;
   border-bottom: 2px solid var(--gold-greek);
   display: flex; justify-content: space-between; align-items: center;
-  background: var(--parchment-dark-greek); border-radius: 12px 12px 0 0;
+  background: var(--parchment-dark-greek); 
+  flex-shrink: 0;
 }
-.pm-header-greek h2 { margin: 0; font-family: var(--font-heading-greek); font-size: 1.1rem; color: var(--ink-greek); }
-.pm-close-greek { background: none; border: none; font-size: 1.4rem; color: var(--ink-greek); cursor: pointer; }
-.pm-subheader-greek {
-  text-align: center; font-size: 0.7rem; letter-spacing: 2px;
-  color: var(--bronze-greek); padding: 8px; text-transform: uppercase;
-  background: rgba(0,0,0,0.03);
+.pm-header-greek h2 { margin: 0; font-family: var(--font-heading-greek); font-size: 1.2rem; color: var(--ink-greek); }
+.pm-close-greek { background: none; border: none; font-size: 1.5rem; color: var(--ink-greek); cursor: pointer; transition: 0.2s; }
+.pm-close-greek:hover { color: var(--red-seal-greek); transform: scale(1.1); }
+
+/* --- DATE TABS --- */
+.pm-tabs-container-greek {
+  display: flex;
+  overflow-x: auto;
+  background: var(--parchment-light-greek);
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  padding: 10px 20px;
+  gap: 10px;
+  flex-shrink: 0;
+  scrollbar-width: none;
 }
+.pm-tabs-container-greek::-webkit-scrollbar { display: none; }
+
+.pm-tab-greek {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 20px;
+  font-family: var(--font-heading-greek);
+  font-size: 0.95rem;
+  color: var(--bronze-greek);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  opacity: 0.6;
+  border-radius: 4px;
+}
+.pm-tab-greek.active {
+  color: var(--red-seal-greek);
+  border-bottom-color: var(--red-seal-greek);
+  opacity: 1;
+  font-weight: 700;
+  background: rgba(138, 42, 42, 0.05);
+}
+.pm-tab-greek:hover { opacity: 1; }
+
+/* Modal Body - Infinite Scroll */
 .pm-body-greek {
-  flex: 1; overflow-y: auto; padding: 10px; /* Padding dikurangi */
+  flex: 1;
+  overflow: hidden;
+  position: relative;
   background-color: #fdf6e3;
   background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
 }
 
-/* Decree Cards */
+.pm-infinite-scroll-wrapper-greek {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 2%, black 98%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 2%, black 98%, transparent 100%);
+}
+
+.pm-infinite-track-greek {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 30px 20px;
+  /* Endless Scroll Animation */
+  animation: scrollEndlessVertical 45s linear infinite;
+}
+
+.pm-infinite-scroll-wrapper-greek:hover .pm-infinite-track-greek {
+  animation-play-state: paused;
+}
+
+@keyframes scrollEndlessVertical {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+/* Decree Cards (Matches) - UPDATED FOR SCORES */
 .decree-card-greek {
   background: #fff; border: 1px solid #d4c5b0;
-  border-left: 4px solid var(--bronze-greek);
-  border-radius: 4px; padding: 10px 12px; margin-bottom: 10px; /* Padding & margin diperketat */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  border-radius: 6px;
+  padding: 12px 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   display: flex; align-items: center; justify-content: space-between;
-  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+  position: relative;
 }
-.decree-card-greek:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--gold-greek); }
-.decree-card-greek.live { border-left-color: #d00; background: linear-gradient(to right, #fff5f5, #fff); }
+
+.decree-card-greek:hover { 
+  transform: scale(1.01); 
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
+  border-color: var(--gold-greek); 
+  z-index: 10;
+}
+
+.decree-card-greek.live { 
+  border-left: 6px solid #d00; 
+  background: linear-gradient(to right, #fff5f5, #fff); 
+  border-color: #ffcccc;
+}
+.decree-card-greek.live .dc-score-greek {
+  color: var(--red-seal-greek);
+}
+
 .decree-card-greek.finished { border-left-color: var(--gold-greek); background: #fdfdfd; }
-.dc-left-greek { display: flex; flex-direction: column; width: 55px; }
-.dc-time-greek { font-weight: 800; font-family: var(--font-body-greek); color: #222; font-size: 0.85rem; }
-.dc-cat-greek { font-size: 0.65rem; color: #666; text-transform: uppercase; font-weight: 600; }
-.dc-center-greek { flex: 1; text-align: center; }
-.dc-team-greek { font-family: var(--font-heading-greek); font-weight: 700; color: #1a1a1a; font-size: 0.95rem; }
-.dc-vs-greek { font-size: 0.65rem; color: var(--gold-greek); font-weight: bold; margin: 2px 0; }
-.dc-result-greek { font-size: 0.7rem; color: var(--red-seal-greek); font-weight: bold; margin-top: 2px; }
-.dc-right-greek { width: 55px; text-align: right; }
-.live-tag-greek { background: var(--red-seal-greek); color: #fff; font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; }
-.date-tag-greek { font-size: 0.65rem; color: #888; }
+
+/* Sides - Left & Right */
+.dc-left-greek, .dc-right-greek {
+  width: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.dc-top-info-greek {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.dc-time-greek { font-weight: 900; font-family: var(--font-body-greek); color: #333; font-size: 0.8rem; }
+.dc-cat-greek { font-size: 0.6rem; color: #777; text-transform: uppercase; font-weight: 700; }
+
+/* SCORE STYLES */
+.dc-score-greek {
+  font-family: var(--font-heading-greek);
+  font-weight: 900;
+  font-size: 1.6rem;
+  color: var(--ink-greek);
+  line-height: 1;
+  opacity: 0.8;
+  transition: color 0.3s;
+}
+.dc-score-greek.winner {
+  color: var(--gold-greek);
+  opacity: 1;
+  text-shadow: 0 2px 4px rgba(197, 160, 89, 0.3);
+}
+
+/* Center */
+.dc-center-greek { 
+  flex: 1; 
+  text-align: center; 
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.dc-team-greek { 
+  font-family: var(--font-heading-greek); 
+  font-weight: 700; 
+  color: #1a1a1a; 
+  font-size: 1rem; 
+  line-height: 1.2;
+  margin: 2px 0;
+}
+.dc-vs-greek { 
+  font-size: 0.7rem; 
+  color: var(--gold-greek); 
+  font-weight: 900; 
+  margin: 4px 0; 
+  letter-spacing: 2px;
+}
+
+/* Status Tags */
+.live-tag-greek { 
+  background: var(--red-seal-greek); 
+  color: #fff; 
+  font-size: 0.6rem; 
+  padding: 2px 8px; 
+  border-radius: 10px; 
+  font-weight: 800;
+  box-shadow: 0 2px 4px rgba(138, 42, 42, 0.4);
+  animation: pulseLive 1.5s infinite;
+}
+@keyframes pulseLive { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
+
+.date-tag-greek { font-size: 0.7rem; color: #999; font-weight: 700; }
 
 /* =========================================
-   DETAILED MATCH POPUP (IMPROVED CONTRAST)
+   DETAILED MATCH POPUP 
    ========================================= */
 .match-detail-overlay-greek {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
-  z-index: 300; display: flex; justify-content: center; align-items: center; padding: 15px;
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+  z-index: 300; display: flex; justify-content: center; align-items: center; padding: 20px;
   animation: fadeIn 0.3s ease;
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .match-detail-scroll-greek {
-  width: 100%; max-width: 450px; /* Lebar max dikurangi sedikit agar compact */
+  width: 100%; max-width: 500px;
   background: var(--parchment-light-greek);
   border: 4px double var(--ink-greek); border-radius: 8px;
   position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-  padding: 20px 15px; /* Padding dikurangi dari 30px */
+  padding: 25px;
   text-align: center;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E");
 }
 
 .md-close-btn-greek {
-  position: absolute; top: 8px; right: 8px; background: none; border: none; 
-  font-size: 1.4rem; color: var(--ink-greek); cursor: pointer;
+  position: absolute; top: 10px; right: 10px; background: none; border: none; 
+  font-size: 1.5rem; color: var(--ink-greek); cursor: pointer;
+  transition: 0.2s;
 }
+.md-close-btn-greek:hover { color: var(--red-seal-greek); transform: rotate(90deg); }
 
 .md-header-greek {
-  display: flex; justify-content: center; align-items: center; gap: 8px;
-  font-family: var(--font-heading-greek); font-size: 1.3rem; font-weight: 700; 
-  color: var(--ink-greek); margin-bottom: 8px;
+  display: flex; justify-content: center; align-items: center; gap: 10px;
+  font-family: var(--font-heading-greek); font-size: 1.5rem; font-weight: 700; 
+  color: var(--ink-greek); margin-bottom: 15px;
 }
 .laurels-left { transform: scaleX(-1); color: var(--gold-greek); }
 .laurels-right { color: var(--gold-greek); }
 
 .md-status-pill-greek {
-  display: inline-block; padding: 4px 12px; background: var(--ink-greek); color: #fff;
-  font-size: 0.65rem; letter-spacing: 2px; border-radius: 20px; margin-bottom: 25px; /* Margin bawah dikurangi */
+  display: inline-block; padding: 6px 16px; background: var(--ink-greek); color: #fff;
+  font-size: 0.7rem; letter-spacing: 2px; border-radius: 20px; margin-bottom: 30px;
+  text-transform: uppercase;
 }
 
 .md-versus-section-greek { 
   display: flex; align-items: center; justify-content: space-between; 
-  margin-bottom: 25px; /* Margin bawah dikurangi dari 40px */
+  margin-bottom: 30px;
 }
 
 .md-team-block { flex: 1; display: flex; flex-direction: column; align-items: center; }
 
 .md-team-logo-placeholder {
-  width: 60px; height: 60px; /* Diperkecil dari 80px */
+  width: 70px; height: 70px;
   background: var(--parchment-dark-greek);
   border: 2px dashed var(--bronze-greek); border-radius: 50%;
   display: flex; justify-content: center; align-items: center;
-  font-size: 1.5rem; font-family: var(--font-heading-greek); color: var(--bronze-greek); 
-  margin-bottom: 8px;
+  font-size: 1.8rem; font-family: var(--font-heading-greek); color: var(--bronze-greek); 
+  margin-bottom: 10px;
 }
 
-.md-team-name { font-family: var(--font-heading-greek); font-weight: 700; font-size: 1rem; }
+.md-team-name { font-family: var(--font-heading-greek); font-weight: 700; font-size: 1.1rem; }
 
 .md-vs-divider { 
-  width: 40px; text-align: center; font-family: var(--font-heading-greek); 
-  font-style: italic; color: var(--gold-greek); font-size: 1rem; 
+  width: 50px; text-align: center; font-family: var(--font-heading-greek); 
+  font-style: italic; color: var(--gold-greek); font-size: 1.2rem; 
 }
 
-/* KARTU INFO KONTRAS TINGGI */
 .md-info-grid-greek {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; /* Gap diperkecil */
-  /* Ganti background transparan dengan Putih Solid + Border */
+  display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
   background: #ffffff; 
   border: 1px solid #e0d0b0;
   box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
-  padding: 15px; /* Padding dikurangi dari 20px */
-  border-radius: 6px; 
-  margin-bottom: 15px;
+  padding: 20px;
+  border-radius: 8px; 
+  margin-bottom: 20px;
 }
 
-.md-info-item { display: flex; flex-direction: column; gap: 2px; }
-.md-info-item .label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1px; color: #888; }
-.md-info-item .value { font-size: 0.85rem; font-weight: 800; color: var(--ink-greek); }
+.md-info-item { display: flex; flex-direction: column; gap: 4px; }
+.md-info-item .label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: #999; }
+.md-info-item .value { font-size: 0.9rem; font-weight: 800; color: var(--ink-greek); }
 
-.md-footer-greek { font-size: 0.75rem; font-style: italic; color: #888; margin-top: 5px; }
-.md-draw-text { text-align: center; color: #888; margin-bottom: 15px; font-weight: bold; font-size: 0.9rem; }
+.md-footer-greek { font-size: 0.8rem; font-style: italic; color: #888; margin-top: 10px; }
+.md-draw-text { text-align: center; color: #888; margin-bottom: 20px; font-weight: bold; font-size: 1rem; }
 
 /* Special Winner Styles */
-.score-big { font-size: 1.8rem; font-weight: 900; color: var(--red-seal-greek); }
-.winner-glow { border-color: var(--gold-greek) !important; box-shadow: 0 0 10px rgba(197, 160, 89, 0.4); color: var(--gold-greek) !important; }
-.winner-label { font-size: 0.55rem; background: var(--gold-greek); color: #fff; padding: 2px 5px; border-radius: 4px; margin-top: 4px; letter-spacing: 1px; }
+.score-big { font-size: 2rem; font-weight: 900; color: var(--red-seal-greek); text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.winner-glow { border-color: var(--gold-greek) !important; box-shadow: 0 0 15px rgba(197, 160, 89, 0.5); color: var(--gold-greek) !important; }
+.winner-label { font-size: 0.6rem; background: var(--gold-greek); color: #fff; padding: 3px 8px; border-radius: 4px; margin-top: 6px; letter-spacing: 1px; }
+
+/* Responsive Modal Tweaks */
+@media (max-width: 768px) {
+  .parchment-modal-overlay-greek { padding: 0; align-items: flex-end; }
+  .parchment-modal-greek { 
+    border-radius: 20px 20px 0 0; 
+    border: none;
+    max-width: 100%;
+    max-height: 90vh;
+    transform: translateY(100%);
+  }
+  .parchment-modal-overlay-greek.open-greek .parchment-modal-greek { transform: translateY(0); }
+}

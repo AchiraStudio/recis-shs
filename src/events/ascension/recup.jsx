@@ -19,7 +19,6 @@ const SCHEDULE_API = "https://script.google.com/macros/s/AKfycbxcR39xEqBTH8Rq8lA
 
 // --- TEMPLATES BERITA ---
 const NEWS_TEMPLATES = {
-  // 1. Menang dengan Skor
   withScore: [
     (w, l, s) => `${w} melibas ${l} dengan skor telak ${s}!`,
     (w, l, s) => `Dominasi total! ${w} membungkam ${l} (${s}).`,
@@ -32,8 +31,6 @@ const NEWS_TEMPLATES = {
     (w, l, s) => `Peluit panjang berbunyi. ${w} ${s}, ${l} tumbang.`,
     (w, l, s) => `Kemenangan manis ${s} diraih oleh ${w}.`
   ],
-
-  // 2. Menang Tanpa Skor
   noScore: [
     (w, l) => `${w} berhasil mengamankan kemenangan atas ${l}!`,
     (w, l) => `Kemenangan krusial bagi ${w} dalam laga kontra ${l}.`,
@@ -46,8 +43,6 @@ const NEWS_TEMPLATES = {
     (w, l) => `Mahkota kemenangan jatuh kepada ${w}.`,
     (w, l) => `Sorak sorai untuk ${w} yang berhasil menang!`
   ],
-
-  // 3. Kalah (Loss Perspective)
   lossPerspective: [
     (w, l, s) => `${l} harus mengakui keunggulan ${w}${s ? ` (${s})` : ''}.`,
     (w, l, s) => `Nasib kurang beruntung bagi ${l}, takluk di tangan ${w}.`,
@@ -58,8 +53,6 @@ const NEWS_TEMPLATES = {
     (w, l, s) => `${l} gagal mencuri poin dari ${w} hari ini.`,
     (w, l, s) => `Hari yang berat bagi ${l} setelah dikalahkan ${w}.`
   ],
-
-  // 4. Draw / Seri
   draw: [
     (t1, t2, s) => `Sama kuat! ${t1} dan ${t2} berbagi angka ${s ? `(${s})` : ''}.`,
     (t1, t2, s) => `Pertarungan sengit antara ${t1} vs ${t2} berakhir imbang.`,
@@ -72,8 +65,6 @@ const NEWS_TEMPLATES = {
     (t1, t2, s) => `Berbagi poin! ${t1} ${s ? s : '-'} ${t2}.`,
     (t1, t2, s) => `Kebuntuan tak terpecahkan antara ${t1} dan ${t2}.`
   ],
-
-  // 5. Upcoming Matches (Teaser Jadwal Nyata)
   upcoming: [
     (t1, t2) => `Nantikan laga panas antara ${t1} melawan ${t2}!`,
     (t1, t2) => `Siapakah yang akan berjaya? ${t1} atau ${t2}?`,
@@ -86,8 +77,6 @@ const NEWS_TEMPLATES = {
     (t1, t2) => `Saksikan aksi ${t1} menantang ${t2} di arena.`,
     (t1, t2) => `Prediksi skor Anda untuk ${t1} vs ${t2}?`
   ],
-
-  // 6. Fallback Static Teasers
   staticTeasers: [
     { title: "Segera Dimulai", desc: "Upacara Pembukaan menanti pada 24 Januari." },
     { title: "Para Pejuang Siap", desc: "Tim-tim sedang mematangkan strategi mereka." },
@@ -106,6 +95,10 @@ function Recup() {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [activeNewsIndex, setActiveNewsIndex] = useState(0);
 
+  // --- TABS STATE ---
+  const [groupedSchedules, setGroupedSchedules] = useState({});
+  const [activeTabDate, setActiveTabDate] = useState('');
+
   // --- 1. SETUP AWAL ---
   useEffect(() => {
     document.title = "Ascension Cup - Official Website";
@@ -116,26 +109,20 @@ function Recup() {
   // --- 2. LOGIC GENERATOR BERITA ---
   const generateNewsFromData = (data) => {
     let finalNews = [];
-
-    // Helper: Parse Date String ke Object Date untuk sorting lokal di fungsi news
     const parseDate = (d, t) => new Date(`${d} ${t}`);
 
-    // A. Match Selesai (Winner/Score ada)
     const completedMatches = data.filter(m => {
       const winner = m.winner ? m.winner.toLowerCase().trim() : '';
       const score = m.score ? m.score.toString().trim() : '';
       return (winner !== '' && winner !== 'tbd') || (score !== '' && score !== '-');
     });
 
-    // B. Match Mendatang (Belum ada winner/score)
     const upcomingMatches = data.filter(m => {
       const winner = m.winner ? m.winner.toLowerCase().trim() : '';
       const score = m.score ? m.score.toString().trim() : '';
       return (winner === '' || winner === 'tbd') && (score === '' || score === '-');
     });
 
-    // --- PROSES MATCH SELESAI (Ambil 5 TERBARU / Paling Akhir Selesai) ---
-    // Sort Descending (Waktu terbesar/terbaru di atas)
     const recentCompleted = completedMatches
       .sort((a, b) => parseDate(b.date, b.time) - parseDate(a.date, a.time))
       .slice(0, 5);
@@ -145,7 +132,6 @@ function Recup() {
       const score = match.score;
       const t1 = match.team1;
       const t2 = match.team2;
-
       let newsItem = {};
 
       if (rawWinner === 'draw') {
@@ -154,14 +140,12 @@ function Recup() {
       } else {
         let winnerName = rawWinner;
         let loserName = 'Lawan';
-
         if (rawWinner === 'team1') { winnerName = t1; loserName = t2; }
         else if (rawWinner === 'team2') { winnerName = t2; loserName = t1; }
         else {
             if (rawWinner === t1.toLowerCase()) { winnerName = t1; loserName = t2; }
             else if (rawWinner === t2.toLowerCase()) { winnerName = t2; loserName = t1; }
         }
-
         const variantType = Math.floor(Math.random() * 3); 
         if (variantType === 0 && score && score !== "-" && score !== "") {
           const idx = Math.floor(Math.random() * NEWS_TEMPLATES.withScore.length);
@@ -179,12 +163,9 @@ function Recup() {
     
     finalNews = [...finalNews, ...resultNews];
 
-    // --- PROSES MATCH MENDATANG (Ambil yang PALING DEKAT waktunya) ---
-    // Sort Ascending (Waktu terkecil/terdekat di atas)
     const nearestUpcoming = upcomingMatches
       .sort((a, b) => parseDate(a.date, a.time) - parseDate(b.date, b.time));
 
-    // Isi slot berita sampai minimal 5 item
     if (finalNews.length < 6 && nearestUpcoming.length > 0) {
       const slotsNeeded = 6 - finalNews.length;
       const teasers = nearestUpcoming.slice(0, slotsNeeded).map(match => {
@@ -197,7 +178,6 @@ function Recup() {
       finalNews = [...finalNews, ...teasers];
     }
 
-    // Fallback
     if (finalNews.length === 0) {
       setNews(NEWS_TEMPLATES.staticTeasers);
     } else {
@@ -205,7 +185,7 @@ function Recup() {
     }
   };
 
-  // --- 3. FETCH DATA & SORTING UTAMA ---
+  // --- 3. FETCH DATA & SORTING (UPDATED FOR LIVE PRIORITY) ---
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
@@ -213,17 +193,43 @@ function Recup() {
         const data = await res.json();
         
         if (Array.isArray(data)) {
-          // --- SORTIR: TANGGAL AWAL & JAM AWAL (ASCENDING) ---
-          // Format dari API biasanya "D Month YYYY" (e.g., 7 January 2026) karena Apps Script
-          // Jadi kita gabung date + time string dan convert ke Date Object untuk komparasi akurat
-          const sortedData = data.sort((a, b) => {
-            const dateA = new Date(`${a.date} ${a.time}`);
-            const dateB = new Date(`${b.date} ${b.time}`);
-            return dateA - dateB; // Ascending: Tanggal lama di atas, tanggal baru di bawah
-          });
+          const parseDate = (d, t) => new Date(`${d} ${t}`);
+          const sortedData = data.sort((a, b) => parseDate(a.date, a.time) - parseDate(b.date, a.time)); // Global sort
           
           setMatchSchedules(sortedData);
           generateNewsFromData(sortedData); 
+
+          // --- GROUPING LOGIC ---
+          const groups = {};
+          sortedData.forEach(match => {
+            if (!groups[match.date]) {
+              groups[match.date] = [];
+            }
+            groups[match.date].push(match);
+          });
+
+          // --- SORTING WITHIN GROUPS: LIVE FIRST ---
+          Object.keys(groups).forEach(date => {
+            groups[date].sort((a, b) => {
+              const aLive = a.status?.toLowerCase() === 'live';
+              const bLive = b.status?.toLowerCase() === 'live';
+
+              // Priority: Live > Finished > Upcoming
+              if (aLive && !bLive) return -1;
+              if (!aLive && bLive) return 1;
+
+              // Secondary sort: Time
+              return a.time.localeCompare(b.time);
+            });
+          });
+
+          setGroupedSchedules(groups);
+
+          const dates = Object.keys(groups);
+          if (dates.length > 0 && !activeTabDate) {
+            setActiveTabDate(dates[0]);
+          }
+
         }
       } catch (err) { console.error("API Error", err); }
     };
@@ -266,6 +272,17 @@ function Recup() {
     return '';
   };
 
+  // Helper to parse scores for display
+  const parseScores = (scoreStr) => {
+    if(!scoreStr) return { t1: '-', t2: '-' };
+    // Assuming format "X-Y" or similar
+    const parts = scoreStr.split('-');
+    return {
+      t1: parts[0] || '',
+      t2: parts[1] || ''
+    };
+  };
+
   return (
     <>
       <DynamicIsland theme="greek" />
@@ -284,7 +301,6 @@ function Recup() {
             <div className="ticker-container-greek">
               {matchSchedules.length > 0 ? (
                 <div className="ticker-track-greek">
-                  {/* Duplikasi data untuk efek infinite scroll CSS */}
                   {[...matchSchedules, ...matchSchedules].map((m, i) => (
                     <div key={i} className={`ticker-item-greek ${getStatusClass(m)}`} onClick={() => { setIsScheduleOpen(true); openMatchDetails(m); }}>
                       <div className="ti-time-greek">{m.time}</div>
@@ -323,7 +339,7 @@ function Recup() {
             <img src="./assets/recup/building.webp" className="hero-building-greek" alt="Pantheon" />
           </div>
 
-          {/* === MOBILE NEWS WIDGET (Town Crier) === */}
+          {/* === MOBILE NEWS WIDGET === */}
           <div className="mobile-news-widget-greek">
             <div className="mn-inner-greek">
               <div className="mn-icon-greek"><GiScrollQuill /></div>
@@ -379,38 +395,80 @@ function Recup() {
         <div className="seal-inner-greek"><span className="seal-icon-greek"><GrSchedules /></span></div>
       </button>
 
-      {/* === MODAL LIST JADWAL === */}
+      {/* === MODAL LIST JADWAL (FULL SCREEN + LIVE PRIORITY + SCORES) === */}
       <div className={`parchment-modal-overlay-greek ${isScheduleOpen ? 'open-greek' : ''}`} onClick={() => setIsScheduleOpen(false)}>
         <div className="parchment-modal-greek" onClick={e => e.stopPropagation()}>
           <div className="pm-header-greek">
             <h2>TITAH RESMI</h2>
             <button className="pm-close-greek" onClick={() => setIsScheduleOpen(false)}><IoMdClose /></button>
           </div>
-          <div className="pm-subheader-greek">KLIK PERTANDINGAN UNTUK DETAIL</div>
           
+          {/* --- TABS --- */}
+          <div className="pm-tabs-container-greek">
+            {Object.keys(groupedSchedules).map((date, idx) => (
+              <button 
+                key={idx} 
+                className={`pm-tab-greek ${activeTabDate === date ? 'active' : ''}`}
+                onClick={() => setActiveTabDate(date)}
+              >
+                {date}
+              </button>
+            ))}
+          </div>
+
+          {/* --- INFINITE AUTO SCROLL BODY --- */}
           <div className="pm-body-greek">
-             {matchSchedules.map((match, idx) => (
-               <div key={idx} className={`decree-card-greek ${getStatusClass(match)}`} onClick={() => openMatchDetails(match)}>
-                  <div className="dc-left-greek">
-                    <span className="dc-time-greek">{match.time}</span>
-                    <span className="dc-cat-greek">{match.category}</span>
-                  </div>
-                  <div className="dc-center-greek">
-                    <div className="dc-team-greek">{match.team1}</div>
-                    <div className="dc-vs-greek">VS</div>
-                    <div className="dc-team-greek">{match.team2}</div>
-                    {getStatusClass(match) === 'finished' && (
-                        <div className="dc-result-greek">
-                           {match.winner === 'draw' ? 'SERI' : `Pemenang: ${match.winner === 'team1' ? match.team1 : match.winner === 'team2' ? match.team2 : match.winner}`} 
-                           {match.score ? ` (${match.score})` : ''}
+            {groupedSchedules[activeTabDate] && groupedSchedules[activeTabDate].length > 0 ? (
+              <div className="pm-infinite-scroll-wrapper-greek">
+                <div className="pm-infinite-track-greek">
+                  {[...groupedSchedules[activeTabDate], ...groupedSchedules[activeTabDate]].map((match, idx) => {
+                    const scores = parseScores(match.score);
+                    return (
+                      <div key={idx} className={`decree-card-greek ${getStatusClass(match)}`} onClick={() => openMatchDetails(match)}>
+                        {/* LEFT SIDE: INFO + SCORE T1 */}
+                        <div className="dc-left-greek">
+                          <div className="dc-top-info-greek">
+                            <span className="dc-time-greek">{match.time}</span>
+                            <span className="dc-cat-greek">{match.category}</span>
+                          </div>
+                          {(match.status?.toLowerCase() === 'live' || match.score) && (
+                            <span className={`dc-score-greek ${match.winner === 'team1' ? 'winner' : ''}`}>
+                              {scores.t1}
+                            </span>
+                          )}
                         </div>
-                    )}
-                  </div>
-                  <div className="dc-right-greek">
-                    {match.status?.toLowerCase() === 'live' ? <span className="live-tag-greek">LIVE</span> : <span className="date-tag-greek">{match.date}</span>}
-                  </div>
-               </div>
-             ))}
+
+                        {/* CENTER: TEAMS */}
+                        <div className="dc-center-greek">
+                          <div className="dc-team-greek">{match.team1}</div>
+                          <div className="dc-vs-greek">VS</div>
+                          <div className="dc-team-greek">{match.team2}</div>
+                        </div>
+
+                        {/* RIGHT SIDE: STATUS + SCORE T2 */}
+                        <div className="dc-right-greek">
+                          <div className="dc-top-info-greek">
+                            {match.status?.toLowerCase() === 'live' ? 
+                              <span className="live-tag-greek">LIVE</span> : 
+                              <span className="date-tag-greek">{match.date}</span>
+                            }
+                          </div>
+                          {(match.status?.toLowerCase() === 'live' || match.score) && (
+                            <span className={`dc-score-greek ${match.winner === 'team2' ? 'winner' : ''}`}>
+                              {scores.t2}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="loading-text-greek" style={{textAlign: 'center', marginTop: '20px'}}>
+                Tidak ada pertandingan pada tanggal ini.
+              </div>
+            )}
           </div>
         </div>
       </div>

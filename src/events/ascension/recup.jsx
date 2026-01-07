@@ -1,14 +1,13 @@
-import { useState, useEffect } from "react";
-import DynamicIsland from "../../components/DynamicI";
-import "./css/recup-scroll.css"; 
-import "./css/recup-column.css";
+import React, { useState, useEffect, useRef } from "react";
+import DynamicIsland from "../../components/DynamicI"; // Ensure this path is correct for your project
+import "./css/recup-scroll.css";
 
-// Icons
+// --- ICONS ---
 import { GrSchedules } from "react-icons/gr";
-import { IoMdClose } from "react-icons/io"; 
+import { IoMdClose } from "react-icons/io";
 import { GiScrollQuill, GiLaurels } from "react-icons/gi";
 
-// Sections
+// --- SECTIONS ---
 import RecupGuestStar from "./recup-jiband";
 import RecupCompetitions from "./recup-list-lomba";
 import RecupMerch from "./recup-merch";
@@ -17,114 +16,280 @@ import RecupSpecialPerformance from "./recup-tulus";
 
 const SCHEDULE_API = "https://script.google.com/macros/s/AKfycbxcR39xEqBTH8Rq8lAE2hLvZXKzwWOdG8LK0qqWm7m7kjyYlrm2QAHx2L2XxE-TRJQ3/exec";
 
-// --- TEMPLATES BERITA (No changes needed here, logic handled in generator) ---
+// --- BLACKLIST SYSTEM ---
+// Matches containing these team pairs will NOT generate news.
+// Comparison is case-insensitive and ignores whitespace order.
+const NEWS_BLACKLIST = [
+  { t1: "SF1 Loser", t2: "SF2 Loser" },
+  { t1: "SF1 Winner", t2: "SF2 Winner" },
+  { t1: "Tim A", t2: "Tim B" },
+  { t1: "Tim C", t2: "Tim D" },
+  { t1: "Tim E", t2: "Tim F" },
+  { t1: "Tim G", t2: "Tim H" },
+  { t1: "Tim 1", t2: "Tim 2" },
+  { t1: "Tim 3", t2: "Tim 4" },
+  { t1: "SMA Semifinal A Winner", t2: "SMA Semifinal B Winner" },
+  { t1: "SMA Semifinal C Winner", t2: "SMA Semifinal D Winner" },
+  { t1: "SMA Semifinal A Loser", t2: "SMA Semifinal B Loser" },
+  { t1: "SMA Finalist 1", t2: "SMA Finalist 2" },
+  { t1: "M2 Winner", t2: "M3 Winner" },
+  { t1: "M1 Winner", t2: "M3 Loser" }
+];
+
+// --- TEMPLATES BERITA ---
 const NEWS_TEMPLATES = {
   withScore: [
     (w, l, s) => `${w} melibas ${l} dengan skor telak ${s}!`,
     (w, l, s) => `Dominasi total! ${w} membungkam ${l} (${s}).`,
-    // ... (keep your existing templates)
-    (w, l, s) => `Kemenangan manis ${s} diraih oleh ${w}.`
+    (w, l, s) => `Kemenangan manis ${s} diraih oleh ${w}.`,
+    (w, l, s) => `${w} tampil perkasa dan mengalahkan ${l} ${s}.`,
+    (w, l, s) => `${l} tak berkutik saat ${w} menang ${s}.`,
+    (w, l, s) => `Pesta gol! ${w} unggul atas ${l} dengan skor ${s}.`,
+    (w, l, s) => `${w} memastikan kemenangan meyakinkan ${s} atas ${l}.`,
+    (w, l, s) => `Laga sepihak! ${w} terlalu kuat untuk ${l} (${s}).`,
+    (w, l, s) => `${w} menunjukkan kelasnya lewat kemenangan ${s}.`,
+    (w, l, s) => `Hasil akhir ${s}, ${w} keluar sebagai pemenang.`
   ],
+
   noScore: [
     (w, l) => `${w} berhasil mengamankan kemenangan atas ${l}!`,
-    // ... (keep your existing templates)
-    (w, l) => `Sorak sorai untuk ${w} yang berhasil menang!`
+    (w, l) => `Sorak sorai untuk ${w} yang berhasil menang!`,
+    (w, l) => `${w} tampil solid dan menundukkan ${l}.`,
+    (w, l) => `Kemenangan penting diraih ${w} atas ${l}.`,
+    (w, l) => `${l} harus mengakui keunggulan ${w}.`,
+    (w, l) => `${w} sukses mengunci kemenangan di laga ini.`,
+    (w, l) => `Langkah ${w} berlanjut setelah menang dari ${l}.`,
+    (w, l) => `${w} keluar sebagai pemenang dalam duel ini.`,
+    (w, l) => `Performa apik membawa ${w} menaklukkan ${l}.`,
+    (w, l) => `${w} memastikan hasil positif melawan ${l}.`
   ],
+
   lossPerspective: [
     (w, l, s) => `${l} harus mengakui keunggulan ${w}${s ? ` (${s})` : ''}.`,
-    // ... (keep your existing templates)
-    (w, l, s) => `Hari yang berat bagi ${l} setelah dikalahkan ${w}.`
+    (w, l, s) => `Hari yang berat bagi ${l} setelah dikalahkan ${w}.`,
+    (w, l, s) => `${l} gagal membendung permainan ${w}.`,
+    (w, l, s) => `Langkah ${l} terhenti oleh ${w}${s ? ` ${s}` : ''}.`,
+    (w, l, s) => `${l} pulang dengan hasil pahit melawan ${w}.`,
+    (w, l, s) => `Upaya ${l} belum cukup untuk menandingi ${w}.`,
+    (w, l, s) => `${l} harus menerima kekalahan dari ${w}.`,
+    (w, l, s) => `Bukan hari milik ${l} saat berhadapan dengan ${w}.`,
+    (w, l, s) => `${l} tak mampu keluar dari tekanan ${w}.`,
+    (w, l, s) => `Harapan ${l} pupus setelah tumbang dari ${w}.`
   ],
+
   draw: [
     (t1, t2, s) => `Sama kuat! ${t1} dan ${t2} berbagi angka ${s ? `(${s})` : ''}.`,
-    // ... (keep your existing templates)
-    (t1, t2, s) => `Kebuntuan tak terpecahkan antara ${t1} dan ${t2}.`
+    (t1, t2, s) => `Kebuntuan tak terpecahkan antara ${t1} dan ${t2}.`,
+    (t1, t2, s) => `Laga ketat berakhir imbang antara ${t1} dan ${t2}.`,
+    (t1, t2, s) => `${t1} dan ${t2} harus puas dengan hasil seri.`,
+    (t1, t2, s) => `Tak ada pemenang dalam duel ${t1} vs ${t2}.`,
+    (t1, t2, s) => `Pertandingan seimbang, ${t1} kontra ${t2} berakhir imbang.`,
+    (t1, t2, s) => `Skor akhir tak berubah, kedua tim berbagi poin.`,
+    (t1, t2, s) => `${t1} gagal mengunci kemenangan, ${t2} mampu menyamakan.`,
+    (t1, t2, s) => `Pertarungan sengit tanpa pemenang antara ${t1} dan ${t2}.`,
+    (t1, t2, s) => `Hasil seri menjadi akhir laga ${t1} melawan ${t2}.`
   ],
+
   upcoming: [
     (t1, t2) => `Nantikan laga panas antara ${t1} melawan ${t2}!`,
-    // ... (keep your existing templates)
-    (t1, t2) => `Prediksi skor Anda untuk ${t1} vs ${t2}?`
+    (t1, t2) => `Prediksi skor Anda untuk ${t1} vs ${t2}?`,
+    (t1, t2) => `${t1} dan ${t2} siap berduel.`,
+    (t1, t2) => `Laga seru akan terjadi: ${t1} vs ${t2}.`,
+    (t1, t2) => `Pertandingan yang dinanti: ${t1} menghadapi ${t2}.`,
+    (t1, t2) => `Siapakah yang akan unggul di ${t1} vs ${t2}?`,
+    (t1, t2) => `Semua mata tertuju pada duel ${t1} kontra ${t2}.`,
+    (t1, t2) => `Pertarungan besar segera hadir: ${t1} vs ${t2}.`,
+    (t1, t2) => `${t1} menantang ${t2} dalam laga penuh gengsi.`,
+    (t1, t2) => `Jangan lewatkan bentrokan ${t1} dan ${t2}!`
   ],
+
   staticTeasers: [
     { title: "Segera Dimulai", desc: "Upacara Pembukaan menanti pada 24 Januari." },
     { title: "Para Pejuang Siap", desc: "Tim-tim sedang mematangkan strategi mereka." },
     { title: "Ascension Cup", desc: "Siapa yang akan naik ke Olympus tahun ini?" },
     { title: "Catat Tanggalnya", desc: "24 Jan: Hari di mana bumi bergoncang." },
-    { title: "Bersiaplah", desc: "Siapkan yel-yel kalian. Pertandingan makin dekat." }
+    { title: "Bersiaplah", desc: "Siapkan yel-yel kalian. Pertandingan makin dekat." },
+    { title: "Menuju Puncak", desc: "Hanya yang terbaik yang akan bertahan." },
+    { title: "Hitung Mundur", desc: "Detik-detik menuju turnamen akbar." },
+    { title: "Arena Memanas", desc: "Atmosfer kompetisi semakin terasa." },
+    { title: "Waktu Penentuan", desc: "Tak ada ruang untuk kesalahan." },
+    { title: "Legenda Baru", desc: "Satu turnamen, satu sejarah baru." }
   ]
 };
 
+// --- HELPER COMPONENT: SMART TABS (UX IMPROVEMENT) ---
+const SmartTabs = ({ children, activeId, className = "", subTabs = false }) => {
+  const containerRef = useRef(null);
+  const [showLeft, setShowLeft] = useState(false);
+  const [showRight, setShowRight] = useState(false);
+
+  const checkScroll = () => {
+    const el = containerRef.current;
+    if (!el) return;
+    const isOverflowing = el.scrollWidth > el.clientWidth;
+    const atStart = Math.abs(el.scrollLeft) < 5;
+    const atEnd = Math.abs(el.scrollLeft + el.clientWidth - el.scrollWidth) < 5;
+    setShowLeft(isOverflowing && !atStart);
+    setShowRight(isOverflowing && !atEnd);
+  };
+
+  const scroll = (direction) => {
+    const el = containerRef.current;
+    if (!el) return;
+    const scrollAmount = 200; 
+    el.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    if (!activeId || !containerRef.current) return;
+    const activeButton = Array.from(containerRef.current.children).find(
+      child => child.getAttribute('data-id') === String(activeId)
+    );
+    if (activeButton) {
+      setTimeout(() => {
+        activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }, 50);
+    }
+  }, [activeId]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (el) {
+      el.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+      checkScroll(); 
+    }
+    return () => {
+      if (el) {
+        el.removeEventListener('scroll', checkScroll);
+        window.removeEventListener('resize', checkScroll);
+      }
+    };
+  }, [children]);
+
+  return (
+    <div className={`smart-tabs-wrapper ${subTabs ? 'sub' : ''} ${className}`}>
+      <div className={`smart-tabs-mask left ${showLeft ? '' : 'hidden'}`}></div>
+      <button className={`smart-tabs-arrow left ${showLeft ? 'visible' : ''}`} onClick={() => scroll('left')} aria-label="Scroll left">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <div ref={containerRef} className="smart-tabs-container">{children}</div>
+      <div className={`smart-tabs-mask right ${showRight ? '' : 'hidden'}`}></div>
+      <button className={`smart-tabs-arrow right ${showRight ? 'visible' : ''}`} onClick={() => scroll('right')} aria-label="Scroll right">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+    </div>
+  );
+};
+
+// --- MAIN COMPONENT ---
 function Recup() {
   const [matchSchedules, setMatchSchedules] = useState([]);
-  const [news, setNews] = useState(NEWS_TEMPLATES.staticTeasers); 
-  
-  // UI States
+  const [news, setNews] = useState(NEWS_TEMPLATES.staticTeasers);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [activeNewsIndex, setActiveNewsIndex] = useState(0);
-
-  // --- TABS STATE ---
   const [groupedSchedules, setGroupedSchedules] = useState({});
   const [activeTabDate, setActiveTabDate] = useState('');
-  const [activeTabComp, setActiveTabComp] = useState('ALL'); // New: Competition Filter
+  const [activeTabComp, setActiveTabComp] = useState('ALL');
 
-  // --- 1. SETUP AWAL ---
   useEffect(() => {
     document.title = "Ascension Cup - Official Website";
     const favicon = document.querySelector("link[rel='icon']");
     if (favicon) favicon.href = "/assets/recup/favicon-recucp.png";
   }, []);
 
-  // --- 2. LOGIC GENERATOR BERITA (Updated for new Columns) ---
+  // --- 2. LOGIC GENERATOR BERITA (UPDATED: Live, TBD/Upcoming, Finished + Blacklist) ---
   const generateNewsFromData = (data) => {
     let finalNews = [];
     const parseDate = (d, t) => new Date(`${d} ${t}`);
+    
+    // Helper function to check if a match is blacklisted
+    const isBlacklistedMatch = (match) => {
+      const m1 = match.team1.toLowerCase().trim();
+      const m2 = match.team2.toLowerCase().trim();
+      return NEWS_BLACKLIST.some(block => {
+        const b1 = block.t1.toLowerCase().trim();
+        const b2 = block.t2.toLowerCase().trim();
+        return (m1 === b1 && m2 === b2) || (m1 === b2 && m2 === b1);
+      });
+    };
 
-    // Helper to check if match has scores
-    const hasScore = (m) => (m.scoreteam1 !== "" && m.scoreteam2 !== "");
+    // Filter Matches: Live OR Finished OR Upcoming(TBD) BUT NOT Blacklisted
+    const relevantMatches = data.filter(m => {
+      if (isBlacklistedMatch(m)) return false;
 
-    const completedMatches = data.filter(m => {
-      const winner = m.winner ? m.winner.toLowerCase().trim() : '';
-      return (winner !== '' && winner !== 'tbd') || hasScore(m);
+      const isLive = m.status?.toLowerCase() === 'live';
+      const score1 = String(m.scoreteam1).trim();
+      const score2 = String(m.scoreteam2).trim();
+      const statusStr = String(m.status).toLowerCase().trim();
+      
+      // Determine Match Type
+      const isUpcoming = (score1 === '-' || score2 === '-' || statusStr === 'tbd');
+      const hasResults = (score1 !== '-' && score2 !== '-' && m.winner && m.winner !== 'tbd');
+
+      // Keep Live, Finished, or Upcoming matches
+      return isLive || hasResults || isUpcoming;
     });
 
-    const upcomingMatches = data.filter(m => {
-      const winner = m.winner ? m.winner.toLowerCase().trim() : '';
-      return (winner === '' || winner === 'tbd') && !hasScore(m);
+    // Sort Logic: Live -> Upcoming (Soonest) -> Finished (Most Recent)
+    const sortedMatches = relevantMatches.sort((a, b) => {
+      const aLive = a.status?.toLowerCase() === 'live';
+      const bLive = b.status?.toLowerCase() === 'live';
+      
+      // 1. Live matches always top
+      if (aLive && !bLive) return -1;
+      if (!aLive && bLive) return 1;
+
+      // Determine upcoming status for remaining
+      const aUpcoming = (String(a.scoreteam1) === '-' || String(a.scoreteam2) === '-' || String(a.status).toLowerCase() === 'tbd');
+      const bUpcoming = (String(b.scoreteam1) === '-' || String(b.scoreteam2) === '-' || String(b.status).toLowerCase() === 'tbd');
+
+      // 2. Upcoming matches next
+      if (aUpcoming && !bUpcoming) return -1;
+      if (!aUpcoming && bUpcoming) return 1;
+
+      // 3. Sorting within Upcoming: Sooner is better
+      if (aUpcoming && bUpcoming) {
+        return parseDate(a.date, a.time) - parseDate(b.date, b.time);
+      }
+
+      // 4. Sorting within Finished: Later (more recent) is better
+      return parseDate(b.date, b.time) - parseDate(a.date, a.time);
     });
 
-    const recentCompleted = completedMatches
-      .sort((a, b) => parseDate(b.date, b.time) - parseDate(a.date, a.time))
-      .slice(0, 5);
-
-    const resultNews = recentCompleted.map(match => {
+    // Map sorted matches to news
+    const resultNews = sortedMatches.map(match => {
       const rawWinner = match.winner ? match.winner.toLowerCase().trim() : '';
+      const scoreStr = `${match.scoreteam1}-${match.scoreteam2}`;
+      const t1 = match.team1; const t2 = match.team2;
       
-      // Construct score string (e.g., "2-1")
-      const scoreStr = hasScore(match) ? `${match.scoreteam1}-${match.scoreteam2}` : "";
-      
-      const t1 = match.team1;
-      const t2 = match.team2;
+      // Check specifically if this is an upcoming match for the news generator
+      const isMatchUpcoming = (String(match.scoreteam1) === '-' || String(match.scoreteam2) === '-' || String(match.status).toLowerCase() === 'tbd');
+
       let newsItem = {};
 
-      if (rawWinner === 'draw' || (hasScore(match) && match.scoreteam1 === match.scoreteam2)) {
+      if (isMatchUpcoming) {
+        // Generate Upcoming News
+        const idx = Math.floor(Math.random() * NEWS_TEMPLATES.upcoming.length);
+        newsItem = { title: "Segera Hadir", desc: NEWS_TEMPLATES.upcoming[idx](t1, t2) };
+      } else if (rawWinner === 'draw' || (match.scoreteam1 === match.scoreteam2)) {
+        // Draw News
         const idx = Math.floor(Math.random() * NEWS_TEMPLATES.draw.length);
         newsItem = { title: "Hasil Imbang", desc: NEWS_TEMPLATES.draw[idx](t1, t2, scoreStr) };
       } else {
+        // Winner News (Live or Finished)
         let winnerName = rawWinner;
         let loserName = 'Lawan';
-        
-        // Logic to determine winner name string
         if (rawWinner === 'team1') { winnerName = t1; loserName = t2; }
         else if (rawWinner === 'team2') { winnerName = t2; loserName = t1; }
         else {
-             // Fallback if script sends actual name or just tries to guess
-            if (rawWinner === t1.toLowerCase()) { winnerName = t1; loserName = t2; }
-            else if (rawWinner === t2.toLowerCase()) { winnerName = t2; loserName = t1; }
+          if (rawWinner === t1.toLowerCase()) { winnerName = t1; loserName = t2; }
+          else if (rawWinner === t2.toLowerCase()) { winnerName = t2; loserName = t1; }
         }
 
-        const variantType = Math.floor(Math.random() * 3); 
-        if (variantType === 0 && scoreStr) {
+        const variantType = Math.floor(Math.random() * 3);
+        if (variantType === 0) {
           const idx = Math.floor(Math.random() * NEWS_TEMPLATES.withScore.length);
           newsItem = { title: "Laporan Laga", desc: NEWS_TEMPLATES.withScore[idx](winnerName, loserName, scoreStr) };
         } else if (variantType === 1) {
@@ -137,23 +302,8 @@ function Recup() {
       }
       return newsItem;
     });
-    
+
     finalNews = [...finalNews, ...resultNews];
-
-    const nearestUpcoming = upcomingMatches
-      .sort((a, b) => parseDate(a.date, a.time) - parseDate(b.date, b.time));
-
-    if (finalNews.length < 6 && nearestUpcoming.length > 0) {
-      const slotsNeeded = 6 - finalNews.length;
-      const teasers = nearestUpcoming.slice(0, slotsNeeded).map(match => {
-        const idx = Math.floor(Math.random() * NEWS_TEMPLATES.upcoming.length);
-        return {
-          title: "Segera Hadir",
-          desc: NEWS_TEMPLATES.upcoming[idx](match.team1, match.team2)
-        };
-      });
-      finalNews = [...finalNews, ...teasers];
-    }
 
     if (finalNews.length === 0) {
       setNews(NEWS_TEMPLATES.staticTeasers);
@@ -168,13 +318,13 @@ function Recup() {
       try {
         const res = await fetch(SCHEDULE_API);
         const data = await res.json();
-        
+
         if (Array.isArray(data)) {
           const parseDate = (d, t) => new Date(`${d} ${t}`);
-          const sortedData = data.sort((a, b) => parseDate(a.date, a.time) - parseDate(b.date, a.time)); 
-          
+          const sortedData = data.sort((a, b) => parseDate(a.date, a.time) - parseDate(b.date, a.time));
+
           setMatchSchedules(sortedData);
-          generateNewsFromData(sortedData); 
+          generateNewsFromData(sortedData);
 
           // --- GROUPING LOGIC (By Date) ---
           const groups = {};
@@ -185,13 +335,24 @@ function Recup() {
             groups[match.date].push(match);
           });
 
-          // --- SORTING WITHIN GROUPS: LIVE FIRST ---
+          // --- SORTING WITHIN GROUPS ---
           Object.keys(groups).forEach(date => {
             groups[date].sort((a, b) => {
               const aLive = a.status?.toLowerCase() === 'live';
               const bLive = b.status?.toLowerCase() === 'live';
+              
+              const aUpcoming = (String(a.scoreteam1) === '-' || String(a.scoreteam2) === '-' || String(a.status).toLowerCase() === 'tbd');
+              const bUpcoming = (String(b.scoreteam1) === '-' || String(b.scoreteam2) === '-' || String(b.status).toLowerCase() === 'tbd');
+
+              // Live First
               if (aLive && !bLive) return -1;
               if (!aLive && bLive) return 1;
+
+              // Upcoming Second
+              if (aUpcoming && !bUpcoming) return -1;
+              if (!aUpcoming && bUpcoming) return 1;
+
+              // Then Time
               return a.time.localeCompare(b.time);
             });
           });
@@ -206,19 +367,20 @@ function Recup() {
         }
       } catch (err) { console.error("API Error", err); }
     };
-    
+
     fetchSchedule();
     const interval = setInterval(fetchSchedule, 30000);
     return () => clearInterval(interval);
+
   }, []);
 
   // --- 4. ANIMASI & HELPERS ---
   const handleMouseMove = (e) => {
-    if (window.innerWidth <= 768) return; 
+    if (window.innerWidth <= 768) return;
     const { clientX, clientY } = e;
     const moveX = clientX - window.innerWidth / 2;
     const moveY = clientY - window.innerHeight / 2;
-    
+
     const title = document.querySelector('.hero-title-greek');
     const clouds = document.querySelectorAll('.cloud-greek');
 
@@ -232,32 +394,30 @@ function Recup() {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveNewsIndex((prev) => (prev + 1) % news.length);
-    }, 5000); 
+    }, 5000);
     return () => clearInterval(interval);
   }, [news]);
 
   const openMatchDetails = (match) => setSelectedMatch(match);
   const closeMatchDetails = () => setSelectedMatch(null);
-  
+
   const getStatusClass = (match) => {
     if (match.status?.toLowerCase() === 'live') return 'live';
-    if ((match.winner && match.winner !== 'tbd') || (match.scoreteam1 && match.scoreteam2)) return 'finished';
+    if (String(match.scoreteam1) === '-' || String(match.scoreteam2) === '-' || String(match.status).toLowerCase() === 'tbd') return 'upcoming';
+    if ((match.scoreteam1 && match.scoreteam2) && match.scoreteam1 !== '-' && match.scoreteam2 !== '-') return 'finished';
     return '';
   };
 
-  // Helper to extract unique Competitions for the current Active Date
   const getCompetitionsForDate = (date) => {
     if (!groupedSchedules[date]) return [];
     const comps = groupedSchedules[date].map(m => m.competition);
-    return [...new Set(comps)]; // Return unique values
+    return [...new Set(comps)];
   };
 
-  // Get matches filtered by Date AND Competition
   const getFilteredMatches = () => {
     if (!activeTabDate || !groupedSchedules[activeTabDate]) return [];
-    
     const matchesOnDate = groupedSchedules[activeTabDate];
-    
+
     if (activeTabComp === 'ALL') {
       return matchesOnDate;
     }
@@ -294,7 +454,9 @@ function Recup() {
                         <span className="ti-team">{m.team2}</span>
                       </div>
                       <div className="ti-status-greek">
-                        {m.status?.toLowerCase() === 'live' ? '🔥 LIVE' : m.stage || m.category}
+                        {m.status?.toLowerCase() === 'live' ? '🔥 LIVE' : 
+                         (String(m.scoreteam1) === '-' || String(m.scoreteam2) === '-' || String(m.status).toLowerCase() === 'tbd') ? 'UPCOMING' : 
+                          m.stage || m.category}
                       </div>
                     </div>
                   ))}
@@ -309,8 +471,7 @@ function Recup() {
 
         {/* --- CENTER STAGE --- */}
         <section className="center-stage-greek">
-          {/* ... (Keep existing Cloud, Title, Building, Mobile News code same as before) ... */}
-           <div className="clouds-container-greek">
+          <div className="clouds-container-greek">
             <img src="./assets/recup/cloud.webp" className="cloud-greek c1-greek" alt="" />
             <img src="./assets/recup/cloud.webp" className="cloud-greek c2-greek" alt="" />
           </div>
@@ -324,7 +485,7 @@ function Recup() {
             <img src="./assets/recup/building.webp" className="hero-building-greek" alt="Pantheon" />
           </div>
 
-           {/* === MOBILE NEWS WIDGET === */}
+          {/* === MOBILE NEWS WIDGET === */}
           <div className="mobile-news-widget-greek">
             <div className="mn-inner-greek">
               <div className="mn-icon-greek"><GiScrollQuill /></div>
@@ -353,26 +514,25 @@ function Recup() {
 
         {/* --- RIGHT: NEWS --- */}
         <div className="sidebar-right-greek">
-           {/* ... (Keep existing News Widget code) ... */}
-           <div className="news-widget-greek">
-              <div className="news-header-greek">
-                <GiScrollQuill className="news-icon-greek" />
-                <span>KABAR OLYMPUS</span>
-              </div>
-              <div className="news-content-area-greek">
-                 {news.map((item, index) => (
-                   <div key={index} className={`news-item-greek ${index === activeNewsIndex ? 'active' : ''}`}>
-                     <h4 className="news-title-greek">{item.title}</h4>
-                     <p className="news-desc-greek">{item.desc}</p>
-                   </div>
-                 ))}
-              </div>
-              <div className="news-indicators-greek">
-                {news.map((_, i) => (
-                  <span key={i} className={`dot-greek ${i === activeNewsIndex ? 'active' : ''}`}></span>
-                ))}
-              </div>
-           </div>
+          <div className="news-widget-greek">
+            <div className="news-header-greek">
+              <GiScrollQuill className="news-icon-greek" />
+              <span>KABAR OLYMPUS</span>
+            </div>
+            <div className="news-content-area-greek">
+              {news.map((item, index) => (
+                <div key={index} className={`news-item-greek ${index === activeNewsIndex ? 'active' : ''}`}>
+                  <h4 className="news-title-greek">{item.title}</h4>
+                  <p className="news-desc-greek">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+            <div className="news-indicators-greek">
+              {news.map((_, i) => (
+                <span key={i} className={`dot-greek ${i === activeNewsIndex ? 'active' : ''}`}></span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -388,25 +548,25 @@ function Recup() {
             <h2>MATCH SCHEDULE</h2>
             <button className="pm-close-greek" onClick={() => setIsScheduleOpen(false)}><IoMdClose /></button>
           </div>
-          
-          {/* --- LEVEL 1 TABS: DATE --- */}
-          <div className="pm-tabs-container-greek">
+
+          <SmartTabs activeId={activeTabDate}>
             {Object.keys(groupedSchedules).map((date, idx) => (
-              <button 
-                key={idx} 
+              <button
+                key={idx}
                 className={`pm-tab-greek ${activeTabDate === date ? 'active' : ''}`}
                 onClick={() => { setActiveTabDate(date); setActiveTabComp('ALL'); }}
+                data-id={date}
               >
                 {date}
               </button>
             ))}
-          </div>
+          </SmartTabs>
 
-          {/* --- LEVEL 2 TABS: COMPETITION (DYNAMIC FROM SHEETS) --- */}
-          <div className="pm-subtabs-container-greek">
-            <button 
+          <SmartTabs activeId={activeTabComp} subTabs={true}>
+            <button
               className={`pm-subtab-greek ${activeTabComp === 'ALL' ? 'active' : ''}`}
               onClick={() => setActiveTabComp('ALL')}
+              data-id="ALL"
             >
               ALL MATCHES
             </button>
@@ -415,68 +575,66 @@ function Recup() {
                 key={idx}
                 className={`pm-subtab-greek ${activeTabComp === comp ? 'active' : ''}`}
                 onClick={() => setActiveTabComp(comp)}
+                data-id={comp}
               >
                 {comp}
               </button>
             ))}
-          </div>
+          </SmartTabs>
 
-          {/* --- INFINITE AUTO SCROLL BODY --- */}
           <div className="pm-body-greek">
             {filteredMatches.length > 0 ? (
               <div className="pm-infinite-scroll-wrapper-greek">
                 <div className="pm-infinite-track-greek">
                   {[...filteredMatches, ...filteredMatches].map((match, idx) => {
-                    // Check if scores exist
-                    const hasScore = (match.scoreteam1 !== "" && match.scoreteam2 !== "");
                     const isLive = match.status?.toLowerCase() === 'live';
+                    const isUpcoming = (String(match.scoreteam1) === '-' || String(match.scoreteam2) === '-' || String(match.status).toLowerCase() === 'tbd');
+                    const shouldShowScore = !isUpcoming && (isLive || (match.scoreteam1 && match.scoreteam2));
 
                     return (
                       <div key={idx} className={`decree-card-greek ${getStatusClass(match)}`} onClick={() => openMatchDetails(match)}>
-                        
-                        {/* LEFT: INFO + TEAM 1 SCORE */}
                         <div className="dc-left-greek">
                           <div className="dc-top-info-greek">
                             <span className="dc-time-greek">{match.time}</span>
-                            <span className="dc-cat-greek">{match.competition}</span> {/* Display Comp */}
+                            <span className="dc-cat-greek">{match.competition}</span>
                           </div>
-                          {(isLive || hasScore) && (
+                          {shouldShowScore && (
                             <span className={`dc-score-greek ${match.winner === 'team1' ? 'winner' : ''}`}>
-                              {match.scoreteam1 || '0'}
+                              {match.scoreteam1}
                             </span>
                           )}
                         </div>
 
-                        {/* CENTER: TEAMS + STAGE */}
                         <div className="dc-center-greek">
                           <div className="dc-team-greek">{match.team1}</div>
                           <div className="dc-vs-greek">VS</div>
                           <div className="dc-team-greek">{match.team2}</div>
-                          {match.stage && <div className="dc-stage-greek">{match.stage}</div>} {/* Display Stage */}
+                          {match.stage && <div className="dc-stage-greek">{match.stage}</div>}
                         </div>
 
-                        {/* RIGHT: STATUS + TEAM 2 SCORE */}
                         <div className="dc-right-greek">
                           <div className="dc-top-info-greek">
                             {isLive ? 
                               <span className="live-tag-greek">LIVE</span> : 
-                              <span className="date-tag-greek">{match.date}</span>
+                              (isUpcoming ? 
+                                <span className="date-tag-greek" style={{color:'#d4af37', fontWeight:'bold'}}>UPCOMING</span> : 
+                                <span className="date-tag-greek">{match.date}</span>
+                              )
                             }
                           </div>
-                          {(isLive || hasScore) && (
+                          {shouldShowScore && (
                             <span className={`dc-score-greek ${match.winner === 'team2' ? 'winner' : ''}`}>
-                              {match.scoreteam2 || '0'}
+                              {match.scoreteam2}
                             </span>
                           )}
                         </div>
-
                       </div>
                     );
                   })}
                 </div>
               </div>
             ) : (
-              <div className="loading-text-greek" style={{textAlign: 'center', marginTop: '20px'}}>
+              <div className="loading-text-greek" style={{ textAlign: 'center', marginTop: '20px' }}>
                 Tidak ada pertandingan untuk kategori ini.
               </div>
             )}
@@ -484,7 +642,7 @@ function Recup() {
         </div>
       </div>
 
-      {/* === POPUP DETAIL MATCH (UPDATED) === */}
+      {/* === POPUP DETAIL MATCH === */}
       {selectedMatch && (
         <div className="match-detail-overlay-greek" onClick={closeMatchDetails}>
           <div className="match-detail-scroll-greek" onClick={(e) => e.stopPropagation()}>
@@ -492,16 +650,16 @@ function Recup() {
             <div className="md-header-greek">
               <GiLaurels className="laurels-left" /><span>DETAIL LAGA</span><GiLaurels className="laurels-right" />
             </div>
-            
+
             <div className="md-status-pill-greek">
-              {selectedMatch.status === 'live' ? '🔥 SEDANG BERLANGSUNG' : (getStatusClass(selectedMatch) === 'finished' ? 'SELESAI' : 'AKAN DATANG')}
+              {selectedMatch.status === 'live' ? '🔥 SEDANG BERLANGSUNG' : 
+               (String(selectedMatch.scoreteam1) === '-' || String(selectedMatch.scoreteam2) === '-' || String(selectedMatch.status).toLowerCase() === 'tbd' ? 'AKAN DATANG' : 
+               (getStatusClass(selectedMatch) === 'finished' ? 'SELESAI' : 'TBD'))}
             </div>
 
-            {/* STAGE INFO */}
             {selectedMatch.stage && <div className="md-stage-title-greek">{selectedMatch.stage}</div>}
 
             <div className="md-versus-section-greek">
-              {/* TEAM 1 */}
               <div className="md-team-block">
                 <div className={`md-team-logo-placeholder ${selectedMatch.winner === 'team1' || selectedMatch.winner === selectedMatch.team1.toLowerCase() ? 'winner-glow' : ''}`}>
                   {selectedMatch.team1.charAt(0)}
@@ -509,16 +667,14 @@ function Recup() {
                 <div className="md-team-name">{selectedMatch.team1}</div>
                 {(selectedMatch.winner === 'team1' || selectedMatch.winner === selectedMatch.team1.toLowerCase()) && <span className="winner-label">MENANG</span>}
               </div>
-              
-              {/* SCORE / VS */}
+
               <div className="md-vs-divider">
-                {(selectedMatch.scoreteam1 && selectedMatch.scoreteam2) ? 
-                  <span className="score-big">{selectedMatch.scoreteam1} - {selectedMatch.scoreteam2}</span> : 
+                {(selectedMatch.scoreteam1 && selectedMatch.scoreteam2 && selectedMatch.scoreteam1 !== '-' && selectedMatch.scoreteam2 !== '-') ?
+                  <span className="score-big">{selectedMatch.scoreteam1} - {selectedMatch.scoreteam2}</span> :
                   <span>VS</span>
                 }
               </div>
-              
-              {/* TEAM 2 */}
+
               <div className="md-team-block">
                 <div className={`md-team-logo-placeholder ${selectedMatch.winner === 'team2' || selectedMatch.winner === selectedMatch.team2.toLowerCase() ? 'winner-glow' : ''}`}>
                   {selectedMatch.team2.charAt(0)}
@@ -527,9 +683,9 @@ function Recup() {
                 {(selectedMatch.winner === 'team2' || selectedMatch.winner === selectedMatch.team2.toLowerCase()) && <span className="winner-label">MENANG</span>}
               </div>
             </div>
-            
+
             {selectedMatch.winner === 'draw' && <div className="md-draw-text">PERTANDINGAN SERI</div>}
-            
+
             <div className="md-info-grid-greek">
               <div className="md-info-item"><span className="label">KOMPETISI</span><span className="value">{selectedMatch.competition}</span></div>
               <div className="md-info-item"><span className="label">KATEGORI</span><span className="value">{selectedMatch.category}</span></div>

@@ -992,3 +992,204 @@ DETAILED MATCH POPUP (FIXED DESIGN)
     font-size: 2.5rem;
   }
 }
+
+/* =========================================
+   MOBILE OPTIMIZATIONS (RESPONSIVE FIXES)
+   ========================================= */
+
+@media (max-width: 768px) {
+
+  /* --- 1. HERO SECTION ADJUSTMENTS --- */
+  .hero-title-greek {
+    width: 90vw;
+    translate: 0; /* Remove desktop offset */
+  }
+  
+  .hero-building-greek {
+    width: 120%;
+    margin-left: -10%; /* Center the overflow */
+    max-height: 40vh;
+  }
+
+  /* --- 2. SCHEDULE MODAL (Bottom Sheet Style) --- */
+  .parchment-modal-overlay-greek {
+    align-items: flex-end; /* Stick to bottom */
+    padding: 0;
+  }
+
+  .parchment-modal-greek {
+    width: 100%;
+    max-width: 100%;
+    height: 85vh; /* Cover 85% of screen */
+    border-radius: 20px 20px 0 0; /* Rounded top only */
+    border: none;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+    transform: translateY(100%); /* Start hidden down */
+  }
+
+  .parchment-modal-overlay-greek.open-greek .parchment-modal-greek {
+    transform: translateY(0);
+  }
+
+  .pm-header-greek {
+    padding: 12px 15px;
+  }
+  
+  .pm-header-greek h2 {
+    font-size: 1rem;
+  }
+
+  /* --- 3. SCHEDULE LIST ITEMS (Compact Mode) --- */
+  .pm-infinite-track-greek {
+    padding: 20px 10px; /* Reduce side padding */
+    gap: 12px;
+  }
+
+  .decree-card-greek {
+    padding: 12px 10px;
+    min-height: auto;
+    /* Grid layout for precise control */
+    display: grid;
+    grid-template-columns: 0.8fr 1.2fr 0.8fr;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* Left Side (Time/Score 1) */
+  .dc-left-greek {
+    width: auto;
+    align-items: flex-start; /* Align left */
+    text-align: left;
+  }
+
+  /* Right Side (Date/Score 2) */
+  .dc-right-greek {
+    width: auto;
+    align-items: flex-end; /* Align right */
+    text-align: right;
+  }
+
+  /* Scores - Drastically Smaller */
+  .dc-score-greek {
+    font-size: 1.6rem; 
+    font-weight: 800;
+  }
+
+  /* Team Names */
+  .dc-center-greek {
+    padding: 0 5px;
+    overflow: hidden; /* Handle long text */
+  }
+
+  .dc-team-greek {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add ... if text is too long */
+    max-width: 100%;
+  }
+
+  .dc-vs-greek {
+    font-size: 0.7rem;
+    margin: 2px 0;
+    opacity: 0.7;
+  }
+
+  .dc-time-greek, .dc-cat-greek { font-size: 0.7rem; }
+  .live-tag-greek { font-size: 0.6rem; padding: 2px 8px; }
+
+  /* --- 4. MATCH DETAIL POPUP (Cleaned Up) --- */
+  .match-detail-scroll-greek {
+    max-height: 90vh;
+    border-radius: 16px;
+    width: 95vw;
+    border: 2px solid var(--ink-greek); /* Restore border on mobile */
+  }
+
+  .md-content-wrapper {
+    padding: 20px 15px;
+    overflow-y: auto;
+  }
+
+  .md-header-greek {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+  }
+  
+  .laurels-left, .laurels-right { font-size: 1.4rem; }
+
+  /* Compact Scoreboard Row (Don't stack vertically) */
+  .md-scoreboard-container {
+    flex-direction: row; /* Keep horizontal */
+    padding: 15px 5px;
+    gap: 0;
+    margin-bottom: 20px;
+    border-radius: 10px;
+  }
+
+  .md-team-block {
+    width: 35%; /* Force width */
+  }
+
+  /* Shrink Logos */
+  .md-team-logo-placeholder {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    border-width: 2px;
+    margin-bottom: 8px;
+  }
+
+  .md-team-name {
+    font-size: 0.85rem;
+    line-height: 1.1;
+    word-wrap: break-word; /* Allow wrapping */
+  }
+
+  /* Winner Label */
+  .winner-label {
+    font-size: 0.55rem;
+    padding: 2px 6px;
+    margin-top: 4px;
+  }
+
+  /* Center Score Area */
+  .md-score-divider {
+    width: 30%;
+    margin: 0;
+  }
+
+  .score-big {
+    font-size: 1.8rem; /* Fit in row */
+  }
+  
+  .score-separator {
+    font-size: 1rem;
+  }
+
+  .vs-text-big {
+    font-size: 1.5rem;
+  }
+
+  /* Info Grid */
+  .md-info-grid-greek {
+    grid-template-columns: 1fr; /* Stack info items */
+    gap: 10px;
+    padding: 15px;
+    text-align: left;
+  }
+
+  .md-info-item {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed #eee;
+    padding-bottom: 5px;
+  }
+
+  .md-info-item:last-child { border-bottom: none; }
+  
+  .md-info-item .label { font-size: 0.75rem; }
+  .md-info-item .value { font-size: 0.9rem; }
+}

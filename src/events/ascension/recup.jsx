@@ -207,15 +207,77 @@ function Recup() {
     if (favicon) favicon.href = "/assets/recup/favicon-recucp.png";
   }, []);
 
-  // --- 2. LOGIC GENERATOR BERITA ---
+  // --- 2. LOGIC GENERATOR BERITA (TIME SENSITIVE) ---
   const generateNewsFromData = (data) => {
     let finalNews = [];
-    const parseDate = (d, t) => new Date(`${d} ${t}`);
     
-    // Filter Matches for News (Hide Blacklisted)
+    // --- A. GET WIB TIME ---
+    const getWIBDate = () => {
+      const now = new Date();
+      // Use Intl API to get accurate time for Asia/Jakarta timezone
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Jakarta',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric'
+      });
+      return new Date(formatter.format(now));
+    };
+
+    const wibNow = getWIBDate();
+    const wibHour = wibNow.getHours();
+
+    // --- B. DEFINE DATE BOUNDARIES ---
+    // Normalize dates to midnight for accurate comparison
+    const getMidnight = (date) => {
+      const d = new Date(date);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    };
+
+    const todayMidnight = getMidnight(wibNow);
+    const yesterdayMidnight = new Date(todayMidnight);
+    yesterdayMidnight.setDate(yesterdayMidnight.getDate() - 1);
+    
+    const tomorrowMidnight = new Date(todayMidnight);
+    tomorrowMidnight.setDate(tomorrowMidnight.getDate() + 1);
+
+    let dateStart, dateEnd;
+
+    // LOGIC:
+    // Before 18:00 WIB -> Show Yesterday + Today
+    // 18:00+ WIB      -> Show Today + Tomorrow
+    if (wibHour < 18) {
+      dateStart = yesterdayMidnight;
+      dateEnd = todayMidnight;
+    } else {
+      dateStart = todayMidnight;
+      dateEnd = tomorrowMidnight;
+    }
+
+    const isDateInRange = (matchDateString) => {
+      // Attempt to parse the date string from API
+      // Assuming API returns YYYY-MM-DD or similar parsable string
+      const mDate = new Date(matchDateString);
+      if (isNaN(mDate)) return false;
+      
+      const mMidnight = getMidnight(mDate);
+      // Check if match date is Start Date OR End Date
+      return mMidnight.getTime() === dateStart.getTime() || mMidnight.getTime() === dateEnd.getTime();
+    };
+
+    // --- C. FILTER MATCHES ---
     const relevantMatches = data.filter(m => {
+      // 1. Blacklist check
       if (checkIsBlacklisted(m)) return false; 
 
+      // 2. Time Window check
+      if (!isDateInRange(m.date)) return false;
+
+      // 3. Status Check (Live, Upcoming, Finished)
       const isLive = m.status?.toLowerCase() === 'live';
       const score1 = String(m.scoreteam1).trim();
       const score2 = String(m.scoreteam2).trim();
@@ -227,7 +289,8 @@ function Recup() {
       return isLive || hasResults || isUpcoming;
     });
 
-    // Sort Logic
+    // --- D. SORT & GENERATE TEMPLATES ---
+    // Sort: Live > Upcoming > Finished
     const sortedMatches = relevantMatches.sort((a, b) => {
       const aLive = a.status?.toLowerCase() === 'live';
       const bLive = b.status?.toLowerCase() === 'live';
@@ -241,10 +304,9 @@ function Recup() {
       if (aUpcoming && !bUpcoming) return -1;
       if (!aUpcoming && bUpcoming) return 1;
 
-      if (aUpcoming && bUpcoming) {
-        return parseDate(a.date, a.time) - parseDate(b.date, b.time);
-      }
-      return parseDate(b.date, b.time) - parseDate(a.date, a.time);
+      // Secondary sort by time for same status
+      const parseTime = (d, t) => new Date(`${d} ${t}`);
+      return parseTime(a.date, a.time) - parseTime(b.date, b.time);
     });
 
     const resultNews = sortedMatches.map(match => {
@@ -254,7 +316,6 @@ function Recup() {
       const isMatchUpcoming = (String(match.scoreteam1) === '-' || String(match.scoreteam2) === '-' || String(match.status).toLowerCase() === 'tbd');
 
       let newsItem = {};
-
       if (isMatchUpcoming) {
         const idx = Math.floor(Math.random() * NEWS_TEMPLATES.upcoming.length);
         newsItem = { title: "Segera Hadir", desc: NEWS_TEMPLATES.upcoming[idx](t1, t2) };
@@ -308,7 +369,6 @@ function Recup() {
           setMatchSchedules(sortedData);
           generateNewsFromData(sortedData);
 
-          // --- GROUPING LOGIC (Group by Date) ---
           const groups = {};
           sortedData.forEach(match => {
             if (!groups[match.date]) {
@@ -317,28 +377,22 @@ function Recup() {
             groups[match.date].push(match);
           });
 
-          // --- SORTING WITHIN GROUPS ---
           Object.keys(groups).forEach(date => {
             groups[date].sort((a, b) => {
               const aLive = a.status?.toLowerCase() === 'live';
               const bLive = b.status?.toLowerCase() === 'live';
-              
               const aUpcoming = (String(a.scoreteam1) === '-' || String(a.scoreteam2) === '-' || String(a.status).toLowerCase() === 'tbd');
               const bUpcoming = (String(b.scoreteam1) === '-' || String(b.scoreteam2) === '-' || String(b.status).toLowerCase() === 'tbd');
-
               if (aLive && !bLive) return -1;
               if (!aLive && bLive) return 1;
-
               if (aUpcoming && !bUpcoming) return -1;
               if (!aUpcoming && bUpcoming) return 1;
-
               return a.time.localeCompare(b.time);
             });
           });
 
           setGroupedSchedules(groups);
 
-          // Only set initial date if none exists, preserving user selection on refresh
           setActiveTabDate(prev => {
             if (!prev) {
               const dates = Object.keys(groups);
@@ -399,10 +453,7 @@ function Recup() {
   const getFilteredMatches = () => {
     if (!activeTabDate || !groupedSchedules[activeTabDate]) return [];
     const matchesOnDate = groupedSchedules[activeTabDate];
-
-    if (activeTabComp === 'ALL') {
-      return matchesOnDate;
-    }
+    if (activeTabComp === 'ALL') return matchesOnDate;
     return matchesOnDate.filter(m => m.competition === activeTabComp);
   };
 
@@ -412,12 +463,8 @@ function Recup() {
   
   const availableComps = getCompetitionsForDate(activeTabDate);
 
-  // --- STYLE ANIMATION (INFINITE SCROLL) ---
-  // Logic: Calculate duration based on match count, but do not reset randomly.
-  const animationDurationStyle = {
-    animationDuration: `${Math.max(visibleMatches.length * 3, 5)}s`
-  };
-
+  // --- STYLE ANIMATION (OPTIMIZED MARQUEE) ---
+  
   return (
     <>
       <DynamicIsland theme="greek" />
@@ -436,7 +483,6 @@ function Recup() {
             <div className="ticker-container-greek">
               {matchSchedules.length > 0 ? (
                 <div className="ticker-track-greek">
-                  {/* Filter ticker items visually here */}
                   {[...matchSchedules, ...matchSchedules]
                     .filter(m => !checkIsBlacklisted(m))
                     .map((m, i) => (
@@ -535,7 +581,7 @@ function Recup() {
         <div className="seal-inner-greek"><span className="seal-icon-greek"><GrSchedules /></span></div>
       </button>
 
-      {/* === MODAL LIST JADWAL === */}
+      {/* === MODAL LIST JADWAL (OPTIMIZED) === */}
       <div className={`parchment-modal-overlay-greek ${isScheduleOpen ? 'open-greek' : ''}`} onClick={() => setIsScheduleOpen(false)}>
         <div className="parchment-modal-greek" onClick={e => e.stopPropagation()}>
           <div className="pm-header-greek">
@@ -579,11 +625,8 @@ function Recup() {
           <div className="pm-body-greek">
             {visibleMatches.length > 0 ? (
               <div className="pm-infinite-scroll-wrapper-greek">
-                <div 
-                  className="pm-infinite-track-greek" 
-                  // Removed key={activeTabComp} to prevent animation reset/jumping
-                  style={animationDurationStyle}
-                >
+                <div className="pm-infinite-track-greek">
+                  {/* DUPLICATE LIST FOR SEAMLESS LOOP */}
                   {[...visibleMatches, ...visibleMatches].map((match, idx) => {
                     const isLive = match.status?.toLowerCase() === 'live';
                     const isUpcoming = (String(match.scoreteam1) === '-' || String(match.scoreteam2) === '-' || String(match.status).toLowerCase() === 'tbd');
@@ -640,57 +683,80 @@ function Recup() {
         </div>
       </div>
 
-      {/* === POPUP DETAIL MATCH === */}
+      {/* === POPUP DETAIL MATCH (REDESIGNED) === */}
       {selectedMatch && (
         <div className="match-detail-overlay-greek" onClick={closeMatchDetails}>
           <div className="match-detail-scroll-greek" onClick={(e) => e.stopPropagation()}>
             <button className="md-close-btn-greek" onClick={closeMatchDetails}><IoMdClose /></button>
-            <div className="md-header-greek">
-              <GiLaurels className="laurels-left" /><span>DETAIL LAGA</span><GiLaurels className="laurels-right" />
-            </div>
+            
+            <div className="md-content-wrapper">
+              
+              {/* HEADER SECTION */}
+              <div className="md-header-greek">
+                <GiLaurels className="laurels-left" />
+                <span className="md-title-text">DETAIL LAGA</span>
+                <GiLaurels className="laurels-right" />
+              </div>
 
-            <div className="md-status-pill-greek">
-              {selectedMatch.status === 'live' ? '🔥 SEDANG BERLANGSUNG' : 
-               (String(selectedMatch.scoreteam1) === '-' || String(selectedMatch.scoreteam2) === '-' || String(selectedMatch.status).toLowerCase() === 'tbd' ? 'AKAN DATANG' : 
-               (getStatusClass(selectedMatch) === 'finished' ? 'SELESAI' : 'TBD'))}
-            </div>
+              {/* STATUS & STAGE */}
+              <div className="md-status-pill-greek">
+                {selectedMatch.status === 'live' ? '🔥 SEDANG BERLANGSUNG' : 
+                 (String(selectedMatch.scoreteam1) === '-' || String(selectedMatch.scoreteam2) === '-' || String(selectedMatch.status).toLowerCase() === 'tbd' ? 'AKAN DATANG' : 
+                 (getStatusClass(selectedMatch) === 'finished' ? 'SELESAI' : 'TBD'))}
+              </div>
 
-            {selectedMatch.stage && <div className="md-stage-title-greek">{selectedMatch.stage}</div>}
+              {selectedMatch.stage && <div className="md-stage-title-greek">{selectedMatch.stage}</div>}
 
-            <div className="md-versus-section-greek">
-              <div className="md-team-block">
-                <div className={`md-team-logo-placeholder ${selectedMatch.winner === 'team1' || selectedMatch.winner === selectedMatch.team1.toLowerCase() ? 'winner-glow' : ''}`}>
-                  {selectedMatch.team1.charAt(0)}
+              {/* SCOREBOARD SECTION */}
+              <div className="md-scoreboard-container">
+                {/* Team 1 */}
+                <div className="md-team-block">
+                  <div className="md-team-info">
+                    <div className={`md-team-logo-placeholder ${selectedMatch.winner === 'team1' || selectedMatch.winner === selectedMatch.team1.toLowerCase() ? 'winner-glow' : ''}`}>
+                      {selectedMatch.team1.charAt(0)}
+                    </div>
+                    <div className="md-team-name">{selectedMatch.team1}</div>
+                  </div>
+                  {(selectedMatch.winner === 'team1' || selectedMatch.winner === selectedMatch.team1.toLowerCase()) && <span className="winner-label">WINNER</span>}
                 </div>
-                <div className="md-team-name">{selectedMatch.team1}</div>
-                {(selectedMatch.winner === 'team1' || selectedMatch.winner === selectedMatch.team1.toLowerCase()) && <span className="winner-label">MENANG</span>}
-              </div>
 
-              <div className="md-vs-divider">
-                {(selectedMatch.scoreteam1 && selectedMatch.scoreteam2 && selectedMatch.scoreteam1 !== '-' && selectedMatch.scoreteam2 !== '-') ?
-                  <span className="score-big">{selectedMatch.scoreteam1} - {selectedMatch.scoreteam2}</span> :
-                  <span>VS</span>
-                }
-              </div>
-
-              <div className="md-team-block">
-                <div className={`md-team-logo-placeholder ${selectedMatch.winner === 'team2' || selectedMatch.winner === selectedMatch.team2.toLowerCase() ? 'winner-glow' : ''}`}>
-                  {selectedMatch.team2.charAt(0)}
+                {/* VS / Score */}
+                <div className="md-score-divider">
+                  {(selectedMatch.scoreteam1 && selectedMatch.scoreteam2 && selectedMatch.scoreteam1 !== '-' && selectedMatch.scoreteam2 !== '-') ?
+                    <div className="md-final-score">
+                      <span className="score-big">{selectedMatch.scoreteam1}</span>
+                      <span className="score-separator">-</span>
+                      <span className="score-big">{selectedMatch.scoreteam2}</span>
+                    </div> :
+                    <span className="vs-text-big">VS</span>
+                  }
                 </div>
-                <div className="md-team-name">{selectedMatch.team2}</div>
-                {(selectedMatch.winner === 'team2' || selectedMatch.winner === selectedMatch.team2.toLowerCase()) && <span className="winner-label">MENANG</span>}
+
+                {/* Team 2 */}
+                <div className="md-team-block">
+                  <div className="md-team-info">
+                    <div className={`md-team-logo-placeholder ${selectedMatch.winner === 'team2' || selectedMatch.winner === selectedMatch.team2.toLowerCase() ? 'winner-glow' : ''}`}>
+                      {selectedMatch.team2.charAt(0)}
+                    </div>
+                    <div className="md-team-name">{selectedMatch.team2}</div>
+                  </div>
+                  {(selectedMatch.winner === 'team2' || selectedMatch.winner === selectedMatch.team2.toLowerCase()) && <span className="winner-label">WINNER</span>}
+                </div>
               </div>
-            </div>
 
-            {selectedMatch.winner === 'draw' && <div className="md-draw-text">PERTANDINGAN SERI</div>}
+              {selectedMatch.winner === 'draw' && <div className="md-draw-text">PERTANDINGAN SERI</div>}
 
-            <div className="md-info-grid-greek">
-              <div className="md-info-item"><span className="label">KOMPETISI</span><span className="value">{selectedMatch.competition}</span></div>
-              <div className="md-info-item"><span className="label">KATEGORI</span><span className="value">{selectedMatch.category}</span></div>
-              <div className="md-info-item"><span className="label">TANGGAL</span><span className="value">{selectedMatch.date}</span></div>
-              <div className="md-info-item"><span className="label">PUKUL</span><span className="value">{selectedMatch.time} WIB</span></div>
+              {/* INFO GRID */}
+              <div className="md-info-grid-greek">
+                <div className="md-info-item"><span className="label">KOMPETISI</span><span className="value">{selectedMatch.competition}</span></div>
+                <div className="md-info-item"><span className="label">KATEGORI</span><span className="value">{selectedMatch.category}</span></div>
+                <div className="md-info-item"><span className="label">TANGGAL</span><span className="value">{selectedMatch.date}</span></div>
+                <div className="md-info-item"><span className="label">PUKUL</span><span className="value">{selectedMatch.time} WIB</span></div>
+              </div>
+
+              {/* FOOTER */}
+              <div className="md-footer-greek">Semoga tim terbaik yang menang.</div>
             </div>
-            <div className="md-footer-greek">Semoga tim terbaik yang menang.</div>
           </div>
         </div>
       )}

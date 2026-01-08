@@ -254,7 +254,7 @@ RIGHT SIDEBAR: NEWS WIDGET
 ========================================= */
 .sidebar-right-greek {
   position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
-  z-index: 999; width: 260px;
+  z-index: 5; width: 260px;
 }
 
 .news-widget-greek {

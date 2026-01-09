@@ -612,14 +612,12 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
   animation-play-state: paused;
 }
 
-/* This keyframe moves the container up by 50% of its height. 
-   Since the content is doubled, it creates a seamless loop. */
 @keyframes verticalMarquee {
   0% { transform: translateY(0); }
   100% { transform: translateY(-50%); }
 }
 
-/* Decree Cards (Matches) - BIGGER TEXT */
+/* Decree Cards (Matches) */
 .decree-card-greek {
   background: #fff; 
   border: 2px solid #d4c5b0;
@@ -689,7 +687,7 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
   font-weight: 700; 
 }
 
-/* SCORE STYLES - MUCH BIGGER */
+/* SCORE STYLES */
 .dc-score-greek {
   font-family: var(--font-heading-greek);
   font-weight: 900;
@@ -776,6 +774,13 @@ DESKTOP SPLIT VIEW (CLEAN)
   min-width: 0; 
 }
 
+.pm-column-greek.full-width {
+  /* When there are no live matches, this column takes full width */
+  max-width: 800px; 
+  margin: 0 auto;
+  width: 100%;
+}
+
 .pm-col-header-greek {
   padding: 15px 0;
   background: transparent;
@@ -791,6 +796,11 @@ DESKTOP SPLIT VIEW (CLEAN)
   position: sticky;
   top: 0;
   z-index: 10;
+  justify-content: center; /* Center title when full width */
+}
+
+.pm-column-greek:not(.full-width) .pm-col-header-greek {
+  justify-content: flex-start; /* Align left when in split view */
 }
 
 .pm-header-dot {
@@ -802,6 +812,7 @@ DESKTOP SPLIT VIEW (CLEAN)
 
 .pm-header-dot.live { background-color: var(--red-seal-greek); box-shadow: 0 0 8px rgba(138, 42, 42, 0.4); }
 .pm-header-dot.upcoming { background-color: var(--gold-greek); }
+.pm-header-dot.all { background-color: var(--ink-greek); }
 
 .pm-col-scroll-area-greek {
   flex: 1;
@@ -822,7 +833,6 @@ DESKTOP SPLIT VIEW (CLEAN)
   animation: verticalMarqueeSlow 60s linear infinite;
 }
 
-/* Pause animation on hover for usability */
 .pm-col-scroll-area-greek:hover .pm-track-greek {
   animation-play-state: paused;
 }
@@ -837,14 +847,6 @@ DESKTOP SPLIT VIEW (CLEAN)
   background: linear-gradient(to bottom, transparent, var(--gold-greek), transparent);
   flex-shrink: 0;
   margin: 0 10px;
-}
-
-.pm-empty-state-greek {
-  text-align: center;
-  color: #999;
-  font-style: italic;
-  padding: 40px 0;
-  font-size: 0.9rem;
 }
 
 /* =========================================
@@ -912,7 +914,6 @@ DETAILED MATCH POPUP
   letter-spacing: 3px;
 }
 
-/* SCOREBOARD CONTAINER - FIXED LAYOUT */
 .md-scoreboard-container {
   display: flex;
   align-items: center;
@@ -977,7 +978,6 @@ DETAILED MATCH POPUP
   box-shadow: 0 2px 5px rgba(197, 160, 89, 0.4);
 }
 
-/* CENTER VS / SCORE */
 .md-score-divider {
   width: 80px; 
   text-align: center; 
@@ -1090,7 +1090,7 @@ DETAILED MATCH POPUP
 @media (min-width: 1024px) {
   /* --- DESKTOP SCHEDULE OVERLAY STYLES --- */
   .parchment-modal-greek {
-    width: 95vw; /* Request: 95% width */
+    width: 95vw; 
     max-width: 1600px; 
   }
   

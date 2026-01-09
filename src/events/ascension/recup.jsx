@@ -211,7 +211,6 @@ function Recup() {
   const generateNewsFromData = (data) => {
     let finalNews = [];
     
-    // --- A. GET WIB TIME ---
     const getWIBDate = () => {
       const now = new Date();
       const formatter = new Intl.DateTimeFormat('en-US', {
@@ -229,7 +228,6 @@ function Recup() {
     const wibNow = getWIBDate();
     const wibHour = wibNow.getHours();
 
-    // --- B. DEFINE DATE BOUNDARIES ---
     const getMidnight = (date) => {
       const d = new Date(date);
       d.setHours(0, 0, 0, 0);
@@ -245,7 +243,6 @@ function Recup() {
 
     let dateStart, dateEnd;
 
-    // ADJUSTMENT: 18:00 Cutoff
     if (wibHour < 18) {
       dateStart = yesterdayMidnight;
       dateEnd = todayMidnight;
@@ -261,7 +258,6 @@ function Recup() {
       return mMidnight.getTime() === dateStart.getTime() || mMidnight.getTime() === dateEnd.getTime();
     };
 
-    // --- C. FILTER MATCHES ---
     const relevantMatches = data.filter(m => {
       if (checkIsBlacklisted(m)) return false; 
       if (!isDateInRange(m.date)) return false;
@@ -274,7 +270,6 @@ function Recup() {
       return isLive || hasResults || isUpcoming;
     });
 
-    // --- D. SORT & GENERATE TEMPLATES ---
     const sortedMatches = relevantMatches.sort((a, b) => {
       const aLive = a.status?.toLowerCase() === 'live';
       const bLive = b.status?.toLowerCase() === 'live';
@@ -444,15 +439,11 @@ function Recup() {
   
   const availableComps = getCompetitionsForDate(activeTabDate);
 
-  // --- NEW SPLIT LOGIC (STRICT SEPARATION) ---
+  // --- NEW SPLIT LOGIC ---
   
-  // 1. LEFT COLUMN: STRICTLY LIVE MATCHES
   const liveMatches = visibleMatches.filter(m => m.status?.toLowerCase() === 'live');
 
-  // 2. RIGHT COLUMN: EXPIRED (Finished) AND UPCOMING (TBD)
-  // Everything that is NOT live
   const nonLiveMatches = visibleMatches.filter(m => m.status?.toLowerCase() !== 'live').sort((a, b) => {
-    // Sort chronological: Earliest match at the top
     const parseTime = (d, t) => new Date(`${d} ${t}`);
     return parseTime(a.date, a.time) - parseTime(b.date, b.time);
   });
@@ -664,43 +655,45 @@ function Recup() {
           <div className="pm-body-greek">
             {visibleMatches.length > 0 ? (
               <>
-                {/* --- DESKTOP SPLIT VIEW (CLEAN) --- */}
+                {/* --- DESKTOP SPLIT VIEW --- */}
                 <div className="pm-desktop-split-greek">
                   
-                  {/* LEFT COLUMN: LIVE ONLY */}
-                  <div className="pm-column-greek left-col">
-                    <div className="pm-col-header-greek">
-                      <span className="pm-header-dot live"></span>
-                      <span className="pm-header-title">SEDANG BERLANGSUNG</span>
-                    </div>
-                    <div className="pm-col-scroll-area-greek">
-                      <div 
-                        className="pm-track-greek"
-                        style={{ animation: liveMatches.length <= 2 ? 'none' : undefined }}
-                      >
-                         {liveMatches.length > 0 ? (
-                            // LOGIC FIX: Only duplicate for seamless scroll if more than 2 matches exist
-                            (liveMatches.length > 2 ? [...liveMatches, ...liveMatches] : liveMatches)
-                              .map((match, idx) => renderDecreeCard(match, idx))
-                         ) : (
-                            <div className="loading-text-greek" style={{textAlign:'center', padding:'20px'}}>Tidak ada pertandingan live.</div>
-                         )}
+                  {/* LEFT COLUMN: LIVE ONLY (Conditional Render) */}
+                  {liveMatches.length > 0 && (
+                    <div className="pm-column-greek left-col">
+                      <div className="pm-col-header-greek">
+                        <span className="pm-header-dot live"></span>
+                        <span className="pm-header-title">SEDANG BERLANGSUNG</span>
+                      </div>
+                      <div className="pm-col-scroll-area-greek">
+                        <div 
+                          className="pm-track-greek"
+                          style={{ animation: liveMatches.length <= 2 ? 'none' : undefined }}
+                        >
+                           {liveMatches.length > 0 ? (
+                              (liveMatches.length > 2 ? [...liveMatches, ...liveMatches] : liveMatches)
+                                .map((match, idx) => renderDecreeCard(match, idx))
+                           ) : (
+                              <div className="loading-text-greek" style={{textAlign:'center', padding:'20px'}}>Tidak ada pertandingan live.</div>
+                           )}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* CENTER DIVIDER */}
-                  <div className="pm-divider-vertical-greek"></div>
+                  {/* CENTER DIVIDER (Conditional Render) */}
+                  {liveMatches.length > 0 && (
+                    <div className="pm-divider-vertical-greek"></div>
+                  )}
 
-                  {/* RIGHT COLUMN: NON-LIVE (Expired + Upcoming) */}
-                  <div className="pm-column-greek right-col">
+                  {/* RIGHT COLUMN: NON-LIVE (Always Renders, Full Width if no Live) */}
+                  <div className={`pm-column-greek right-col ${liveMatches.length === 0 ? 'full-width' : ''}`}>
                     <div className="pm-col-header-greek">
-                      <span className="pm-header-dot upcoming"></span>
-                      <span className="pm-header-title">JADWAL & HASIL</span>
+                      <span className={`pm-header-dot ${liveMatches.length > 0 ? 'upcoming' : 'all'}`}></span>
+                      <span className="pm-header-title">{liveMatches.length > 0 ? 'JADWAL & HASIL' : 'SEMUA JADWAL'}</span>
                     </div>
                     <div className="pm-col-scroll-area-greek">
                       <div className="pm-track-greek">
-                        {/* Duplicate for seamless scroll - standard for long lists */}
                         {[...nonLiveMatches, ...nonLiveMatches].map((match, idx) => renderDecreeCard(match, idx))}
                       </div>
                     </div>
@@ -724,7 +717,7 @@ function Recup() {
         </div>
       </div>
 
-      {/* === POPUP DETAIL MATCH (REDESIGNED) === */}
+      {/* === POPUP DETAIL MATCH === */}
       {selectedMatch && (
         <div className="match-detail-overlay-greek" onClick={closeMatchDetails}>
           <div className="match-detail-scroll-greek" onClick={(e) => e.stopPropagation()}>

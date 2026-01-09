@@ -396,15 +396,15 @@ SMART TABS (UX IMPROVEMENT)
   overflow-x: auto;
   overflow-y: hidden;
   scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+  -webkit-overflow-scrolling: touch;
   width: 100%;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
   padding: 10px 20px;
   gap: 10px;
 }
 
 .smart-tabs-container::-webkit-scrollbar {
-  display: none; /* Chrome/Safari/Opera */
+  display: none;
 }
 
 /* Visual Gradient Masks (Fade effects) */
@@ -551,7 +551,7 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
 /* Desktop: Fullscreen-ish Modal */
 .parchment-modal-greek {
   width: 100%;
-  max-width: 1000px; /* Limits width on huge screens */
+  max-width: 1000px; 
   height: 100%;
   max-height: 95vh;
   background: var(--parchment-light-greek);
@@ -602,7 +602,7 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
 .pm-infinite-track-greek {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Increased gap for better visibility */
+  gap: 20px; 
   padding: 40px 20px;
   /* Optimized Marquee: Moves items up seamlessly */
   animation: verticalMarquee 45s linear infinite;
@@ -624,7 +624,7 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
   background: #fff; 
   border: 2px solid #d4c5b0;
   border-radius: 12px;
-  padding: 20px 25px; /* More padding */
+  padding: 20px 25px; 
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
   display: flex; 
   align-items: center; 
@@ -633,7 +633,7 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
   flex-shrink: 0;
   position: relative;
-  min-height: 90px; /* Ensure touch target size */
+  min-height: 90px; 
 }
 
 .decree-card-greek:hover {
@@ -661,7 +661,7 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
 
 /* Sides - Left & Right */
 .dc-left-greek, .dc-right-greek {
-  width: 100px; /* Wider for bigger scores */
+  width: 100px; 
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -680,7 +680,7 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
   font-weight: 900; 
   font-family: var(--font-body-greek); 
   color: #333; 
-  font-size: 1.1rem; /* Bigger */
+  font-size: 1.1rem; 
 }
 .dc-cat-greek { 
   font-size: 0.75rem; 
@@ -693,7 +693,7 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
 .dc-score-greek {
   font-family: var(--font-heading-greek);
   font-weight: 900;
-  font-size: 2.8rem; /* Huge for visibility */
+  font-size: 2.8rem; 
   color: var(--ink-greek);
   line-height: 1;
   opacity: 0.9;
@@ -719,7 +719,7 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
   font-family: var(--font-heading-greek);
   font-weight: 800;
   color: #1a1a1a;
-  font-size: 1.4rem; /* Bigger team names */
+  font-size: 1.4rem; 
   line-height: 1.3;
   margin: 4px 0;
 }
@@ -735,7 +735,7 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
 .live-tag-greek {
   background: var(--red-seal-greek);
   color: #fff;
-  font-size: 0.8rem; /* Bigger */
+  font-size: 0.8rem; 
   padding: 4px 12px;
   border-radius: 12px;
   font-weight: 800;
@@ -758,7 +758,97 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
 }
 
 /* =========================================
-DETAILED MATCH POPUP (FIXED DESIGN)
+DESKTOP SPLIT VIEW (CLEAN)
+========================================= */
+.pm-desktop-split-greek {
+  display: none; 
+  width: 100%;
+  height: 100%;
+  gap: 0;
+  padding: 0 20px;
+}
+
+.pm-column-greek {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0; 
+}
+
+.pm-col-header-greek {
+  padding: 15px 0;
+  background: transparent;
+  border-bottom: 2px solid var(--gold-greek);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-heading-greek);
+  font-weight: 700;
+  color: var(--ink-greek);
+  font-size: 1rem;
+  letter-spacing: 1px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.pm-header-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.pm-header-dot.live { background-color: var(--red-seal-greek); box-shadow: 0 0 8px rgba(138, 42, 42, 0.4); }
+.pm-header-dot.upcoming { background-color: var(--gold-greek); }
+
+.pm-col-scroll-area-greek {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+}
+
+.pm-track-greek {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  /* Slow Marquee: 60s for seamless loop */
+  animation: verticalMarqueeSlow 60s linear infinite;
+}
+
+/* Pause animation on hover for usability */
+.pm-col-scroll-area-greek:hover .pm-track-greek {
+  animation-play-state: paused;
+}
+
+@keyframes verticalMarqueeSlow {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+.pm-divider-vertical-greek {
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--gold-greek), transparent);
+  flex-shrink: 0;
+  margin: 0 10px;
+}
+
+.pm-empty-state-greek {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 40px 0;
+  font-size: 0.9rem;
+}
+
+/* =========================================
+DETAILED MATCH POPUP
 ========================================= */
 .match-detail-overlay-greek {
   position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
@@ -773,7 +863,7 @@ DETAILED MATCH POPUP (FIXED DESIGN)
   border: 4px double var(--ink-greek); border-radius: 12px;
   position: relative; 
   box-shadow: 0 25px 80px rgba(0,0,0,0.7);
-  overflow: hidden; /* Ensures border radius works on children */
+  overflow: hidden; 
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E");
 }
 
@@ -997,199 +1087,31 @@ DETAILED MATCH POPUP (FIXED DESIGN)
    MOBILE OPTIMIZATIONS (RESPONSIVE FIXES)
    ========================================= */
 
-@media (max-width: 768px) {
-
-  /* --- 1. HERO SECTION ADJUSTMENTS --- */
-  .hero-title-greek {
-    width: 90vw;
-    translate: 0; /* Remove desktop offset */
-  }
-  
-  .hero-building-greek {
-    width: 120%;
-    margin-left: -10%; /* Center the overflow */
-    max-height: 40vh;
-  }
-
-  /* --- 2. SCHEDULE MODAL (Bottom Sheet Style) --- */
-  .parchment-modal-overlay-greek {
-    align-items: flex-end; /* Stick to bottom */
-    padding: 0;
-  }
-
+@media (min-width: 1024px) {
+  /* --- DESKTOP SCHEDULE OVERLAY STYLES --- */
   .parchment-modal-greek {
-    width: 100%;
-    max-width: 100%;
-    height: 85vh; /* Cover 85% of screen */
-    border-radius: 20px 20px 0 0; /* Rounded top only */
-    border: none;
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
-    transform: translateY(100%); /* Start hidden down */
-  }
-
-  .parchment-modal-overlay-greek.open-greek .parchment-modal-greek {
-    transform: translateY(0);
-  }
-
-  .pm-header-greek {
-    padding: 12px 15px;
+    width: 95vw; /* Request: 95% width */
+    max-width: 1600px; 
   }
   
-  .pm-header-greek h2 {
-    font-size: 1rem;
+  .pm-infinite-scroll-wrapper-greek {
+    display: none; /* Hide Mobile Infinite Scroll */
   }
 
-  /* --- 3. SCHEDULE LIST ITEMS (Compact Mode) --- */
-  .pm-infinite-track-greek {
-    padding: 20px 10px; /* Reduce side padding */
-    gap: 12px;
+  .pm-desktop-split-greek {
+    display: flex; /* Show Split View */
   }
 
-  .decree-card-greek {
-    padding: 12px 10px;
-    min-height: auto;
-    /* Grid layout for precise control */
-    display: grid;
-    grid-template-columns: 0.8fr 1.2fr 0.8fr;
-    align-items: center;
-    gap: 5px;
-  }
+  .pm-header-greek h2 { font-size: 1.5rem; }
+}
 
-  /* Left Side (Time/Score 1) */
-  .dc-left-greek {
-    width: auto;
-    align-items: flex-start; /* Align left */
-    text-align: left;
-  }
-
-  /* Right Side (Date/Score 2) */
-  .dc-right-greek {
-    width: auto;
-    align-items: flex-end; /* Align right */
-    text-align: right;
-  }
-
-  /* Scores - Drastically Smaller */
-  .dc-score-greek {
-    font-size: 1.6rem; 
-    font-weight: 800;
-  }
-
-  /* Team Names */
-  .dc-center-greek {
-    padding: 0 5px;
-    overflow: hidden; /* Handle long text */
-  }
-
-  .dc-team-greek {
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Add ... if text is too long */
-    max-width: 100%;
-  }
-
-  .dc-vs-greek {
-    font-size: 0.7rem;
-    margin: 2px 0;
-    opacity: 0.7;
-  }
-
-  .dc-time-greek, .dc-cat-greek { font-size: 0.7rem; }
-  .live-tag-greek { font-size: 0.6rem; padding: 2px 8px; }
-
-  /* --- 4. MATCH DETAIL POPUP (Cleaned Up) --- */
-  .match-detail-scroll-greek {
-    max-height: 90vh;
-    border-radius: 16px;
-    width: 95vw;
-    border: 2px solid var(--ink-greek); /* Restore border on mobile */
-  }
-
-  .md-content-wrapper {
-    padding: 20px 15px;
-    overflow-y: auto;
-  }
-
-  .md-header-greek {
-    font-size: 1.1rem;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
+@media (max-width: 1023px) {
+  /* --- TABLET / MOBILE --- */
+  .pm-desktop-split-greek {
+    display: none; /* Hide Split View */
   }
   
-  .laurels-left, .laurels-right { font-size: 1.4rem; }
-
-  /* Compact Scoreboard Row (Don't stack vertically) */
-  .md-scoreboard-container {
-    flex-direction: row; /* Keep horizontal */
-    padding: 15px 5px;
-    gap: 0;
-    margin-bottom: 20px;
-    border-radius: 10px;
+  .pm-infinite-scroll-wrapper-greek {
+    display: block; /* Show Infinite Scroll */
   }
-
-  .md-team-block {
-    width: 35%; /* Force width */
-  }
-
-  /* Shrink Logos */
-  .md-team-logo-placeholder {
-    width: 50px;
-    height: 50px;
-    font-size: 1.5rem;
-    border-width: 2px;
-    margin-bottom: 8px;
-  }
-
-  .md-team-name {
-    font-size: 0.85rem;
-    line-height: 1.1;
-    word-wrap: break-word; /* Allow wrapping */
-  }
-
-  /* Winner Label */
-  .winner-label {
-    font-size: 0.55rem;
-    padding: 2px 6px;
-    margin-top: 4px;
-  }
-
-  /* Center Score Area */
-  .md-score-divider {
-    width: 30%;
-    margin: 0;
-  }
-
-  .score-big {
-    font-size: 1.8rem; /* Fit in row */
-  }
-  
-  .score-separator {
-    font-size: 1rem;
-  }
-
-  .vs-text-big {
-    font-size: 1.5rem;
-  }
-
-  /* Info Grid */
-  .md-info-grid-greek {
-    grid-template-columns: 1fr; /* Stack info items */
-    gap: 10px;
-    padding: 15px;
-    text-align: left;
-  }
-
-  .md-info-item {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px dashed #eee;
-    padding-bottom: 5px;
-  }
-
-  .md-info-item:last-child { border-bottom: none; }
-  
-  .md-info-item .label { font-size: 0.75rem; }
-  .md-info-item .value { font-size: 0.9rem; }
 }

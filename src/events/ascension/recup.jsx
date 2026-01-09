@@ -207,14 +207,13 @@ function Recup() {
     if (favicon) favicon.href = "/assets/recup/favicon-recucp.png";
   }, []);
 
-  // --- 2. LOGIC GENERATOR BERITA (TIME SENSITIVE) ---
+  // --- 2. LOGIC GENERATOR BERITA ---
   const generateNewsFromData = (data) => {
     let finalNews = [];
     
     // --- A. GET WIB TIME ---
     const getWIBDate = () => {
       const now = new Date();
-      // Use Intl API to get accurate time for Asia/Jakarta timezone
       const formatter = new Intl.DateTimeFormat('en-US', {
         timeZone: 'Asia/Jakarta',
         year: 'numeric',
@@ -231,7 +230,6 @@ function Recup() {
     const wibHour = wibNow.getHours();
 
     // --- B. DEFINE DATE BOUNDARIES ---
-    // Normalize dates to midnight for accurate comparison
     const getMidnight = (date) => {
       const d = new Date(date);
       d.setHours(0, 0, 0, 0);
@@ -247,9 +245,7 @@ function Recup() {
 
     let dateStart, dateEnd;
 
-    // LOGIC:
-    // Before 18:00 WIB -> Show Yesterday + Today
-    // 18:00+ WIB      -> Show Today + Tomorrow
+    // ADJUSTMENT: 18:00 Cutoff
     if (wibHour < 18) {
       dateStart = yesterdayMidnight;
       dateEnd = todayMidnight;
@@ -259,42 +255,29 @@ function Recup() {
     }
 
     const isDateInRange = (matchDateString) => {
-      // Attempt to parse the date string from API
-      // Assuming API returns YYYY-MM-DD or similar parsable string
       const mDate = new Date(matchDateString);
       if (isNaN(mDate)) return false;
-      
       const mMidnight = getMidnight(mDate);
-      // Check if match date is Start Date OR End Date
       return mMidnight.getTime() === dateStart.getTime() || mMidnight.getTime() === dateEnd.getTime();
     };
 
     // --- C. FILTER MATCHES ---
     const relevantMatches = data.filter(m => {
-      // 1. Blacklist check
       if (checkIsBlacklisted(m)) return false; 
-
-      // 2. Time Window check
       if (!isDateInRange(m.date)) return false;
-
-      // 3. Status Check (Live, Upcoming, Finished)
       const isLive = m.status?.toLowerCase() === 'live';
       const score1 = String(m.scoreteam1).trim();
       const score2 = String(m.scoreteam2).trim();
       const statusStr = String(m.status).toLowerCase().trim();
-      
       const isUpcoming = (score1 === '-' || score2 === '-' || statusStr === 'tbd');
       const hasResults = (score1 !== '-' && score2 !== '-' && m.winner && m.winner !== 'tbd');
-
       return isLive || hasResults || isUpcoming;
     });
 
     // --- D. SORT & GENERATE TEMPLATES ---
-    // Sort: Live > Upcoming > Finished
     const sortedMatches = relevantMatches.sort((a, b) => {
       const aLive = a.status?.toLowerCase() === 'live';
       const bLive = b.status?.toLowerCase() === 'live';
-      
       if (aLive && !bLive) return -1;
       if (!aLive && bLive) return 1;
 
@@ -304,7 +287,6 @@ function Recup() {
       if (aUpcoming && !bUpcoming) return -1;
       if (!aUpcoming && bUpcoming) return 1;
 
-      // Secondary sort by time for same status
       const parseTime = (d, t) => new Date(`${d} ${t}`);
       return parseTime(a.date, a.time) - parseTime(b.date, b.time);
     });
@@ -458,13 +440,70 @@ function Recup() {
   };
 
   const filteredMatches = getFilteredMatches();
-  // Filter for VISUAL use only (don't show blacklisted cards)
   const visibleMatches = filteredMatches.filter(m => !checkIsBlacklisted(m));
   
   const availableComps = getCompetitionsForDate(activeTabDate);
 
-  // --- STYLE ANIMATION (OPTIMIZED MARQUEE) ---
+  // --- NEW SPLIT LOGIC (STRICT SEPARATION) ---
   
+  // 1. LEFT COLUMN: STRICTLY LIVE MATCHES
+  const liveMatches = visibleMatches.filter(m => m.status?.toLowerCase() === 'live');
+
+  // 2. RIGHT COLUMN: EXPIRED (Finished) AND UPCOMING (TBD)
+  // Everything that is NOT live
+  const nonLiveMatches = visibleMatches.filter(m => m.status?.toLowerCase() !== 'live').sort((a, b) => {
+    // Sort chronological: Earliest match at the top
+    const parseTime = (d, t) => new Date(`${d} ${t}`);
+    return parseTime(a.date, a.time) - parseTime(b.date, b.time);
+  });
+
+  // --- RENDER HELPERS ---
+  const renderDecreeCard = (match, idx) => {
+    const isLive = match.status?.toLowerCase() === 'live';
+    const isUpcoming = (String(match.scoreteam1) === '-' || String(match.scoreteam2) === '-' || String(match.status).toLowerCase() === 'tbd');
+    const shouldShowScore = !isUpcoming && (isLive || (match.scoreteam1 && match.scoreteam2));
+
+    return (
+      <div key={`${match.team1}-${match.team2}-${idx}`} className={`decree-card-greek ${getStatusClass(match)}`} onClick={() => openMatchDetails(match)}>
+        <div className="dc-left-greek">
+          <div className="dc-top-info-greek">
+            <span className="dc-time-greek">{match.time}</span>
+            <span className="dc-cat-greek">{match.competition}</span>
+          </div>
+          {shouldShowScore && (
+            <span className={`dc-score-greek ${match.winner === 'team1' ? 'winner' : ''}`}>
+              {match.scoreteam1}
+            </span>
+          )}
+        </div>
+
+        <div className="dc-center-greek">
+          <div className="dc-team-greek">{match.team1}</div>
+          <div className="dc-vs-greek">VS</div>
+          <div className="dc-team-greek">{match.team2}</div>
+          {match.stage && <div className="dc-stage-greek">{match.stage}</div>}
+        </div>
+
+        <div className="dc-right-greek">
+          <div className="dc-top-info-greek">
+            {isLive ? 
+              <span className="live-tag-greek">LIVE</span> : 
+              (isUpcoming ? 
+                <span className="date-tag-greek" style={{color:'#d4af37', fontWeight:'bold'}}>UPCOMING</span> : 
+                <span className="date-tag-greek">{match.date}</span>
+              )
+            }
+          </div>
+          {shouldShowScore && (
+            <span className={`dc-score-greek ${match.winner === 'team2' ? 'winner' : ''}`}>
+              {match.scoreteam2}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <DynamicIsland theme="greek" />
@@ -581,7 +620,7 @@ function Recup() {
         <div className="seal-inner-greek"><span className="seal-icon-greek"><GrSchedules /></span></div>
       </button>
 
-      {/* === MODAL LIST JADWAL (OPTIMIZED) === */}
+      {/* === MODAL LIST JADWAL (DESKTOP SPLIT / MOBILE OPTIMIZED) === */}
       <div className={`parchment-modal-overlay-greek ${isScheduleOpen ? 'open-greek' : ''}`} onClick={() => setIsScheduleOpen(false)}>
         <div className="parchment-modal-greek" onClick={e => e.stopPropagation()}>
           <div className="pm-header-greek">
@@ -624,56 +663,58 @@ function Recup() {
 
           <div className="pm-body-greek">
             {visibleMatches.length > 0 ? (
-              <div className="pm-infinite-scroll-wrapper-greek">
-                <div className="pm-infinite-track-greek">
-                  {/* DUPLICATE LIST FOR SEAMLESS LOOP */}
-                  {[...visibleMatches, ...visibleMatches].map((match, idx) => {
-                    const isLive = match.status?.toLowerCase() === 'live';
-                    const isUpcoming = (String(match.scoreteam1) === '-' || String(match.scoreteam2) === '-' || String(match.status).toLowerCase() === 'tbd');
-                    const shouldShowScore = !isUpcoming && (isLive || (match.scoreteam1 && match.scoreteam2));
-
-                    return (
-                      <div key={`${match.team1}-${match.team2}-${idx}`} className={`decree-card-greek ${getStatusClass(match)}`} onClick={() => openMatchDetails(match)}>
-                        <div className="dc-left-greek">
-                          <div className="dc-top-info-greek">
-                            <span className="dc-time-greek">{match.time}</span>
-                            <span className="dc-cat-greek">{match.competition}</span>
-                          </div>
-                          {shouldShowScore && (
-                            <span className={`dc-score-greek ${match.winner === 'team1' ? 'winner' : ''}`}>
-                              {match.scoreteam1}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="dc-center-greek">
-                          <div className="dc-team-greek">{match.team1}</div>
-                          <div className="dc-vs-greek">VS</div>
-                          <div className="dc-team-greek">{match.team2}</div>
-                          {match.stage && <div className="dc-stage-greek">{match.stage}</div>}
-                        </div>
-
-                        <div className="dc-right-greek">
-                          <div className="dc-top-info-greek">
-                            {isLive ? 
-                              <span className="live-tag-greek">LIVE</span> : 
-                              (isUpcoming ? 
-                                <span className="date-tag-greek" style={{color:'#d4af37', fontWeight:'bold'}}>UPCOMING</span> : 
-                                <span className="date-tag-greek">{match.date}</span>
-                              )
-                            }
-                          </div>
-                          {shouldShowScore && (
-                            <span className={`dc-score-greek ${match.winner === 'team2' ? 'winner' : ''}`}>
-                              {match.scoreteam2}
-                            </span>
-                          )}
-                        </div>
+              <>
+                {/* --- DESKTOP SPLIT VIEW (CLEAN) --- */}
+                <div className="pm-desktop-split-greek">
+                  
+                  {/* LEFT COLUMN: LIVE ONLY */}
+                  <div className="pm-column-greek left-col">
+                    <div className="pm-col-header-greek">
+                      <span className="pm-header-dot live"></span>
+                      <span className="pm-header-title">SEDANG BERLANGSUNG</span>
+                    </div>
+                    <div className="pm-col-scroll-area-greek">
+                      <div 
+                        className="pm-track-greek"
+                        style={{ animation: liveMatches.length <= 2 ? 'none' : undefined }}
+                      >
+                         {liveMatches.length > 0 ? (
+                            // LOGIC FIX: Only duplicate for seamless scroll if more than 2 matches exist
+                            (liveMatches.length > 2 ? [...liveMatches, ...liveMatches] : liveMatches)
+                              .map((match, idx) => renderDecreeCard(match, idx))
+                         ) : (
+                            <div className="loading-text-greek" style={{textAlign:'center', padding:'20px'}}>Tidak ada pertandingan live.</div>
+                         )}
                       </div>
-                    );
-                  })}
+                    </div>
+                  </div>
+
+                  {/* CENTER DIVIDER */}
+                  <div className="pm-divider-vertical-greek"></div>
+
+                  {/* RIGHT COLUMN: NON-LIVE (Expired + Upcoming) */}
+                  <div className="pm-column-greek right-col">
+                    <div className="pm-col-header-greek">
+                      <span className="pm-header-dot upcoming"></span>
+                      <span className="pm-header-title">JADWAL & HASIL</span>
+                    </div>
+                    <div className="pm-col-scroll-area-greek">
+                      <div className="pm-track-greek">
+                        {/* Duplicate for seamless scroll - standard for long lists */}
+                        {[...nonLiveMatches, ...nonLiveMatches].map((match, idx) => renderDecreeCard(match, idx))}
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
-              </div>
+
+                {/* --- MOBILE INFINITE VIEW (SCROLL) --- */}
+                <div className="pm-infinite-scroll-wrapper-greek">
+                  <div className="pm-infinite-track-greek">
+                    {[...visibleMatches, ...visibleMatches].map((match, idx) => renderDecreeCard(match, idx))}
+                  </div>
+                </div>
+              </>
             ) : (
               <div className="loading-text-greek" style={{ textAlign: 'center', marginTop: '20px' }}>
                 Tidak ada pertandingan yang ditampilkan.
@@ -690,15 +731,12 @@ function Recup() {
             <button className="md-close-btn-greek" onClick={closeMatchDetails}><IoMdClose /></button>
             
             <div className="md-content-wrapper">
-              
-              {/* HEADER SECTION */}
               <div className="md-header-greek">
                 <GiLaurels className="laurels-left" />
                 <span className="md-title-text">DETAIL LAGA</span>
                 <GiLaurels className="laurels-right" />
               </div>
 
-              {/* STATUS & STAGE */}
               <div className="md-status-pill-greek">
                 {selectedMatch.status === 'live' ? '🔥 SEDANG BERLANGSUNG' : 
                  (String(selectedMatch.scoreteam1) === '-' || String(selectedMatch.scoreteam2) === '-' || String(selectedMatch.status).toLowerCase() === 'tbd' ? 'AKAN DATANG' : 
@@ -707,9 +745,7 @@ function Recup() {
 
               {selectedMatch.stage && <div className="md-stage-title-greek">{selectedMatch.stage}</div>}
 
-              {/* SCOREBOARD SECTION */}
               <div className="md-scoreboard-container">
-                {/* Team 1 */}
                 <div className="md-team-block">
                   <div className="md-team-info">
                     <div className={`md-team-logo-placeholder ${selectedMatch.winner === 'team1' || selectedMatch.winner === selectedMatch.team1.toLowerCase() ? 'winner-glow' : ''}`}>
@@ -720,7 +756,6 @@ function Recup() {
                   {(selectedMatch.winner === 'team1' || selectedMatch.winner === selectedMatch.team1.toLowerCase()) && <span className="winner-label">WINNER</span>}
                 </div>
 
-                {/* VS / Score */}
                 <div className="md-score-divider">
                   {(selectedMatch.scoreteam1 && selectedMatch.scoreteam2 && selectedMatch.scoreteam1 !== '-' && selectedMatch.scoreteam2 !== '-') ?
                     <div className="md-final-score">
@@ -732,7 +767,6 @@ function Recup() {
                   }
                 </div>
 
-                {/* Team 2 */}
                 <div className="md-team-block">
                   <div className="md-team-info">
                     <div className={`md-team-logo-placeholder ${selectedMatch.winner === 'team2' || selectedMatch.winner === selectedMatch.team2.toLowerCase() ? 'winner-glow' : ''}`}>
@@ -746,7 +780,6 @@ function Recup() {
 
               {selectedMatch.winner === 'draw' && <div className="md-draw-text">PERTANDINGAN SERI</div>}
 
-              {/* INFO GRID */}
               <div className="md-info-grid-greek">
                 <div className="md-info-item"><span className="label">KOMPETISI</span><span className="value">{selectedMatch.competition}</span></div>
                 <div className="md-info-item"><span className="label">KATEGORI</span><span className="value">{selectedMatch.category}</span></div>
@@ -754,7 +787,6 @@ function Recup() {
                 <div className="md-info-item"><span className="label">PUKUL</span><span className="value">{selectedMatch.time} WIB</span></div>
               </div>
 
-              {/* FOOTER */}
               <div className="md-footer-greek">Semoga tim terbaik yang menang.</div>
             </div>
           </div>

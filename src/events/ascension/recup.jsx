@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import DynamicIsland from "../../components/DynamicI"; 
 import "./css/recup-scroll.css";
-
 // --- ICONS ---
 import { GrSchedules } from "react-icons/gr";
 import { IoMdClose } from "react-icons/io";
@@ -16,7 +15,7 @@ import RecupSpecialPerformance from "./recup-tulus";
 
 const SCHEDULE_API = "https://script.google.com/macros/s/AKfycbxcR39xEqBTH8Rq8lAE2hLvZXKzwWOdG8LK0qqWm7m7kjyYlrm2QAHx2L2XxE-TRJQ3/exec";
 
-// --- BLACKLIST SYSTEM ---
+// --- BLACKLIST SYSTEM (Sama seperti sebelumnya) ---
 const NEWS_BLACKLIST = [
   { t1: "SF1 Loser", t2: "SF2 Loser" },
   { t1: "SF1 Winner", t2: "SF2 Winner" },
@@ -36,12 +35,10 @@ const NEWS_BLACKLIST = [
   { t1: "Semifinal 1 Winner", t2: "Semifinal 1 Winner" }
 ];
 
-// --- HELPER: CHECK BLACKLIST ---
 const checkIsBlacklisted = (match) => {
   if (!match.team1 || !match.team2) return false;
   const m1 = match.team1.toLowerCase().trim();
   const m2 = match.team2.toLowerCase().trim();
-  
   return NEWS_BLACKLIST.some(block => {
     const b1 = block.t1.toLowerCase().trim();
     const b2 = block.t2.toLowerCase().trim();
@@ -49,7 +46,7 @@ const checkIsBlacklisted = (match) => {
   });
 };
 
-// --- TEMPLATES BERITA ---
+// --- NEWS TEMPLATES (Sama seperti sebelumnya) ---
 const NEWS_TEMPLATES = {
   withScore: [
     (w, l, s) => `${w} melibas ${l} dengan skor telak ${s}!`,
@@ -190,7 +187,253 @@ const SmartTabs = ({ children, activeId, className = "", subTabs = false }) => {
   );
 };
 
-// --- MAIN COMPONENT ---
+// --- COMPONENT BARU: AUTO-SCROLL LIST ---
+// Menangani scroll otomatis, loop seamless, dan pause-on-hover
+const AutoScrollList = ({ matches, renderItem, className, speed = 0.5 }) => {
+  const containerRef = useRef(null);
+  const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    let animationFrameId;
+    let accumulator = 0;
+
+    const scroll = () => {
+      const el = containerRef.current;
+      
+      // Jika tidak di-hover dan element ada, jalankan auto-scroll
+      if (el && !isHovered) {
+        // Gunakan accumulator untuk kecepatan sub-pixel yang halus
+        accumulator += speed;
+        
+        if (accumulator >= 1) {
+          const pixelsToMove = Math.floor(accumulator);
+          el.scrollTop += pixelsToMove;
+          accumulator -= pixelsToMove;
+
+          // LOGIKA SEAMLESS LOOP:
+          // Karena data di-duplicate, jika scrollTop mencapai setengah dari total tinggi (tinggi data asli),
+          // kita reset scrollTop ke 0. User tidak akan sadar karena kontennya identik.
+          // Dikurangi clientHeight sedikit untuk safety buffer.
+          if (el.scrollTop >= (el.scrollHeight / 2)) {
+             el.scrollTop = 0; 
+          }
+        }
+      }
+      
+      animationFrameId = requestAnimationFrame(scroll);
+    };
+
+    animationFrameId = requestAnimationFrame(scroll);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isHovered, speed]);
+
+  // Jika data terlalu sedikit untuk di-scroll, render biasa saja tanpa duplikasi
+  if (matches.length < 3) {
+      return (
+        <div className={className} style={{ overflowY: 'auto' }}>
+            <div className="pm-track-greek">
+               {matches.map((m, i) => renderItem(m, i))}
+            </div>
+        </div>
+      );
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className={`${className} auto-scroller-active`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      // Touch start/end untuk support mobile touch-to-pause
+      onTouchStart={() => setIsHovered(true)}
+      onTouchEnd={() => setIsHovered(false)}
+    >
+      <div className="pm-track-greek">
+        {/* Render Data PERTAMA */}
+        {matches.map((match, idx) => renderItem(match, `orig-${idx}`))}
+        
+        {/* Render Data KEDUA (Duplikat untuk Seamless Loop) */}
+        {matches.map((match, idx) => renderItem(match, `dup-${idx}`))}
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN SCHEDULE COMPONENT ---
+const RecupSchedule = ({
+  groupedSchedules,
+  activeTabDate,
+  activeTabComp,
+  setActiveTabDate,
+  setActiveTabComp,
+  onMatchClick,
+  isBlacklistedFn,
+  onClose
+}) => {
+
+  const getFilteredMatches = () => {
+    if (!activeTabDate || !groupedSchedules[activeTabDate]) return [];
+    const matchesOnDate = groupedSchedules[activeTabDate];
+    if (activeTabComp === 'ALL') return matchesOnDate;
+    return matchesOnDate.filter(m => m.competition === activeTabComp);
+  };
+
+  const filteredMatches = getFilteredMatches().filter(m => !isBlacklistedFn(m));
+  const availableComps = activeTabDate && groupedSchedules[activeTabDate] 
+    ? [...new Set(groupedSchedules[activeTabDate].map(m => m.competition))] 
+    : [];
+
+  const liveMatches = filteredMatches.filter(m => m.status?.toLowerCase() === 'live');
+  const nonLiveMatches = filteredMatches.filter(m => m.status?.toLowerCase() !== 'live').sort((a, b) => {
+    const parseTime = (d, t) => new Date(`${d} ${t}`);
+    return parseTime(a.date, a.time) - parseTime(b.date, b.time);
+  });
+
+  const renderDecreeCard = (match, key) => {
+    const isLive = match.status?.toLowerCase() === 'live';
+    const isUpcoming = (String(match.scoreteam1) === '-' || String(match.scoreteam2) === '-' || String(match.status).toLowerCase() === 'tbd');
+    const shouldShowScore = !isUpcoming && (isLive || (match.scoreteam1 && match.scoreteam2));
+
+    return (
+      <div key={key} className={`decree-card-greek ${match.status?.toLowerCase() === 'live' ? 'live' : (isUpcoming ? 'upcoming' : 'finished')}`} onClick={() => onMatchClick(match)}>
+        <div className="dc-left-greek">
+          <div className="dc-top-info-greek">
+            <span className="dc-time-greek">{match.time}</span>
+            <span className="dc-cat-greek">{match.competition}</span>
+          </div>
+          {shouldShowScore && (
+            <span className={`dc-score-greek ${match.winner === 'team1' ? 'winner' : ''}`}>
+              {match.scoreteam1}
+            </span>
+          )}
+        </div>
+
+        <div className="dc-center-greek">
+          <div className="dc-team-greek">{match.team1}</div>
+          <div className="dc-vs-greek">VS</div>
+          <div className="dc-team-greek">{match.team2}</div>
+          {match.stage && <div className="dc-stage-greek">{match.stage}</div>}
+        </div>
+
+        <div className="dc-right-greek">
+          <div className="dc-top-info-greek">
+            {isLive ? 
+              <span className="live-tag-greek">LIVE</span> : 
+              (isUpcoming ? 
+                <span className="date-tag-greek" style={{color:'#d4af37', fontWeight:'bold'}}>UPCOMING</span> : 
+                <span className="date-tag-greek">{match.date}</span>
+              )
+            }
+          </div>
+          {shouldShowScore && (
+            <span className={`dc-score-greek ${match.winner === 'team2' ? 'winner' : ''}`}>
+              {match.scoreteam2}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="parchment-modal-greek" onClick={e => e.stopPropagation()}>
+      <div className="pm-header-greek">
+        <h2>MATCH SCHEDULE</h2>
+        <button className="pm-close-greek" onClick={onClose}><IoMdClose /></button>
+      </div>
+
+      <SmartTabs activeId={activeTabDate}>
+        {Object.keys(groupedSchedules).map((date) => (
+          <button
+            key={date}
+            className={`pm-tab-greek ${activeTabDate === date ? 'active' : ''}`}
+            onClick={() => { setActiveTabDate(date); setActiveTabComp('ALL'); }}
+            data-id={date}
+          >
+            {date}
+          </button>
+        ))}
+      </SmartTabs>
+
+      <SmartTabs activeId={activeTabComp} subTabs={true}>
+        <button
+          className={`pm-subtab-greek ${activeTabComp === 'ALL' ? 'active' : ''}`}
+          onClick={() => setActiveTabComp('ALL')}
+          data-id="ALL"
+        >
+          ALL MATCHES
+        </button>
+        {availableComps.map((comp) => (
+          <button
+            key={comp}
+            className={`pm-subtab-greek ${activeTabComp === comp ? 'active' : ''}`}
+            onClick={() => setActiveTabComp(comp)}
+            data-id={comp}
+          >
+            {comp}
+          </button>
+        ))}
+      </SmartTabs>
+
+      <div className="pm-body-greek">
+        {filteredMatches.length > 0 ? (
+          <>
+            {/* --- DESKTOP SPLIT VIEW (AUTO SCROLL + MANUAL ON HOVER) --- */}
+            <div className="pm-desktop-split-greek">
+              {liveMatches.length > 0 && (
+                <div className="pm-column-greek left-col">
+                  <div className="pm-col-header-greek">
+                    <span className="pm-header-dot live"></span>
+                    <span className="pm-header-title">SEDANG BERLANGSUNG</span>
+                  </div>
+                  {/* Gunakan AutoScrollList */}
+                  <AutoScrollList 
+                    className="pm-col-scroll-area-greek"
+                    matches={liveMatches}
+                    renderItem={renderDecreeCard}
+                    speed={0.8} // Sedikit lebih cepat untuk live
+                  />
+                </div>
+              )}
+
+              {liveMatches.length > 0 && (
+                <div className="pm-divider-vertical-greek"></div>
+              )}
+
+              <div className={`pm-column-greek right-col ${liveMatches.length === 0 ? 'full-width' : ''}`}>
+                <div className="pm-col-header-greek">
+                  <span className={`pm-header-dot ${liveMatches.length > 0 ? 'upcoming' : 'all'}`}></span>
+                  <span className="pm-header-title">{liveMatches.length > 0 ? 'JADWAL & HASIL' : 'SEMUA JADWAL'}</span>
+                </div>
+                 {/* Gunakan AutoScrollList */}
+                 <AutoScrollList 
+                    className="pm-col-scroll-area-greek"
+                    matches={nonLiveMatches}
+                    renderItem={renderDecreeCard}
+                    speed={0.6}
+                  />
+              </div>
+            </div>
+
+            {/* --- MOBILE VIEW (AUTO SCROLL + MANUAL ON HOVER) --- */}
+             {/* Mobile hanya menggunakan satu list panjang */}
+             <AutoScrollList 
+                className="pm-mobile-scroll-wrapper-greek"
+                matches={filteredMatches}
+                renderItem={renderDecreeCard}
+                speed={0.7}
+              />
+          </>
+        ) : (
+          <div className="loading-text-greek" style={{ textAlign: 'center', marginTop: '20px' }}>
+            Tidak ada pertandingan yang ditampilkan.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 function Recup() {
   const [matchSchedules, setMatchSchedules] = useState([]);
   const [news, setNews] = useState(NEWS_TEMPLATES.staticTeasers);
@@ -207,20 +450,14 @@ function Recup() {
     if (favicon) favicon.href = "/assets/recup/favicon-recucp.png";
   }, []);
 
-  // --- 2. LOGIC GENERATOR BERITA ---
   const generateNewsFromData = (data) => {
     let finalNews = [];
-    
     const getWIBDate = () => {
       const now = new Date();
       const formatter = new Intl.DateTimeFormat('en-US', {
         timeZone: 'Asia/Jakarta',
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric'
+        year: 'numeric', month: 'numeric', day: 'numeric',
+        hour: 'numeric', minute: 'numeric', second: 'numeric'
       });
       return new Date(formatter.format(now));
     };
@@ -237,12 +474,10 @@ function Recup() {
     const todayMidnight = getMidnight(wibNow);
     const yesterdayMidnight = new Date(todayMidnight);
     yesterdayMidnight.setDate(yesterdayMidnight.getDate() - 1);
-    
     const tomorrowMidnight = new Date(todayMidnight);
     tomorrowMidnight.setDate(tomorrowMidnight.getDate() + 1);
 
     let dateStart, dateEnd;
-
     if (wibHour < 18) {
       dateStart = yesterdayMidnight;
       dateEnd = todayMidnight;
@@ -332,7 +567,6 @@ function Recup() {
     }
   };
 
-  // --- 3. FETCH DATA & PROCESS ---
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
@@ -385,9 +619,8 @@ function Recup() {
     const interval = setInterval(fetchSchedule, 30000);
     return () => clearInterval(interval);
 
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
-  // --- 4. ANIMASI & HELPERS ---
   const handleMouseMove = (e) => {
     if (window.innerWidth <= 768) return;
     const { clientX, clientY } = e;
@@ -421,90 +654,13 @@ function Recup() {
     return '';
   };
 
-  const getCompetitionsForDate = (date) => {
-    if (!groupedSchedules[date]) return [];
-    const comps = groupedSchedules[date].map(m => m.competition);
-    return [...new Set(comps)];
-  };
-
-  const getFilteredMatches = () => {
-    if (!activeTabDate || !groupedSchedules[activeTabDate]) return [];
-    const matchesOnDate = groupedSchedules[activeTabDate];
-    if (activeTabComp === 'ALL') return matchesOnDate;
-    return matchesOnDate.filter(m => m.competition === activeTabComp);
-  };
-
-  const filteredMatches = getFilteredMatches();
-  const visibleMatches = filteredMatches.filter(m => !checkIsBlacklisted(m));
-  
-  const availableComps = getCompetitionsForDate(activeTabDate);
-
-  // --- NEW SPLIT LOGIC ---
-  
-  const liveMatches = visibleMatches.filter(m => m.status?.toLowerCase() === 'live');
-
-  const nonLiveMatches = visibleMatches.filter(m => m.status?.toLowerCase() !== 'live').sort((a, b) => {
-    const parseTime = (d, t) => new Date(`${d} ${t}`);
-    return parseTime(a.date, a.time) - parseTime(b.date, b.time);
-  });
-
-  // --- RENDER HELPERS ---
-  const renderDecreeCard = (match, idx) => {
-    const isLive = match.status?.toLowerCase() === 'live';
-    const isUpcoming = (String(match.scoreteam1) === '-' || String(match.scoreteam2) === '-' || String(match.status).toLowerCase() === 'tbd');
-    const shouldShowScore = !isUpcoming && (isLive || (match.scoreteam1 && match.scoreteam2));
-
-    return (
-      <div key={`${match.team1}-${match.team2}-${idx}`} className={`decree-card-greek ${getStatusClass(match)}`} onClick={() => openMatchDetails(match)}>
-        <div className="dc-left-greek">
-          <div className="dc-top-info-greek">
-            <span className="dc-time-greek">{match.time}</span>
-            <span className="dc-cat-greek">{match.competition}</span>
-          </div>
-          {shouldShowScore && (
-            <span className={`dc-score-greek ${match.winner === 'team1' ? 'winner' : ''}`}>
-              {match.scoreteam1}
-            </span>
-          )}
-        </div>
-
-        <div className="dc-center-greek">
-          <div className="dc-team-greek">{match.team1}</div>
-          <div className="dc-vs-greek">VS</div>
-          <div className="dc-team-greek">{match.team2}</div>
-          {match.stage && <div className="dc-stage-greek">{match.stage}</div>}
-        </div>
-
-        <div className="dc-right-greek">
-          <div className="dc-top-info-greek">
-            {isLive ? 
-              <span className="live-tag-greek">LIVE</span> : 
-              (isUpcoming ? 
-                <span className="date-tag-greek" style={{color:'#d4af37', fontWeight:'bold'}}>UPCOMING</span> : 
-                <span className="date-tag-greek">{match.date}</span>
-              )
-            }
-          </div>
-          {shouldShowScore && (
-            <span className={`dc-score-greek ${match.winner === 'team2' ? 'winner' : ''}`}>
-              {match.scoreteam2}
-            </span>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <>
       <DynamicIsland theme="greek" />
-
-      {/* === HERO WRAPPER === */}
       <div className="recup-scroll-wrapper-greek" onMouseMove={handleMouseMove}>
         <div className="parchment-texture-greek"></div>
         <div className="vignette-greek"></div>
 
-        {/* --- LEFT: TICKER --- */}
         <div className="sidebar-left-greek">
           <div className="ancient-widget-greek ticker-widget-greek">
             <div className="widget-header-greek">
@@ -539,7 +695,6 @@ function Recup() {
           </div>
         </div>
 
-        {/* --- CENTER STAGE --- */}
         <section className="center-stage-greek">
           <div className="clouds-container-greek">
             <img src="./assets/recup/cloud.webp" className="cloud-greek c1-greek" alt="" />
@@ -555,7 +710,6 @@ function Recup() {
             <img src="./assets/recup/building.webp" className="hero-building-greek" alt="Pantheon" />
           </div>
 
-          {/* === MOBILE NEWS WIDGET === */}
           <div className="mobile-news-widget-greek">
             <div className="mn-inner-greek">
               <div className="mn-icon-greek"><GiScrollQuill /></div>
@@ -582,7 +736,6 @@ function Recup() {
           </div>
         </section>
 
-        {/* --- RIGHT: NEWS --- */}
         <div className="sidebar-right-greek">
           <div className="news-widget-greek">
             <div className="news-header-greek">
@@ -606,123 +759,27 @@ function Recup() {
         </div>
       </div>
 
-      {/* === MOBILE FAB === */}
       <button className="wax-fab-greek" onClick={() => setIsScheduleOpen(true)}>
         <div className="seal-inner-greek"><span className="seal-icon-greek"><GrSchedules /></span></div>
       </button>
 
-      {/* === MODAL LIST JADWAL (DESKTOP SPLIT / MOBILE OPTIMIZED) === */}
       <div className={`parchment-modal-overlay-greek ${isScheduleOpen ? 'open-greek' : ''}`} onClick={() => setIsScheduleOpen(false)}>
-        <div className="parchment-modal-greek" onClick={e => e.stopPropagation()}>
-          <div className="pm-header-greek">
-            <h2>MATCH SCHEDULE</h2>
-            <button className="pm-close-greek" onClick={() => setIsScheduleOpen(false)}><IoMdClose /></button>
-          </div>
-
-          <SmartTabs activeId={activeTabDate}>
-            {Object.keys(groupedSchedules).map((date, idx) => (
-              <button
-                key={date}
-                className={`pm-tab-greek ${activeTabDate === date ? 'active' : ''}`}
-                onClick={() => { setActiveTabDate(date); setActiveTabComp('ALL'); }}
-                data-id={date}
-              >
-                {date}
-              </button>
-            ))}
-          </SmartTabs>
-
-          <SmartTabs activeId={activeTabComp} subTabs={true}>
-            <button
-              className={`pm-subtab-greek ${activeTabComp === 'ALL' ? 'active' : ''}`}
-              onClick={() => setActiveTabComp('ALL')}
-              data-id="ALL"
-            >
-              ALL MATCHES
-            </button>
-            {availableComps.map((comp, idx) => (
-              <button
-                key={comp}
-                className={`pm-subtab-greek ${activeTabComp === comp ? 'active' : ''}`}
-                onClick={() => setActiveTabComp(comp)}
-                data-id={comp}
-              >
-                {comp}
-              </button>
-            ))}
-          </SmartTabs>
-
-          <div className="pm-body-greek">
-            {visibleMatches.length > 0 ? (
-              <>
-                {/* --- DESKTOP SPLIT VIEW --- */}
-                <div className="pm-desktop-split-greek">
-                  
-                  {/* LEFT COLUMN: LIVE ONLY (Conditional Render) */}
-                  {liveMatches.length > 0 && (
-                    <div className="pm-column-greek left-col">
-                      <div className="pm-col-header-greek">
-                        <span className="pm-header-dot live"></span>
-                        <span className="pm-header-title">SEDANG BERLANGSUNG</span>
-                      </div>
-                      <div className="pm-col-scroll-area-greek">
-                        <div 
-                          className="pm-track-greek"
-                          style={{ animation: liveMatches.length <= 2 ? 'none' : undefined }}
-                        >
-                           {liveMatches.length > 0 ? (
-                              (liveMatches.length > 2 ? [...liveMatches, ...liveMatches] : liveMatches)
-                                .map((match, idx) => renderDecreeCard(match, idx))
-                           ) : (
-                              <div className="loading-text-greek" style={{textAlign:'center', padding:'20px'}}>Tidak ada pertandingan live.</div>
-                           )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* CENTER DIVIDER (Conditional Render) */}
-                  {liveMatches.length > 0 && (
-                    <div className="pm-divider-vertical-greek"></div>
-                  )}
-
-                  {/* RIGHT COLUMN: NON-LIVE (Always Renders, Full Width if no Live) */}
-                  <div className={`pm-column-greek right-col ${liveMatches.length === 0 ? 'full-width' : ''}`}>
-                    <div className="pm-col-header-greek">
-                      <span className={`pm-header-dot ${liveMatches.length > 0 ? 'upcoming' : 'all'}`}></span>
-                      <span className="pm-header-title">{liveMatches.length > 0 ? 'JADWAL & HASIL' : 'SEMUA JADWAL'}</span>
-                    </div>
-                    <div className="pm-col-scroll-area-greek">
-                      <div className="pm-track-greek">
-                        {[...nonLiveMatches, ...nonLiveMatches].map((match, idx) => renderDecreeCard(match, idx))}
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* --- MOBILE INFINITE VIEW (SCROLL) --- */}
-                <div className="pm-infinite-scroll-wrapper-greek">
-                  <div className="pm-infinite-track-greek">
-                    {[...visibleMatches, ...visibleMatches].map((match, idx) => renderDecreeCard(match, idx))}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="loading-text-greek" style={{ textAlign: 'center', marginTop: '20px' }}>
-                Tidak ada pertandingan yang ditampilkan.
-              </div>
-            )}
-          </div>
-        </div>
+        <RecupSchedule 
+          groupedSchedules={groupedSchedules}
+          activeTabDate={activeTabDate}
+          activeTabComp={activeTabComp}
+          setActiveTabDate={setActiveTabDate}
+          setActiveTabComp={setActiveTabComp}
+          onMatchClick={(match) => { openMatchDetails(match); setIsScheduleOpen(false); }}
+          isBlacklistedFn={checkIsBlacklisted}
+          onClose={() => setIsScheduleOpen(false)}
+        />
       </div>
 
-      {/* === POPUP DETAIL MATCH === */}
       {selectedMatch && (
         <div className="match-detail-overlay-greek" onClick={closeMatchDetails}>
           <div className="match-detail-scroll-greek" onClick={(e) => e.stopPropagation()}>
             <button className="md-close-btn-greek" onClick={closeMatchDetails}><IoMdClose /></button>
-            
             <div className="md-content-wrapper">
               <div className="md-header-greek">
                 <GiLaurels className="laurels-left" />

@@ -13,6 +13,23 @@
   --font-body-greek: 'Lato', sans-serif;
 }
 
+/* --- SCROLLBAR THEME --- */
+/* Custom Scrollbar for Modal and Lists */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--parchment-light-greek);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bronze-greek);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-greek);
+}
+
 /* --- MAIN WRAPPER --- */
 .recup-scroll-wrapper-greek {
   position: relative;
@@ -173,7 +190,7 @@
 }
 
 /* =========================================
-LEFT SIDEBAR: INFINITE TICKER
+LEFT SIDEBAR: INFINITE TICKER (Keep Automatic)
 ========================================= */
 .sidebar-left-greek {
   position: absolute; left: 40px; top: 50%; transform: translateY(-50%);
@@ -533,7 +550,7 @@ SMART TABS (UX IMPROVEMENT)
 
 
 /* =========================================
-MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
+MAIN SCHEDULE MODAL (HYBRID SCROLL)
 ========================================= */
 .parchment-modal-overlay-greek {
   position: fixed; inset: 0;
@@ -581,40 +598,45 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
 .pm-close-greek:hover { color: var(--red-seal-greek); transform: scale(1.1); }
 
 
-/* Modal Body - Infinite Scroll */
+/* Modal Body - Container */
 .pm-body-greek {
   flex: 1;
-  overflow: hidden;
+  overflow: hidden; /* Prevent body itself from scrolling, we scroll the columns */
   position: relative;
   background-color: #fdf6e3;
   background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+  display: flex;
+  flex-direction: column;
 }
 
-.pm-infinite-scroll-wrapper-greek {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  /* Mask for fade effect at top and bottom */
+/* --- SCROLL WRAPPERS --- */
+.pm-col-scroll-area-greek, 
+.pm-mobile-scroll-wrapper-greek {
+  flex: 1;
+  overflow-y: auto; /* Enable native scroll (used when paused) */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Masking hanya aktif saat auto-scrolling (tidak di hover) */
+/* Opsional: Membuat efek pudar atas bawah */
+.auto-scroller-active {
   mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);
 }
+.auto-scroller-active:hover {
+  mask-image: none;
+  -webkit-mask-image: none;
+}
 
-.pm-infinite-track-greek {
+.pm-track-greek {
   display: flex;
   flex-direction: column;
-  gap: 20px; 
-  padding: 40px 20px;
-  /* Optimized Marquee: Moves items up seamlessly */
-  animation: verticalMarquee 45s linear infinite;
-}
-
-.pm-infinite-scroll-wrapper-greek:hover .pm-infinite-track-greek {
-  animation-play-state: paused;
-}
-
-@keyframes verticalMarquee {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-50%); }
+  gap: 15px;
+  padding: 20px 0 50px 0; /* Extra padding at bottom */
 }
 
 /* Decree Cards (Matches) */
@@ -756,7 +778,7 @@ MAIN SCHEDULE MODAL (OPTIMIZED SCROLL)
 }
 
 /* =========================================
-DESKTOP SPLIT VIEW (CLEAN)
+DESKTOP SPLIT VIEW
 ========================================= */
 .pm-desktop-split-greek {
   display: none; 
@@ -764,6 +786,7 @@ DESKTOP SPLIT VIEW (CLEAN)
   height: 100%;
   gap: 0;
   padding: 0 20px;
+  overflow: hidden; /* Parent doesn't scroll, children do */
 }
 
 .pm-column-greek {
@@ -793,8 +816,7 @@ DESKTOP SPLIT VIEW (CLEAN)
   color: var(--ink-greek);
   font-size: 1rem;
   letter-spacing: 1px;
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 10;
   justify-content: center; /* Center title when full width */
 }
@@ -813,34 +835,6 @@ DESKTOP SPLIT VIEW (CLEAN)
 .pm-header-dot.live { background-color: var(--red-seal-greek); box-shadow: 0 0 8px rgba(138, 42, 42, 0.4); }
 .pm-header-dot.upcoming { background-color: var(--gold-greek); }
 .pm-header-dot.all { background-color: var(--ink-greek); }
-
-.pm-col-scroll-area-greek {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-  mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%);
-  display: flex;
-  flex-direction: column;
-  padding: 20px 0;
-}
-
-.pm-track-greek {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  /* Slow Marquee: 60s for seamless loop */
-  animation: verticalMarqueeSlow 60s linear infinite;
-}
-
-.pm-col-scroll-area-greek:hover .pm-track-greek {
-  animation-play-state: paused;
-}
-
-@keyframes verticalMarqueeSlow {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-50%); }
-}
 
 .pm-divider-vertical-greek {
   width: 1px;
@@ -1053,7 +1047,7 @@ DETAILED MATCH POPUP
     max-height: 90vh;
     transform: translateY(100%);
   }
-  .parchment-modal-overlay-greek.open-greek .parchment-modal-greek { transform: translateY(0); }
+  .parchment-modal-overlay-greek.open-greek { transform: translateY(0); }
   
   .match-detail-scroll-greek {
     max-width: 100%;
@@ -1094,8 +1088,8 @@ DETAILED MATCH POPUP
     max-width: 1600px; 
   }
   
-  .pm-infinite-scroll-wrapper-greek {
-    display: none; /* Hide Mobile Infinite Scroll */
+  .pm-mobile-scroll-wrapper-greek {
+    display: none; /* Hide Mobile View */
   }
 
   .pm-desktop-split-greek {
@@ -1111,7 +1105,7 @@ DETAILED MATCH POPUP
     display: none; /* Hide Split View */
   }
   
-  .pm-infinite-scroll-wrapper-greek {
-    display: block; /* Show Infinite Scroll */
+  .pm-mobile-scroll-wrapper-greek {
+    display: flex; /* Show Mobile View */
   }
 }

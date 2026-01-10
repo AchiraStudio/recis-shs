@@ -1,0 +1,172 @@
+/* jingle-joyce.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+.jingle-wrapper {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #050510;
+  color: #ffffff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.jingle-hero {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  z-index: 1;
+}
+
+.jingle-ambient-glow {
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80vw;
+  height: 80vh;
+  background: radial-gradient(circle, rgba(76, 29, 149, 0.25) 0%, rgba(15, 23, 42, 0) 70%);
+  filter: blur(80px);
+  z-index: -1;
+  animation: pulse 10s ease-in-out infinite alternate;
+}
+
+.jingle-content {
+  text-align: center;
+  max-width: 800px;
+  animation: fadeIn 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.jingle-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #d8b4fe;
+  margin-bottom: 24px;
+  backdrop-filter: blur(10px);
+}
+
+.jingle-title {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.jingle-subtitle {
+  font-size: 1.25rem;
+  font-weight: 300;
+  color: #94a3b8;
+  margin-bottom: 40px;
+  line-height: 1.5;
+}
+
+.jingle-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.jingle-btn {
+  padding: 14px 32px;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+}
+
+.jingle-btn.primary {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.jingle-btn.primary:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.jingle-btn.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.jingle-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-icon {
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+.jingle-details {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 4rem 2rem;
+  flex-wrap: wrap;
+}
+
+.jingle-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 20px 32px;
+  border-radius: 20px;
+  min-width: 240px;
+  transition: transform 0.3s ease;
+}
+
+.jingle-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.card-icon {
+  color: #818cf8;
+}
+
+.card-text h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.card-text p {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; transform: translateX(-50%) scale(0.9); }
+  100% { opacity: 0.8; transform: translateX(-50%) scale(1.1); }
+}
+
+@media (max-width: 768px) {
+  .jingle-actions { flex-direction: column; }
+  .jingle-btn { width: 100%; }
+}

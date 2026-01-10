@@ -18,6 +18,11 @@ import Recup from './events/ascension/recup';
 import Gallery from './events/gallery/Gallery';
 import ErrorPage from './ErrorPage';
 
+import JingleJoyce from './events/jingle-joyce/jingle-joyce';
+import EasterCharity from './events/easter-charity/easter-charity';
+import SlitherSweetheart from './events/slither-sweetheart/slither-sweetheart';
+import Mpls from './events/mpls/mpls';
+
 // --- DATA STEP TUTORIAL ---
 const TUTORIAL_STEPS = [
   { 
@@ -155,6 +160,10 @@ function App() {
           <Route path="/r-shs" element={<LandingPage />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/ascension-cup" element={<Recup />} />
+          <Route path="/jingle-joyce" element={<JingleJoyce />} />
+          <Route path="/easter-charity" element={<EasterCharity />} />
+          <Route path="/slither-sweetheart" element={<SlitherSweetheart />} />
+          <Route path="/mpls-70" element={<Mpls />} />
           <Route path="*" element={<ErrorPage />} />
         </Routes>
 

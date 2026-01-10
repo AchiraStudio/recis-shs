@@ -1,0 +1,153 @@
+/* slither-sweetheart.css */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap');
+
+.slither-wrapper {
+  font-family: 'Lato', sans-serif;
+  background-color: #0f0505;
+  color: #fce7f3;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slither-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, #4a044e, #0f0505 60%),
+              radial-gradient(circle at bottom left, #78350f, #0f0505 60%);
+  opacity: 0.6;
+  z-index: 0;
+}
+
+.slither-container {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 2rem;
+  max-width: 800px;
+}
+
+.slither-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 3rem;
+  font-family: 'Playfair Display', serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.slither-year {
+  color: #fca5a5;
+}
+
+.slither-heart {
+  color: #ef4444;
+  font-size: 1.2rem;
+  animation: beat 1.5s infinite;
+}
+
+.slither-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3rem, 6vw, 5rem);
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  font-weight: 400;
+  color: #fff;
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #fcd34d 0%, #d97706 50%, #fcd34d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: shine 4s linear infinite;
+  font-style: italic;
+}
+
+.slither-text {
+  font-size: 1.1rem;
+  color: #e2e8f0;
+  margin-bottom: 3rem;
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+.slither-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 3rem;
+}
+
+.slither-box {
+  padding: 30px;
+  border-radius: 4px; /* Slightly sharp for refined feel */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  transition: all 0.4s ease;
+}
+
+.slither-box:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.slither-box.red {
+  border-top: 1px solid #ef4444;
+}
+
+.slither-box.gold {
+  border-top: 1px solid #d97706;
+}
+
+.slither-box h3 {
+  font-family: 'Playfair Display', serif;
+  margin: 12px 0 4px 0;
+  font-size: 1.2rem;
+}
+
+.slither-box p {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.slither-cta {
+  background: linear-gradient(90deg, #be123c, #b91c1c);
+  color: white;
+  border: none;
+  padding: 16px 40px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 25px -5px rgba(190, 18, 60, 0.5);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slither-cta:hover {
+  box-shadow: 0 20px 35px -5px rgba(190, 18, 60, 0.6);
+  transform: scale(1.02);
+}
+
+@keyframes beat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes shine {
+  to { background-position: 200% center; }
+}
+
+@media (max-width: 600px) {
+  .slither-grid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,182 @@
+/* easter-charity.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+.easter-wrapper {
+  font-family: 'Inter', sans-serif;
+  background-color: #fdfbf7;
+  color: #1e293b;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.easter-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto 4rem auto;
+}
+
+.easter-logo {
+  font-weight: 600;
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+}
+
+.easter-cta-sm {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: transparent;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.easter-cta-sm:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.easter-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: center;
+}
+
+.easter-left {
+  animation: slideUp 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.easter-icon-box {
+  width: 60px;
+  height: 60px;
+  background: #fff1f2;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  color: #fda4af;
+}
+
+.easter-title {
+  font-size: clamp(3rem, 5vw, 4.5rem);
+  font-weight: 600;
+  line-height: 1.1;
+  margin-bottom: 24px;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+}
+
+.easter-title .highlight {
+  color: #e11d48;
+  font-style: italic;
+}
+
+.easter-desc {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #64748b;
+  margin-bottom: 32px;
+  max-width: 90%;
+}
+
+.easter-metrics {
+  display: flex;
+  gap: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.metric-val {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.easter-right {
+  perspective: 1000px;
+}
+
+.easter-card-main {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 40px;
+  border-radius: 32px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
+  transform: rotateY(-5deg) rotateX(5deg);
+  transition: transform 0.5s ease;
+  /* animation: float 6s ease-in-out infinite; */
+}
+
+.easter-card-main:hover {
+  transform: rotateY(0deg) rotateX(0deg);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e11d48;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.easter-card-main h2 {
+  font-size: 1.8rem;
+  margin-bottom: 12px;
+  color: #0f172a;
+}
+
+.easter-card-main p {
+  color: #64748b;
+  margin-bottom: 24px;
+  font-size: 1rem;
+}
+
+.easter-btn {
+  background: #0f172a;
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 14px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.easter-btn:hover {
+  background: #334155;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0% { transform: rotateY(-5deg) rotateX(5deg) translateY(0px); }
+  50% { transform: rotateY(-5deg) rotateX(5deg) translateY(-15px); }
+  100% { transform: rotateY(-5deg) rotateX(5deg) translateY(0px); }
+}
+
+@media (max-width: 900px) {
+  .easter-hero { grid-template-columns: 1fr; }
+  .easter-card-main { transform: none; margin-top: 2rem; }
+  .easter-card-main:hover { transform: none; }
+}

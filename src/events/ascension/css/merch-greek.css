@@ -1,51 +1,213 @@
+/* --- MERCH DISPLAY (The Armory) --- */
 .merch-section-greek {
-  padding: 80px 20px;
-  background-color: var(--parchment-dark-greek);
+  padding: 120px 20px;
+  background: var(--bg-main); /* Uses global theme background */
   position: relative;
+  overflow: hidden;
+  transition: background 0.5s ease;
 }
 
-.merch-header-greek { text-align: center; margin-bottom: 50px; }
-.mh-title-greek { font-family: var(--font-heading-greek); font-size: 3rem; color: var(--ink-greek); margin: 0; }
-.mh-sub-greek { font-family: var(--font-body-greek); color: #666; margin-top: 5px; letter-spacing: 1px; }
+.merch-container-greek {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 5;
+}
 
+/* Header */
+.merch-header-greek {
+  text-align: center;
+  margin-bottom: 70px;
+}
+
+.mh-sub-greek {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  letter-spacing: 0.3em;
+  color: var(--gold-primary);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.mh-title-greek {
+  font-family: var(--font-heading);
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  color: var(--text-main);
+  margin: 0;
+  text-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  text-transform: uppercase;
+}
+
+/* Grid */
 .merch-grid-greek {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 30px; max-width: 1200px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
 }
 
+/* --- ARTIFACT CARD --- */
 .item-card-greek {
-  background: #fff; border: 1px solid #ccc;
-  padding: 15px; position: relative;
+  background: var(--card-bg); /* Glassy background */
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  flex-direction: column;
 }
 
+.item-card-greek:hover {
+  transform: translateY(-10px);
+  border-color: var(--gold-dim);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+}
+
+/* Featured Badge */
 .featured-flag-greek {
-  position: absolute; top: 0; left: 0;
-  background: var(--gold-greek); color: var(--ink-greek);
-  padding: 5px 10px; font-size: 0.7rem; font-weight: bold; z-index: 5;
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: var(--gold-primary);
+  color: #000;
+  padding: 4px 12px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
+/* Image Box */
 .ic-img-box-greek {
-  height: 250px; position: relative; overflow: hidden; margin-bottom: 15px;
-  background: #f0f0f0;
+  height: 300px;
+  position: relative;
+  overflow: hidden;
+  background: rgba(0,0,0,0.02); /* Slight tint */
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.ic-img-box-greek img {
-  width: 100%; height: 100%; object-fit: cover; transition: 0.3s;
-}
-.item-card-greek:hover img { transform: scale(1.05); }
 
-/* Quick Add Button appears on hover */
-.quick-add-greek {
-  position: absolute; bottom: -50px; left: 0; right: 0;
-  background: var(--ink-greek); color: #fff; border: none;
-  padding: 12px; font-family: var(--font-heading-greek);
-  cursor: pointer; transition: 0.3s;
+.ic-img-box-greek img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  filter: grayscale(30%); /* Cinematic look */
 }
-.item-card-greek:hover .quick-add-greek { bottom: 0; }
+
+.item-card-greek:hover .ic-img-box-greek img {
+  transform: scale(1.1);
+  filter: grayscale(0%);
+}
+
+/* Hover Overlay */
+.ic-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: 0.3s ease;
+}
+
+.item-card-greek:hover .ic-overlay {
+  opacity: 1;
+}
+
+/* Acquire Button */
+.quick-add-greek {
+  background: var(--gold-primary);
+  color: #000;
+  border: none;
+  padding: 14px 28px;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transform: translateY(20px);
+  transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+}
+
+.item-card-greek:hover .quick-add-greek {
+  transform: translateY(0);
+}
+
+.quick-add-greek:hover {
+  background: #fff;
+  box-shadow: 0 0 20px var(--gold-glow);
+}
+
+/* Info Section */
+.ic-info-greek {
+  padding: 20px;
+  text-align: center;
+  background: var(--glass-panel);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
 
 .ic-name-greek {
-  font-family: var(--font-heading-greek); font-size: 1rem;
-  color: var(--ink-greek); margin: 0 0 5px;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--text-main);
+  margin: 0 0 8px;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
 }
+
 .ic-price-greek {
-  font-weight: bold; color: var(--gold-greek); font-size: 1.1rem;
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: var(--gold-primary);
+  font-size: 1rem;
+}
+
+.currency-greek {
+  font-size: 0.8em;
+  margin-right: 2px;
+  opacity: 0.8;
+}
+
+/* Light Mode Specifics */
+.light-mode .item-card-greek {
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+.light-mode .ic-img-box-greek img {
+  filter: none;
+  mix-blend-mode: normal;
+}
+.light-mode .ic-info-greek {
+  background: #fff;
+}
+
+/* Responsive Mobile */
+@media (max-width: 768px) {
+  .mh-title-greek { font-size: 2.5rem; }
+  
+  /* On mobile, show button at bottom instead of hover */
+  .ic-overlay { display: none; }
+  .ic-img-box-greek { height: 250px; }
+  .item-card-greek { padding-bottom: 50px; } /* Make space for button */
+  
+  .mobile-add-btn {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 45px; background: var(--gold-primary);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-heading); font-weight: 800; color: #000;
+    font-size: 0.9rem; letter-spacing: 1px;
+  }
+}
+@media (min-width: 769px) {
+  .mobile-add-btn { display: none; }
 }

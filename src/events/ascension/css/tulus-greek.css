@@ -1,54 +1,172 @@
-.tulus-section-greek {
+/* --- TULUS SPECIAL PERFORMANCE (The Divine Guest) --- */
+.tulus-section {
   position: relative;
-  background-color: var(--ink-greek); /* Dark section */
-  color: var(--parchment-light-greek);
-  padding: 100px 20px;
+  padding: 120px 20px;
+  background: var(--bg-main); 
   overflow: hidden;
+  transition: background 0.5s ease;
 }
 
-.dark-ink-overlay-greek {
-  position: absolute; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415-.828-.828-.828.828-1.415-1.415.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828zM22.485 0l.83.828-1.415 1.415-.828-.828-.828.828-1.415-1.415.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828zM0 22.485l.828.83-1.415 1.415-.828-.828-.828.828L-2.83 22.485l.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828zM0 54.627l.828.83-1.415 1.415-.828-.828-.828.828L-2.83 54.627l.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828zM54.627 32.142l.83.828-1.415 1.415-.828-.828-.828.828-1.415-1.415.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828zM32.142 54.627l.83.828-1.415 1.415-.828-.828-.828.828-1.415-1.415.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828z' fill='%23342312' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E");
+/* Spotlights Background */
+.tulus-spotlight {
+  position: absolute; inset: 0; pointer-events: none;
+  background: 
+    radial-gradient(circle at 80% 50%, rgba(212, 175, 55, 0.15), transparent 50%),
+    radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.05), transparent 50%);
+  z-index: 1;
 }
 
-.tulus-container-greek {
-  max-width: 1200px; margin: 0 auto; position: relative; z-index: 2;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+.tulus-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  position: relative; z-index: 5;
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 80px; 
+  align-items: center;
 }
 
-/* Left Content */
-.tl-label-greek { font-family: var(--font-body-greek); color: var(--gold-greek); letter-spacing: 2px; font-size: 0.9rem; }
-.tl-name-greek { font-family: var(--font-heading-greek); font-size: 5rem; margin: 0; line-height: 1; color: #fff; }
-.tl-divider-greek { width: 60px; height: 4px; background: var(--gold-greek); margin: 20px 0 40px; }
-
-.active-title-greek { font-size: 1.8rem; font-family: 'Cinzel', serif; margin-bottom: 10px; }
-.active-desc-greek { font-size: 1.1rem; line-height: 1.6; opacity: 0.8; margin-bottom: 30px; }
-
-.tulus-controls-greek { display: flex; gap: 10px; margin-bottom: 30px; }
-.dot-btn-greek {
-  width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.2);
-  border: none; cursor: pointer; transition: 0.3s;
+/* --- LEFT SIDE: CONTENT --- */
+.tl-label {
+  font-family: var(--font-body);
+  color: var(--gold-primary);
+  font-size: 0.9rem; letter-spacing: 0.2em;
+  font-weight: 700; text-transform: uppercase;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
 }
-.dot-btn-greek.active { background: var(--gold-greek); transform: scale(1.2); }
+.tl-label::before { content: ''; width: 40px; height: 1px; background: var(--gold-primary); }
 
-.reserve-btn-greek {
-  background: transparent; border: 1px solid var(--gold-greek); color: var(--gold-greek);
-  padding: 15px 40px; font-family: var(--font-heading-greek); font-weight: bold;
-  cursor: pointer; transition: 0.3s;
+.tl-name {
+  font-family: var(--font-heading);
+  font-size: clamp(4rem, 8vw, 8rem);
+  line-height: 0.85;
+  margin: 0 0 30px 0;
+  color: var(--text-main);
+  text-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
-.reserve-btn-greek:hover { background: var(--gold-greek); color: #000; }
 
-/* Right Image */
-.frame-gold-greek {
-  border: 2px solid var(--gold-greek); padding: 10px;
-  transform: rotate(2deg); transition: 0.5s;
+/* Chapter Navigation (Replacing Dots) */
+.chapter-nav {
+  display: flex; gap: 20px; margin-bottom: 30px;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 20px;
 }
-.tulus-container-greek:hover .frame-gold-greek { transform: rotate(0deg); }
 
-.tr-img-greek { width: 100%; height: auto; display: block; filter: grayscale(0.5); }
-
-@media (max-width: 900px) {
-  .tulus-container-greek { grid-template-columns: 1fr; text-align: center; }
-  .tulus-left-greek { display: flex; flex-direction: column; align-items: center; }
-  .tl-name-greek { font-size: 3.5rem; }
+.chapter-btn {
+  background: transparent; border: none;
+  font-family: var(--font-heading); font-size: 1rem;
+  color: var(--text-muted); cursor: pointer;
+  transition: 0.3s; padding: 0; text-transform: uppercase; letter-spacing: 1px;
 }
+.chapter-btn:hover { color: var(--gold-primary); }
+.chapter-btn.active { 
+  color: var(--gold-primary); 
+  text-shadow: 0 0 10px var(--gold-glow); 
+  font-weight: 700;
+}
+
+/* Dynamic Content Area */
+.active-content {
+  min-height: 150px; /* Prevent layout jump */
+}
+.ac-title {
+  font-family: var(--font-heading); font-size: 2rem; color: var(--text-main); margin: 0 0 10px 0;
+}
+.ac-desc {
+  font-size: 1.1rem; line-height: 1.6; color: var(--text-muted); margin: 0 0 30px 0;
+  max-width: 500px;
+}
+
+/* CTA Button */
+.ticket-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 40px;
+  background: var(--gold-primary); color: #000;
+  font-family: var(--font-heading); font-weight: 800; letter-spacing: 1px;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: 0.3s;
+  clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+}
+.ticket-btn:hover {
+  background: #fff; transform: translateY(-3px);
+  box-shadow: 0 10px 30px var(--gold-glow);
+}
+
+/* --- RIGHT SIDE: VISUAL --- */
+.tulus-visual {
+  position: relative;
+  height: 600px;
+  display: flex; justify-content: center; align-items: center;
+}
+
+/* The Glowing Circle Behind */
+.visual-aura {
+  position: absolute;
+  width: 500px; height: 500px;
+  border: 1px solid var(--gold-primary);
+  border-radius: 50%;
+  animation: spinSlow 30s linear infinite;
+  opacity: 0.3;
+}
+.visual-aura::before {
+  content: ''; position: absolute; inset: -20px; border: 1px dashed var(--glass-border); border-radius: 50%;
+}
+
+/* The Image Container */
+.visual-frame {
+  position: relative;
+  width: 400px; height: 550px;
+  background: var(--glass-panel);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  transform: rotate(-3deg);
+  transition: 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 20px 20px 50px rgba(0,0,0,0.3);
+}
+
+.tulus-section:hover .visual-frame { transform: rotate(0deg) scale(1.02); }
+
+.visual-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: grayscale(100%) contrast(1.1);
+  transition: 0.6s;
+}
+.tulus-section:hover .visual-img { filter: grayscale(0%) contrast(1); }
+
+/* Decoration Text */
+.visual-deco {
+  position: absolute; bottom: -40px; right: -20px;
+  font-family: var(--font-heading); font-size: 8rem;
+  color: transparent; -webkit-text-stroke: 1px var(--gold-primary);
+  opacity: 0.2; pointer-events: none; z-index: -1;
+}
+
+/* --- LIGHT MODE TWEAKS --- */
+.light-mode .tl-name { color: var(--text-main); }
+.light-mode .visual-img { filter: sepia(50%); }
+.light-mode .tulus-section:hover .visual-img { filter: sepia(0%); }
+.light-mode .visual-deco { opacity: 0.1; }
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1024px) {
+  .tulus-container { grid-template-columns: 1fr; text-align: center; gap: 50px; }
+  .tulus-visual { height: 500px; order: -1; } /* Image on top for tablet */
+  .visual-frame { width: 350px; height: 450px; margin: 0 auto; }
+  .visual-aura { left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  
+  .tl-label { justify-content: center; }
+  .tl-label::before { display: none; }
+  .chapter-nav { justify-content: center; }
+  .ac-desc { margin: 0 auto 30px; }
+}
+
+@media (max-width: 768px) {
+  .tulus-section { padding: 80px 20px; }
+  .tl-name { font-size: 4rem; }
+  .visual-frame { width: 280px; height: 380px; }
+  .visual-aura { width: 320px; height: 320px; }
+}
+
+@keyframes spinSlow { to { transform: rotate(360deg); } }

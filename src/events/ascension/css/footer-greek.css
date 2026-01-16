@@ -1,32 +1,133 @@
-.footer-greek {
+/* --- FOOTER (The Foundation) --- */
+.footer-section {
   position: relative;
-  background-color: #1a1a1a;
-  color: #888;
-  padding: 80px 20px 20px;
-  border-top: 5px solid var(--gold-greek);
+  background: var(--bg-main);
+  padding: 80px 20px 40px;
+  border-top: 1px solid var(--glass-border);
+  overflow: hidden;
 }
 
-.footer-container-greek {
-  max-width: 1200px; margin: 0 auto;
-  display: flex; justify-content: space-between; align-items: flex-start;
-  flex-wrap: wrap; gap: 40px;
+/* A dark overlay to ground the footer */
+.footer-overlay {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8));
+  z-index: 0;
 }
 
-.fb-logo-greek {
-  font-family: var(--font-heading-greek); font-size: 3rem; color: #fff; margin: 0;
-}
-.fb-tag-greek { font-style: italic; color: var(--gold-greek); }
-
-.footer-cols-greek { display: flex; gap: 50px; }
-.fc-col-greek h4 { color: #fff; margin-bottom: 15px; font-family: var(--font-heading-greek); }
-.fc-col-greek a { display: block; color: #888; text-decoration: none; margin-bottom: 8px; transition: 0.2s; }
-.fc-col-greek a:hover { color: var(--gold-greek); }
-
-.footer-base-greek {
-  text-align: center; margin-top: 60px; padding-top: 20px;
-  border-top: 1px solid #333; font-size: 0.7rem; letter-spacing: 2px;
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative; z-index: 5;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr; /* Brand | Links | Socials */
+  gap: 60px;
 }
 
-@media (max-width: 768px) {
-  .footer-container-greek { flex-direction: column; align-items: center; text-align: center; }
+/* Brand Column */
+.fb-logo {
+  font-family: var(--font-heading);
+  font-size: 4rem; 
+  color: var(--text-main);
+  margin: 0; line-height: 0.8;
+  letter-spacing: -2px;
+}
+
+.fb-tag {
+  font-family: var(--font-body);
+  color: var(--gold-primary);
+  font-size: 0.9rem; letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-top: 15px; display: block;
+  font-weight: 700;
+}
+
+.fb-desc {
+  margin-top: 20px; font-size: 0.9rem; 
+  color: var(--text-muted); line-height: 1.6;
+  max-width: 300px;
+}
+
+/* Links Columns */
+.fc-col h4 {
+  font-family: var(--font-heading);
+  color: var(--text-main);
+  font-size: 1.1rem; margin-bottom: 25px;
+  border-bottom: 2px solid var(--gold-dim);
+  display: inline-block; padding-bottom: 5px;
+}
+
+.footer-link {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--text-muted); text-decoration: none;
+  margin-bottom: 12px; transition: 0.3s;
+  font-size: 0.95rem;
+}
+
+.footer-link:hover {
+  color: var(--gold-primary);
+  transform: translateX(5px);
+}
+
+/* Social Icons */
+.social-grid {
+  display: flex; gap: 15px;
+}
+
+.social-btn {
+  width: 45px; height: 45px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted); font-size: 1.2rem;
+  transition: 0.3s;
+  background: var(--glass-panel);
+}
+
+.social-btn:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px var(--gold-glow);
+}
+
+/* Bottom Bar */
+.footer-base {
+  margin-top: 80px; padding-top: 30px;
+  border-top: 1px solid var(--glass-border);
+  display: flex; justify-content: space-between; align-items: center;
+  position: relative; z-index: 5;
+}
+
+.copyright {
+  font-size: 0.75rem; color: var(--text-muted); 
+  letter-spacing: 1px; text-transform: uppercase;
+}
+
+.achira-credit {
+  font-family: var(--font-heading); font-weight: 700;
+  color: var(--gold-dim); text-decoration: none;
+  font-size: 0.8rem; transition: 0.3s;
+}
+.achira-credit:hover { color: var(--gold-primary); }
+
+/* Back to Top Button */
+.totem-btn {
+  background: transparent; border: 1px solid var(--glass-border);
+  color: var(--gold-primary); width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: 0.3s;
+}
+.totem-btn:hover { border-color: var(--gold-primary); background: var(--glass-panel); }
+
+/* Light Mode Tweaks */
+.light-mode .footer-overlay { background: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(255,255,255,0.9)); }
+.light-mode .footer-section { border-top: 1px solid rgba(0,0,0,0.1); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .footer-container { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+  .fb-desc { margin: 20px auto 0; }
+  .fc-col h4 { border-bottom: 1px solid var(--gold-dim); padding-bottom: 10px; display: block; }
+  .footer-link { justify-content: center; }
+  .social-grid { justify-content: center; }
+  .footer-base { flex-direction: column; gap: 15px; }
 }

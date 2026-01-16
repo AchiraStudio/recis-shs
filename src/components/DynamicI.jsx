@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import { FaInstagram, FaSearch, FaGlobe, FaRedo } from "react-icons/fa"; // Added FaRedo for tutorial icon
+import { FaInstagram, FaSearch, FaGlobe, FaRedo, FaMoon, FaSun } from "react-icons/fa"; 
 import * as XLSX from 'xlsx';
 import './DynamicIsland.css';
-import './DynamicIsland-greek.css';
 
-const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zIndexOverride }, ref) => {
+const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zIndexOverride, onThemeToggle, isDarkMode }, ref) => {
   const [isActive, setIsActive] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
@@ -18,18 +17,16 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
   const islandRef = useRef(null);
   const searchInputRef = useRef(null);
 
-  // --- KOMUNIKASI DENGAN PARENT (TUTORIAL) ---
   useImperativeHandle(ref, () => ({
     collapse: () => collapseIsland(),
     activate: () => setIsActive(true)
   }));
 
-  // Notify parent when state changes
   useEffect(() => {
     if (onToggle) onToggle(isActive);
   }, [isActive, onToggle]);
 
-  // 1. Load Excel Data
+  // Load Data
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -42,21 +39,15 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
         setPages(json);
         setFilteredPages(json);
       } catch (error) {
-        // Fallback data
-        setPages([
-          { name: 'Science Fair', category: 'Academic', date: 'Oct 15', link: '#' },
-          { name: 'Basket Final', category: 'Sports', date: 'Nov 02', link: '#' },
-          { name: 'Art Show', category: 'Arts', date: 'Dec 10', link: '#' },
-        ]);
+        setPages([]);
       }
     };
     loadData();
   }, []);
 
-  // 2. Scroll & Click Outside
+  // Scroll & Click Outside
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    
     const handleClickOutside = (e) => {
       if (islandRef.current && !islandRef.current.contains(e.target)) {
         if (showSearch) {
@@ -67,7 +58,6 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
         }
       }
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
@@ -76,7 +66,6 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
     };
   }, [isActive, showSearch]);
 
-  // --- Actions ---
   const toggleIsland = () => {
     if (showSearch) return;
     if (isActive) collapseIsland();
@@ -100,10 +89,11 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
       onInstagramClick?.() || window.open('https://www.instagram.com/recisshs/#', '_blank');
     } else if (action === 'home') {
       window.location.href = '/';
+    } else if (action === 'theme') {
+      if (onThemeToggle) onThemeToggle();
     }
   };
 
-  // --- FUNGSI RESET TUTORIAL ---
   const handleResetTutorial = () => {
     if (window.confirm("Ulangi Tutorial? Halaman akan direfresh.")) {
       localStorage.removeItem('hasSeenAscensionTutorial');
@@ -111,7 +101,6 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
     }
   };
 
-  // Search Logic
   useEffect(() => {
     const lowerQuery = searchQuery.toLowerCase();
     const results = searchQuery 
@@ -136,16 +125,24 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
             <span className="di-label">RSHS</span>
           </div>
           <div className="di-menu">
-            <button onClick={(e) => handleAction(e, 'instagram')} aria-label="IG"><FaInstagram /></button>
-            <div className="di-divider"></div>
             <button onClick={(e) => handleAction(e, 'home')} aria-label="Home"><FaGlobe /></button>
+            
+            {/* THEME TOGGLE */}
+            {onThemeToggle && (
+               <>
+                 <div className="di-divider"></div>
+                 <button onClick={(e) => handleAction(e, 'theme')} aria-label="Theme">
+                    {isDarkMode ? <FaSun /> : <FaMoon />}
+                 </button>
+               </>
+            )}
+
             <div className="di-divider"></div>
             <button onClick={(e) => handleAction(e, 'search')} aria-label="Search"><FaSearch /></button>
           </div>
         </div>
       </div>
       
-      {/* --- SEARCH PANEL YANG SUDAH DIPERBAIKI --- */}
       <div className={`di-search-panel ${showSearch ? 'open' : ''}`}>
         <div className="di-search-input-wrap">
            <input 
@@ -154,12 +151,11 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
             placeholder="Search events..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onClick={(e) => e.stopPropagation()} // Agar tidak menutup saat diklik
+            onClick={(e) => e.stopPropagation()} 
           />
         </div>
 
         <div className="di-results">
-          {/* 1. Hasil Pencarian Normal */}
           {filteredPages.map((page, i) => (
             <a key={i} href={page.link || '#'} className="di-result-row">
               <div className="res-left">
@@ -170,17 +166,11 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
             </a>
           ))}
 
-          {/* 2. Menu Reset Tutorial (Selalu Muncul Paling Bawah) */}
-          {/* Muncul jika query kosong ATAU query mengandung kata 'tutorial' */}
           {(!searchQuery || 'tutorial'.includes(searchQuery.toLowerCase())) && (
             <div 
               className="di-result-row tutorial-reset-row" 
               onClick={handleResetTutorial}
-              style={{ 
-                marginTop: '10px', 
-                borderTop: '1px solid rgba(255,255,255,0.1)', 
-                cursor: 'pointer' 
-              }}
+              style={{ marginTop: '10px', borderTop: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}
             >
               <div className="res-left">
                 <span className="res-name" style={{ color: '#4ade80', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -192,13 +182,11 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
             </div>
           )}
 
-          {/* Pesan jika tidak ada hasil sama sekali (selain tutorial) */}
           {filteredPages.length === 0 && searchQuery && !'tutorial'.includes(searchQuery.toLowerCase()) && (
             <div className="di-no-res">No matches found.</div>
           )}
         </div>
       </div>
-      
     </div>
   );
 });

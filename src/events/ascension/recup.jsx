@@ -148,7 +148,7 @@ function Recup() {
         <div className="hero-wrapper">
           <span className="est-tag">EST. MMXXVI</span>
           <h1 className="hero-title">ASCENSION<br/>CUP</h1>
-          <span className="hero-subtitle">PATH TO OLYMPUS</span>
+          <span className="hero-subtitle">VIVA RECIS!</span>
           <div className="hero-buttons">
             <button className="btn-greek" onClick={() => setIsModalOpen(true)}>
               <GiGreekTemple size={20} /> SCHEDULE

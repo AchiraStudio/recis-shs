@@ -42,7 +42,7 @@
 }
 .pill-dot { width: 6px; height: 6px; background: currentColor; border-radius: 50%; box-shadow: 0 0 10px var(--accent); }
 
-.hero-title {
+.hero-title-home {
   font-size: clamp(3rem, 6vw, 5.5rem);
   line-height: 1.1;
   font-weight: 800;

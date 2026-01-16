@@ -40,7 +40,7 @@ const Hero = () => {
             </div>
           </div>
           
-          <h1 className="hero-title reveal-item delay-2">
+          <h1 className="hero-title-home reveal-item delay-2">
             RECIS <br /> SHS.
           </h1>
           

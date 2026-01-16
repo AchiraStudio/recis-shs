@@ -2,6 +2,10 @@
 import React from 'react';
 import { Snowflake, Calendar, MapPin, ArrowRight } from 'lucide-react';
 import './css/style.css';
+import './css/sections.css'
+import JingleSchedule from './jingle-schedule';
+import JingleGallery from './jingle-gallery';
+import JingleFooter from './jingle-footer';
 
 const JingleJoyce = () => {
   return (
@@ -42,6 +46,10 @@ const JingleJoyce = () => {
           </div>
         </div>
       </section>
+
+      <JingleSchedule></JingleSchedule>
+      <JingleGallery></JingleGallery>
+      <JingleFooter></JingleFooter>
     </div>
   );
 };

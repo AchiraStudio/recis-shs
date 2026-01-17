@@ -19,14 +19,14 @@ const CheckoutProcess = ({
     { id: 3, title: 'OFFERING' }
   ];
 
-  // --- UPDATED CLASS SORTING LOGIC ---
-  // Generates: X-1...X-9, then XI-1...XI-9, then XII-1...XII-9
+  // Class List Generation
   const kelasOptions = ['X', 'XI', 'XII'].flatMap(grade => 
     Array.from({ length: 9 }, (_, i) => `${grade}-${i + 1}`)
   );
 
-  const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'];
-  const colors = ['Hitam', 'Putih'];
+  // --- SIZE LOGIC BASED ON REQUEST ---
+  const sizesBlack = ['M', 'L', 'XL', '2XL']; // Limited stock
+  const sizesWhite = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL']; // Full stock
   const bracelets = ['Hitam', 'Cream', 'Maroon', 'Light Blue'];
 
   useEffect(() => {
@@ -50,8 +50,9 @@ const CheckoutProcess = ({
   }, [step]);
 
   const next = () => {
-    if(step === 1 && (!formData.namaLengkap || !formData.email || !formData.kelas)) {
-       alert("Please complete identity details.");
+    // FIX: Added validation for !formData.nomorAbsen
+    if(step === 1 && (!formData.namaLengkap || !formData.email || !formData.kelas || !formData.nomorTelepon || !formData.nomorAbsen)) {
+       alert("Please complete all identity details.");
        return;
     }
     setStep(s => s + 1);
@@ -124,13 +125,13 @@ const CheckoutProcess = ({
                   </div>
                   
                   <div className="c-row">
-                    <div className="input-group">
+                    {/* <div className="input-group">
                       <label className="c-label">CLASS</label>
                       <select className="c-select" name="kelas" value={formData.kelas} onChange={handleInput} required>
                         <option value="">Select Legion</option>
                         {kelasOptions.map(k => <option key={k} value={k}>{k}</option>)}
                       </select>
-                    </div>
+                    </div> */}
                     <div className="input-group">
                       <label className="c-label">ABSENT NO.</label>
                       <input type="number" className="c-input" name="nomorAbsen" value={formData.nomorAbsen} onChange={handleInput} required />
@@ -152,54 +153,89 @@ const CheckoutProcess = ({
               {/* STEP 2: SPECS */}
               {step === 2 && (
                 <div className="fade-slide-up">
-                  {cart.map((item, idx) => (
-                    <div key={idx} className={`config-item ${activeConfig === idx ? 'active' : ''}`}>
-                      <div className="config-header" onClick={() => setActiveConfig(activeConfig === idx ? -1 : idx)}>
-                        <h4 style={{textTransform:'uppercase'}}>{item.name} (x{item.quantity})</h4>
-                        <FiChevronDown className="config-icon" />
-                      </div>
-                      
-                      <div className="config-body">
-                         {Array.from({length: item.quantity}).map((_, i) => {
-                           const key = `${idx}_${i}`;
-                           return (
-                             <div key={i} style={{marginBottom: i === item.quantity - 1 ? 0 : 25}}>
-                               <div style={{fontSize:'0.75rem', color:'var(--portal-accent-dim)', marginBottom:10, borderBottom:'1px solid var(--portal-border)', paddingBottom:5}}>
-                                 ITEM #{i+1} CONFIGURATION
-                               </div>
-                               
-                               {item.hasTshirt && (
-                                 <div className="c-row">
-                                   <div className="input-group" style={{marginBottom:15}}>
-                                     <label className="c-label">SIZE</label>
-                                     <select className="c-select" name={`sizeTshirt_${key}`} value={formData[`sizeTshirt_${key}`]} onChange={handleInput} required>
-                                       <option value="">Select Size</option>
-                                       {sizes.map(s => <option key={s} value={s}>{s}</option>)}
-                                     </select>
-                                   </div>
-                                   <div className="input-group" style={{marginBottom:15}}>
-                                     <label className="c-label">COLOR</label>
-                                     <select className="c-select" name={`warnaTshirt_${key}`} value={formData[`warnaTshirt_${key}`]} onChange={handleInput} required>
-                                       <option value="">Select Color</option>
-                                       {colors.map(c => <option key={c} value={c}>{c}</option>)}
-                                     </select>
-                                   </div>
+                  {cart.map((item, idx) => {
+                    // Skip config if accessory (Totebag)
+                    if(item.type === 'accessory') return (
+                       <div key={idx} className="config-item" style={{opacity:0.7}}>
+                         <div className="config-header">
+                            <h4>{item.name} (x{item.quantity}) - No Config Needed</h4>
+                         </div>
+                       </div>
+                    );
+
+                    return (
+                      <div key={idx} className={`config-item ${activeConfig === idx ? 'active' : ''}`}>
+                        <div className="config-header" onClick={() => setActiveConfig(activeConfig === idx ? -1 : idx)}>
+                          <h4 style={{textTransform:'uppercase'}}>{item.name} (x{item.quantity})</h4>
+                          <FiChevronDown className="config-icon" />
+                        </div>
+                        
+                        <div className="config-body">
+                           {Array.from({length: item.quantity}).map((_, i) => {
+                             const key = `${idx}_${i}`;
+                             
+                             // Determine which sizes to show
+                             let sizeOptions = [];
+                             let showColor = false;
+                             let showBracelets = false;
+
+                             if (item.type === 'shirt_black') {
+                               sizeOptions = sizesBlack;
+                             } else if (item.type === 'shirt_white') {
+                               sizeOptions = sizesWhite;
+                             } else if (item.type === 'bundle') {
+                               sizeOptions = sizesWhite; // Assume old bundles had standard sizes
+                               showColor = true;
+                               showBracelets = true;
+                             }
+
+                             return (
+                               <div key={i} style={{marginBottom: i === item.quantity - 1 ? 0 : 25}}>
+                                 <div style={{fontSize:'0.75rem', color:'var(--portal-accent-dim)', marginBottom:10, borderBottom:'1px solid var(--portal-border)', paddingBottom:5}}>
+                                   ITEM #{i+1} SPECIFICATIONS
                                  </div>
-                               )}
-                               
-                               <div className="input-group" style={{marginBottom:0}}>
-                                 <label className="c-label">WRISTBAND</label>
-                                 <select className="c-select" name={`warnaGelang_${key}`} value={formData[`warnaGelang_${key}`]} onChange={handleInput} required>
-                                   <option value="">Select Color</option>
-                                   {bracelets.map(c => <option key={c} value={c}>{c}</option>)}
-                                 </select>
+                                 
+                                 {/* Size Selection (if shirt or bundle) */}
+                                 {(item.type === 'shirt_black' || item.type === 'shirt_white' || item.type === 'bundle') && (
+                                   <div className="c-row">
+                                     <div className="input-group" style={{marginBottom:15}}>
+                                       <label className="c-label">SIZE</label>
+                                       <select className="c-select" name={`sizeTshirt_${key}`} value={formData[`sizeTshirt_${key}`]} onChange={handleInput} required>
+                                         <option value="">Select Size</option>
+                                         {sizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
+                                       </select>
+                                     </div>
+                                     {/* Color Selection (only for bundles where it varies) */}
+                                     {showColor && (
+                                       <div className="input-group" style={{marginBottom:15}}>
+                                         <label className="c-label">COLOR</label>
+                                          <select className="c-select" name={`warnaTshirt_${key}`} value={formData[`warnaTshirt_${key}`]} onChange={handleInput} required>
+                                           <option value="">Select Color</option>
+                                           <option value="Hitam">Hitam</option>
+                                           <option value="Putih">Putih</option>
+                                          </select>
+                                       </div>
+                                     )}
+                                   </div>
+                                 )}
+                                 
+                                 {/* Wristband (Only for old bundles) */}
+                                 {showBracelets && (
+                                   <div className="input-group" style={{marginBottom:0}}>
+                                     <label className="c-label">WRISTBAND</label>
+                                     <select className="c-select" name={`warnaGelang_${key}`} value={formData[`warnaGelang_${key}`]} onChange={handleInput} required>
+                                       <option value="">Select Color</option>
+                                       {bracelets.map(c => <option key={c} value={c}>{c}</option>)}
+                                     </select>
+                                   </div>
+                                 )}
                                </div>
-                             </div>
-                           )
-                         })}
+                             )
+                           })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
@@ -212,42 +248,43 @@ const CheckoutProcess = ({
                   
                   <div className="payment-grid">
                     <div 
-                      className={`payment-card ${formData.metodePembayaran === 'transfer' ? 'selected' : ''}`}
-                      onClick={() => handleInput({target: {name: 'metodePembayaran', value: 'transfer'}})}
+                      className={`payment-card ${formData.metodePembayaran === 'Transfer Bank' ? 'selected' : ''}`}
+                      onClick={() => handleInput({target: {name: 'metodePembayaran', value: 'Transfer Bank'}})}
                     >
                       <FiCreditCard size={24} />
                       <span>TRANSFER</span>
                     </div>
                     <div 
-                      className={`payment-card ${formData.metodePembayaran === 'qris' ? 'selected' : ''}`}
-                      onClick={() => handleInput({target: {name: 'metodePembayaran', value: 'qris'}})}
+                      className={`payment-card ${formData.metodePembayaran === 'QRIS' ? 'selected' : ''}`}
+                      onClick={() => handleInput({target: {name: 'metodePembayaran', value: 'QRIS'}})}
                     >
                       <FiDollarSign size={24} />
                       <span>QRIS</span>
                     </div>
                     <div 
-                      className={`payment-card ${formData.metodePembayaran === 'cod' ? 'selected' : ''}`}
-                      onClick={() => handleInput({target: {name: 'metodePembayaran', value: 'cod'}})}
+                      className={`payment-card ${formData.metodePembayaran === 'COD' ? 'selected' : ''}`}
+                      onClick={() => handleInput({target: {name: 'metodePembayaran', value: 'COD'}})}
                     >
                       <FiTruck size={24} />
                       <span>COD</span>
                     </div>
                   </div>
 
-                  {formData.metodePembayaran === 'transfer' && (
+                  {formData.metodePembayaran === 'Transfer Bank' && (
                      <div style={{background:'var(--portal-left-bg)', padding:15, borderRadius:4, marginBottom:20, textAlign:'center'}}>
                        <p style={{margin:0, color:'var(--portal-accent)', fontFamily:'var(--font-heading)'}}>BCA: 0950477491</p>
                        <p style={{margin:0, fontSize:'0.8rem', color:'var(--portal-text-muted)'}}>a.n. Frans Indroyono</p>
                      </div>
                   )}
 
-                  {formData.metodePembayaran === 'qris' && (
+                  {formData.metodePembayaran === 'QRIS' && (
                      <div style={{textAlign:'center', marginBottom:20}}>
+                       {/* Make sure the image path is correct in your project folder */}
                        <img src="./assets/recup/bundles/qris.jpeg" style={{width:180, borderRadius:8, border:'1px solid var(--portal-border)'}} alt="QRIS" />
                      </div>
                   )}
 
-                  {(formData.metodePembayaran === 'transfer' || formData.metodePembayaran === 'qris') && (
+                  {(formData.metodePembayaran === 'Transfer Bank' || formData.metodePembayaran === 'QRIS') && (
                     <div className="input-group">
                        <label className="upload-area">
                          <input type="file" hidden accept="image/*" onChange={handlePaymentProof} />

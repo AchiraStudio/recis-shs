@@ -3,22 +3,37 @@ import { FiShoppingBag, FiX, FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
 import { GiGreekTemple } from "react-icons/gi";
 
 const ProductCard = memo(({ product, onAdd }) => (
-  <div className="merch-card">
-    {product.featured && <div className="mc-badge">ELITE</div>}
+  <div className={`merch-card ${product.soldOut ? 'sold-out-card' : ''}`}>
+    {product.featured && !product.soldOut && <div className="mc-badge">NEW</div>}
+    {product.soldOut && <div className="mc-badge sold">SOLD OUT</div>}
     
     <div className="mc-image-box">
       <img src={product.image} alt={product.name} className="mc-image" loading="lazy" />
-      <div className="mc-overlay">
-        <button className="mc-btn-overlay" onClick={() => onAdd(product)}>ACQUIRE</button>
+      <div className={`mc-overlay ${product.soldOut ? 'sold-out' : ''}`}>
+        {product.soldOut ? (
+          <span className="sold-text">UNAVAILABLE</span>
+        ) : (
+          <button className="mc-btn-overlay" onClick={() => onAdd(product)}>ACQUIRE</button>
+        )}
       </div>
     </div>
     
     <div className="mc-info">
       <h3 className="mc-name">{product.name}</h3>
       <div className="mc-price">Rp {product.price.toLocaleString('id-ID')}</div>
+      {product.type === 'shirt_black' && !product.soldOut && (
+         <div style={{fontSize:'0.7rem', color:'var(--accent-red)', marginTop:5}}>*Limited Sizes Available</div>
+      )}
     </div>
 
-    <button className="mc-btn-mobile" onClick={() => onAdd(product)}>Add to Cart</button>
+    <button 
+      className="mc-btn-mobile" 
+      onClick={() => onAdd(product)} 
+      disabled={product.soldOut}
+      style={product.soldOut ? {opacity:0.5, cursor:'not-allowed'} : {}}
+    >
+      {product.soldOut ? 'Sold Out' : 'Add to Cart'}
+    </button>
   </div>
 ));
 

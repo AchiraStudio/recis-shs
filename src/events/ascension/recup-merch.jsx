@@ -10,41 +10,61 @@ const UPLOAD_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxx1FNEgjCY2P
 const RecupMerch = () => {
   // Data
   const sampleProducts = useMemo(() => [
+        // --- NEW ITEMS ---
+    {
+      id: 7, name: "Official T-Shirt: White Edition", price: 150000,
+      image: "./assets/recup/bundles/black-shirt.png", 
+      description: "Limited Edition Black T-Shirt. High quality cotton.",
+      soldOut: false, type: 'shirt_black', featured: true
+    },
+    {
+      id: 8, name: "Official T-Shirt: Black Edition", price: 150000,
+      image: "./assets/recup/bundles/white-shirt.png",
+      description: "Standard Edition White T-Shirt. Full size range available.",
+      soldOut: false, type: 'shirt_white', featured: true
+    },
+    {
+      id: 9, name: "Recup Totebag", price: 65000,
+      image: "./assets/recup/bundles/totebag.png",
+      description: "Canvas material, durable print.",
+      soldOut: false, type: 'accessory', featured: false
+    },
+    // --- OLD BUNDLES (SOLD OUT) ---
     {
       id: 1, name: "Bundle 1: Zeus Armory", price: 195000,
       image: "./assets/recup/bundles/bundle1.jpeg",
       description: "Complete Set: Ticket, T-Shirt, Bracelet, Totebag.",
-      featured: true, hasTshirt: true
+      soldOut: true, type: 'bundle'
     },
     {
       id: 2, name: "Bundle 2: Hermes Kit", price: 170000,
       image: "./assets/recup/bundles/bundle2.jpeg",
       description: "Scout Set: Ticket, T-Shirt, Bracelet, Keychain.",
-      featured: true, hasTshirt: true
+      soldOut: true, type: 'bundle'
     },
     {
       id: 3, name: "Bundle 3: Poseidon Pack", price: 220000,
       image: "./assets/recup/bundles/bundle3.jpeg",
       description: "Hydration Set: Ticket, T-Shirt, Tumbler, Bracelet.",
-      featured: true, hasTshirt: true
+      soldOut: true, type: 'bundle'
     },
     {
       id: 4, name: "Bundle 4: Athena Scroll", price: 200000,
       image: "./assets/recup/bundles/bundle4.jpeg",
       description: "Scholar Set: Ticket, Totebag, Tumbler, Bracelet.",
-      featured: false, hasTshirt: false
+      soldOut: true, type: 'bundle'
     },
     {
       id: 5, name: "Bundle 5: Apollo Gear", price: 160000,
       image: "./assets/recup/bundles/bundle5.jpeg",
       description: "Essential: Ticket, Tumbler, Bracelet, Keychain.",
-      featured: false, hasTshirt: false
+      soldOut: true, type: 'bundle'
     },
     {
       id: 6, name: "Bundle 6: Ares Starter", price: 155000,
       image: "./assets/recup/bundles/bundle6.jpeg",
       description: "Novice: Ticket, Totebag, Bracelet, Keychain.",
-      featured: false, hasTshirt: false
+      soldOut: true, type: 'bundle'
     }
   ], []);
 
@@ -77,6 +97,7 @@ const RecupMerch = () => {
 
   // Handlers
   const addToCart = useCallback((product) => {
+    if (product.soldOut) return;
     setCart(prev => {
       const exist = prev.find(p => p.id === product.id);
       if (exist) return prev.map(p => p.id === product.id ? {...p, quantity: p.quantity + 1} : p);
@@ -103,6 +124,13 @@ const RecupMerch = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if(isSubmitting) return;
+
+    // VALIDATION: Ensure all fields are filled before submitting
+    if (!formData.email || !formData.namaLengkap || !formData.nomorAbsen || !formData.kelas || !formData.nomorTelepon) {
+        alert("Please complete all identity fields.");
+        return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -127,28 +155,58 @@ const RecupMerch = () => {
         proofUrl = uploadData.fileUrl || uploadData.url;
       }
 
-      // 2. Submit Rows
+      // 2. Submit Rows - Matching Google Script "setRowData" PRECISELY
       const rows = [];
       cart.forEach((item, idx) => {
         for(let i=0; i<item.quantity; i++) {
           const key = `${idx}_${i}`;
+          
+          let specificColor = '-';
+          let specificSize = '-';
+
+          if (item.type === 'shirt_black') {
+            specificColor = 'Hitam';
+            specificSize = formData[`sizeTshirt_${key}`] || '-';
+          } else if (item.type === 'shirt_white') {
+            specificColor = 'Putih';
+            specificSize = formData[`sizeTshirt_${key}`] || '-';
+          } else if (item.type === 'bundle') {
+            specificColor = formData[`warnaTshirt_${key}`] || '-';
+            specificSize = formData[`sizeTshirt_${key}`] || '-';
+          }
+
+          const specificGelang = formData[`warnaGelang_${key}`] || '-';
+
+          // --- FIX: EXACT KEYS FROM GOOGLE SCRIPT ---
           rows.push({
-            'Timestamp': new Date().toISOString(),
-            'Nama': formData.namaLengkap,
-            'Email': formData.email,
+            'Timestamp': new Date().toLocaleString('id-ID'), 
+            'Email': formData.email, 
+            'Nama lengkap (KAPITAL SEMUA)': formData.namaLengkap.toUpperCase(), 
+            'Nomor Telepon (cth. 081287198857)': formData.nomorTelepon,
             'Kelas': formData.kelas,
-            'Item': item.name,
-            'Warna Kaos': formData[`warnaTshirt_${key}`] || '-',
-            'Ukuran Kaos': formData[`sizeTshirt_${key}`] || '-',
-            'Warna Gelang': formData[`warnaGelang_${key}`] || '-',
-            'Bukti': proofUrl,
-            'Total': cartTotal
+            'Nomor Absen': formData.nomorAbsen,
+            'Pilih Bundle': item.name, 
+            'Warna T-Shirt': specificColor,
+            'Size T-Shirt': specificSize,
+            'Warna Gelang': specificGelang,
+            'Metode Pembayaran': formData.metodePembayaran,
+            'Harga': item.price,
+            'Total Harga': cartTotal,
+            'Bukti': proofUrl 
           });
         }
       });
 
+      // Send to Google Script
       for (const row of rows) {
-        await fetch(APP_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(row) });
+        await fetch(APP_SCRIPT_URL, { 
+            method: 'POST', 
+            mode: 'no-cors', 
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(row) 
+        });
       }
 
       setCart([]);
@@ -193,9 +251,9 @@ const RecupMerch = () => {
       {/* Success Modal */}
       {showSuccess && (
         <div className="checkout-portal-overlay open" onClick={() => setShowSuccess(false)}>
-          <div className="portal-container" style={{height:'auto', padding:'60px', alignItems:'center', justifyContent:'center', textAlign:'center', flexDirection:'column'}}>
-            <h2 style={{fontFamily:'var(--font-heading)', color:'var(--portal-accent)', fontSize:'2rem'}}>TRIBUTE ACCEPTED</h2>
-            <p style={{color:'var(--portal-text-muted)', marginBottom:30}}>Your equipment has been secured.</p>
+          <div className="portal-container" style={{height:'auto', padding:'60px', alignItems:'center', justifyContent:'center', textAlign:'center', flexDirection:'column', maxWidth:'500px'}}>
+            <h2 style={{fontFamily:'var(--font-heading)', color:'var(--portal-accent)', fontSize:'2rem'}}>OFFERING ACCEPTED</h2>
+            <p style={{color:'var(--portal-text-muted)', marginBottom:30}}>Your equipment has been secured. Check your email for confirmation.</p>
             <button className="btn-portal primary" onClick={() => setShowSuccess(false)}>RETURN</button>
           </div>
         </div>

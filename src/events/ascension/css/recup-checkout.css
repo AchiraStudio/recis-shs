@@ -63,8 +63,8 @@
   max-width: 1200px;
   height: 85vh;
   display: flex;
-  background: var(--portal-bg-gradient); /* UPDATED */
-  border: 1px solid var(--portal-border); /* UPDATED */
+  background: var(--portal-bg-gradient); 
+  border: 1px solid var(--portal-border); 
   box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.5);
   border-radius: 12px;
   overflow: hidden;
@@ -77,11 +77,40 @@
   transform: scale(1) translateY(0);
 }
 
+/* --- SOLD OUT STYLES (NEW) --- */
+.sold-out-card {
+  opacity: 0.7;
+}
+
+.mc-badge.sold {
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+}
+
+.mc-overlay.sold-out {
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1 !important; /* Force visible */
+}
+
+.sold-text {
+  color: #fff;
+  font-family: var(--font-heading);
+  letter-spacing: 2px;
+  font-weight: bold;
+  transform: rotate(-5deg);
+  border: 2px solid #fff;
+  padding: 5px 15px;
+}
+
 /* --- LEFT PANEL: THE MANIFEST (Order Summary) --- */
 .portal-left {
   width: 40%;
-  background: var(--portal-left-bg); /* UPDATED */
-  border-right: 1px solid var(--portal-border); /* UPDATED */
+  background: var(--portal-left-bg); 
+  border-right: 1px solid var(--portal-border); 
   display: flex;
   flex-direction: column;
   padding: 40px;
@@ -121,7 +150,7 @@
   gap: 15px;
   margin-bottom: 20px;
   padding-bottom: 20px;
-  border-bottom: var(--portal-manifest-item-border); /* UPDATED */
+  border-bottom: var(--portal-manifest-item-border); 
 }
 
 .m-img {
@@ -168,7 +197,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  background: var(--portal-right-bg); /* UPDATED */
+  background: var(--portal-right-bg); 
 }
 
 /* Header & Close */
@@ -243,8 +272,8 @@
 
 .c-input, .c-select {
   width: 100%;
-  background: var(--portal-input-bg); /* UPDATED */
-  border: 1px solid var(--portal-input-border); /* UPDATED */
+  background: var(--portal-input-bg); 
+  border: 1px solid var(--portal-input-border); 
   padding: 15px;
   color: var(--portal-text-main);
   font-family: var(--font-body);

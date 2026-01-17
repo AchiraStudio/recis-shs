@@ -1,512 +1,293 @@
-import React, { useState } from 'react';
-import '../css/checkout.css';
+import React, { useState, useEffect, useRef } from 'react';
+import '../css/recup-checkout.css';
+import { FiX, FiChevronDown, FiUpload, FiCreditCard, FiTruck, FiDollarSign, FiShoppingBag } from 'react-icons/fi';
 
 const CheckoutProcess = ({ 
-  isOpen, 
-  onClose, 
-  cart, 
-  cartTotal, 
-  formData, 
-  paymentMethods,
-  kelasOptions,
-  tshirtSizes,
-  tshirtColors,
-  gelangColors,
-  onInputChange,
-  onSubmit,
-  isSubmitting,
-  submitMessage,
-  paymentProof,
-  onPaymentProofChange
+  isOpen, onClose, cart, cartTotal, formData, handleInput, 
+  paymentProof, handlePaymentProof, onSubmit, isSubmitting 
 }) => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [fullscreenImage, setFullscreenImage] = useState(null);
+  
+  const [step, setStep] = useState(1);
+  const [activeConfig, setActiveConfig] = useState(0); 
+  const [preview, setPreview] = useState(null);
+  const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
+  const contentRef = useRef(null);
 
-  // Validation functions for each step
-  const validateStep1 = () => {
-    if (!formData.email || !formData.namaLengkap || !formData.nomorTelepon ||
-        !formData.kelas || !formData.nomorAbsen) {
-      return false;
+  const steps = [
+    { id: 1, title: 'IDENTITY' },
+    { id: 2, title: 'SPECS' },
+    { id: 3, title: 'OFFERING' }
+  ];
+
+  // --- UPDATED CLASS SORTING LOGIC ---
+  // Generates: X-1...X-9, then XI-1...XI-9, then XII-1...XII-9
+  const kelasOptions = ['X', 'XI', 'XII'].flatMap(grade => 
+    Array.from({ length: 9 }, (_, i) => `${grade}-${i + 1}`)
+  );
+
+  const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'];
+  const colors = ['Hitam', 'Putih'];
+  const bracelets = ['Hitam', 'Cream', 'Maroon', 'Light Blue'];
+
+  useEffect(() => {
+    if (isOpen) {
+      setStep(1);
+      setIsMobileSummaryOpen(false);
     }
-    return true;
-  };
+  }, [isOpen]);
 
-  const validateStep2 = () => {
-    let valid = true;
-    cart.forEach((item, itemIndex) => {
-      for (let i = 0; i < item.quantity; i++) {
-        const instanceIndex = `${itemIndex}_${i}`;
-        
-        if (item.hasTshirt) {
-          if (!formData[`warnaTshirt_${instanceIndex}`] || !formData[`sizeTshirt_${instanceIndex}`]) {
-            valid = false;
-          }
-        }
-        
-        if (!formData[`warnaGelang_${instanceIndex}`]) {
-          valid = false;
-        }
-      }
-    });
-    
-    return valid;
-  };
-
-  const validateStep3 = () => {
-    const needsProof = formData.metodePembayaran === 'qris' || formData.metodePembayaran === 'transfer';
-    if (needsProof && !paymentProof) {
-      return false;
+  useEffect(() => {
+    if(paymentProof) {
+      const u = URL.createObjectURL(paymentProof);
+      setPreview(u);
+      return () => URL.revokeObjectURL(u);
     }
-    return true;
-  };
+    setPreview(null);
+  }, [paymentProof]);
 
-  const nextStep = () => {
-    // Validate current step before moving to next
-    if (currentStep === 1 && !validateStep1()) {
-      return;
+  useEffect(() => {
+    if(contentRef.current) contentRef.current.scrollTop = 0;
+  }, [step]);
+
+  const next = () => {
+    if(step === 1 && (!formData.namaLengkap || !formData.email || !formData.kelas)) {
+       alert("Please complete identity details.");
+       return;
     }
-    
-    if (currentStep === 2 && !validateStep2()) {
-      return;
-    }
-    
-    if (currentStep === 3 && !validateStep3()) {
-      return;
-    }
-    
-    setCurrentStep(currentStep + 1);
+    setStep(s => s + 1);
   };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Validate all steps before submission
-    if (!validateStep1() || !validateStep2() || !validateStep3()) {
-      return;
-    }
-    
-    onSubmit(e);
-  };
-
-  const formatRupiah = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
-
-  // Progress bar for multi-step checkout
-  const renderProgressBar = () => {
-    return (
-      <div className="progress-container">
-        <div className="progress-bar">
-          <div className={`progress-step ${currentStep >= 1 ? 'active' : ''}`}></div>
-          <div className={`progress-step ${currentStep >= 2 ? 'active' : ''}`}></div>
-          <div className={`progress-step ${currentStep >= 3 ? 'active' : ''}`}></div>
-        </div>
-        <div className="progress-labels">
-          <div className={`progress-label ${currentStep === 1 ? 'active' : ''}`}>Informasi</div>
-          <div className={`progress-label ${currentStep === 2 ? 'active' : ''}`}>Detail</div>
-          <div className={`progress-label ${currentStep === 3 ? 'active' : ''}`}>Pembayaran</div>
-        </div>
-      </div>
-    );
-  };
-
-  // Handler to close fullscreen image with event propagation stopped
-  const closeFullscreenImage = (e) => {
-    e.stopPropagation();
-    setFullscreenImage(null);
-  };
+  const back = () => setStep(s => s - 1);
 
   if (!isOpen) return null;
 
   return (
-    <div className="checkout-modal-overlay" onClick={onClose}>
-      <div className="checkout-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3 className="modal-title">Formulir Pemesanan</h3>
-          <button className="modal-close-btn" onClick={onClose}>✕</button>
-        </div>
-
-        {/* Progress Bar */}
-        {renderProgressBar()}
-
-        <form className="checkout-form" onSubmit={handleSubmit}>
-          {submitMessage === 'error' && (
-            <div className="alert alert-error">
-              ❌ Terjadi kesalahan saat mengirim data. Silakan coba lagi.
-            </div>
-          )}
-
-          {submitMessage && submitMessage !== 'error' && submitMessage !== 'success' && (
-            <div className="alert alert-warning">
-              ⚠️ {submitMessage}
-            </div>
-          )}
-
-          {/* Step 1: Personal Information */}
-          <div className={`checkout-section ${currentStep === 1 ? 'active' : ''}`}>
-            <div className="step-header">
-              <div className="step-number">1</div>
-              <h4 className="step-title">Informasi Pribadi</h4>
-            </div>
-
-            <div className="step-content">
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="email">Email</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={onInputChange}
-                    required
-                    className="form-input"
-                  />
+    <div className={`checkout-portal-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}>
+      <div className="portal-container" onClick={e => e.stopPropagation()}>
+        
+        {/* --- LEFT PANEL: MANIFEST --- */}
+        <div className={`portal-left ${isMobileSummaryOpen ? 'visible' : ''}`}>
+          <div className="manifest-header">
+            <h2 className="manifest-title">MANIFEST</h2>
+            <div className="manifest-subtitle">EST. MMXXVI // RECUP</div>
+          </div>
+          
+          <div className="manifest-scroll">
+            {cart.map((item, i) => (
+              <div key={i} className="manifest-item">
+                <img src={item.image} alt="" className="m-img" />
+                <div className="m-details">
+                  <h4>{item.name}</h4>
+                  <div className="m-qty">Qty: {item.quantity}</div>
                 </div>
-
-                <div className="form-group">
-                  <label htmlFor="namaLengkap">Nama Lengkap</label>
-                  <input
-                    type="text"
-                    id="namaLengkap"
-                    name="namaLengkap"
-                    value={formData.namaLengkap}
-                    onChange={onInputChange}
-                    required
-                    className="form-input"
-                    style={{ textTransform: 'uppercase' }}
-                  />
+                <div className="m-price">
+                  { (item.price * item.quantity).toLocaleString('id-ID') }
                 </div>
               </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="nomorTelepon">Nomor Telepon</label>
-                  <input
-                    type="tel"
-                    id="nomorTelepon"
-                    name="nomorTelepon"
-                    value={formData.nomorTelepon}
-                    onChange={onInputChange}
-                    required
-                    className="form-input"
-                    placeholder="081287198857"
-                    pattern="[0-9]{10,13}"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="kelas">Kelas</label>
-                  <select
-                    id="kelas"
-                    name="kelas"
-                    value={formData.kelas}
-                    onChange={onInputChange}
-                    required
-                    className="form-select"
-                  >
-                    <option value="">Pilih Kelas</option>
-                    {kelasOptions.map(kelas => (
-                      <option key={kelas} value={kelas}>{kelas}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="nomorAbsen">Nomor Absen</label>
-                <input
-                  type="text"
-                  id="nomorAbsen"
-                  name="nomorAbsen"
-                  value={formData.nomorAbsen}
-                  onChange={onInputChange}
-                  required
-                  className="form-input"
-                />
-              </div>
-            </div>
-
-            <div className="step-actions">
-              <button type="button" className="next-btn" onClick={nextStep}>
-                Lanjut
-              </button>
-            </div>
+            ))}
           </div>
 
-          {/* Step 2: Bundle Details */}
-          <div className={`checkout-section ${currentStep === 2 ? 'active' : ''}`}>
-            <div className="step-header">
-              <div className="step-number">2</div>
-              <h4 className="step-title">Detail Bundle</h4>
+          <div className="manifest-total">
+            <span className="mt-label">TOTAL TRIBUTE</span>
+            <span className="mt-value">Rp {cartTotal.toLocaleString('id-ID')}</span>
+          </div>
+        </div>
+
+        {/* --- RIGHT PANEL: FORM --- */}
+        <div className="portal-right">
+          
+          <div className="portal-header">
+            <div className="mobile-summary-toggle" onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}>
+              <FiShoppingBag /> {isMobileSummaryOpen ? 'Hide' : 'Show'} Order
             </div>
 
-            <div className="step-content">
-              {cart.map((item, itemIndex) => (
-                <div key={itemIndex} className="bundle-card">
-                  <div className="bundle-header">
-                    <img src={item.image} alt={item.name} className="bundle-image" />
-                    <div className="bundle-info">
-                      <h5 className="bundle-name">{item.name}</h5>
-                      <p className="bundle-price">Rp{item.price.toLocaleString('id-ID')} × {item.quantity}</p>
-                    </div>
-                  </div>
-
-                  {Array.from({ length: item.quantity }, (_, i) => {
-                    const instanceIndex = `${itemIndex}_${i}`;
-                    const instanceNumber = i + 1;
-                    const instanceLabel = item.quantity > 1 ? ` (${instanceNumber})` : '';
-
-                    return (
-                      <div key={instanceIndex} className="bundle-instance">
-                        <h6 className="instance-title">Detail {instanceLabel}</h6>
-
-                        {item.hasTshirt && (
-                          <div className="form-row">
-                            <div className="form-group">
-                              <label>Warna T-Shirt</label>
-                              <select
-                                name={`warnaTshirt_${instanceIndex}`}
-                                value={formData[`warnaTshirt_${instanceIndex}`] || ''}
-                                onChange={onInputChange}
-                                className="form-select"
-                                required={item.hasTshirt}
-                              >
-                                <option value="">Pilih Warna</option>
-                                {tshirtColors.map(color => (
-                                  <option key={color} value={color}>{color}</option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div className="form-group">
-                              <label>Size T-Shirt</label>
-                              <div className="size-selector-with-image">
-                                <select
-                                  name={`sizeTshirt_${instanceIndex}`}
-                                  value={formData[`sizeTshirt_${instanceIndex}`] || ''}
-                                  onChange={onInputChange}
-                                  className="form-select"
-                                  required={item.hasTshirt}
-                                >
-                                  <option value="">Pilih Ukuran</option>
-                                  {tshirtSizes.map(size => (
-                                    <option key={size} value={size}>{size}</option>
-                                  ))}
-                                </select>
-                                <button 
-                                  type="button"
-                                  className="size-chart-btn"
-                                  onClick={() => setFullscreenImage("./assets/recup/bundles/tsize.jpg")}
-                                  aria-label="View size chart"
-                                >
-                                  <img
-                                    src="./assets/recup/bundles/tsize.jpg"
-                                    alt="Size Chart"
-                                    className="size-chart-image"
-                                  />
-                                  <div className="size-chart-overlay">
-                                    <span className="size-chart-icon">🔍</span>
-                                  </div>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="form-row">
-                          <div className="form-group">
-                            <label>Warna Gelang</label>
-                            <select
-                              name={`warnaGelang_${instanceIndex}`}
-                              value={formData[`warnaGelang_${instanceIndex}`] || ''}
-                              onChange={onInputChange}
-                              className="form-select"
-                              required
-                            >
-                              <option value="">Pilih Warna</option>
-                              {gelangColors.map(color => (
-                                <option key={color} value={color}>{color}</option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="form-group">
-                            <label>Alternatif 1</label>
-                            <select
-                              name={`warnaGelangAlt_${instanceIndex}`}
-                              value={formData[`warnaGelangAlt_${instanceIndex}`] || ''}
-                              onChange={onInputChange}
-                              className="form-select"
-                            >
-                              <option value="">Pilih Warna Alternatif</option>
-                              {gelangColors.map(color => (
-                                <option key={color} value={color}>{color}</option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="form-group">
-                            <label>Alternatif 2</label>
-                            <select
-                              name={`warnaGelangAlt2_${instanceIndex}`}
-                              value={formData[`warnaGelangAlt2_${instanceIndex}`] || ''}
-                              onChange={onInputChange}
-                              className="form-select"
-                            >
-                              <option value="">Pilih Warna Alternatif 2</option>
-                              {gelangColors.map(color => (
-                                <option key={color} value={color}>{color}</option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+            <div className="step-indicator">
+              {steps.map(s => (
+                <div key={s.id} className={`step-dot ${step === s.id ? 'active' : ''} ${step > s.id ? 'completed' : ''}`}>
+                  <span>0{s.id}</span>
+                  <span>{s.title}</span>
                 </div>
               ))}
             </div>
 
-            <div className="step-actions">
-              <button type="button" className="prev-btn" onClick={prevStep}>
-                Kembali
-              </button>
-              <button type="button" className="next-btn" onClick={nextStep}>
-                Lanjut
-              </button>
-            </div>
+            <button className="portal-close" onClick={onClose}><FiX /></button>
           </div>
 
-          {/* Step 3: Payment */}
-          <div className={`checkout-section ${currentStep === 3 ? 'active' : ''}`}>
-            <div className="step-header">
-              <div className="step-number">3</div>
-              <h4 className="step-title">Pembayaran</h4>
-            </div>
+          <div className="portal-content" ref={contentRef}>
+            <form id="checkoutForm" onSubmit={onSubmit}>
+              
+              {/* STEP 1: IDENTITY */}
+              {step === 1 && (
+                <div className="fade-slide-up">
+                  <div className="input-group">
+                    <label className="c-label">FULL NAME</label>
+                    <input className="c-input" name="namaLengkap" value={formData.namaLengkap} onChange={handleInput} placeholder="e.g. JONATHAN JOESTAR" style={{textTransform:'uppercase'}} required />
+                  </div>
+                  
+                  <div className="c-row">
+                    <div className="input-group">
+                      <label className="c-label">CLASS</label>
+                      <select className="c-select" name="kelas" value={formData.kelas} onChange={handleInput} required>
+                        <option value="">Select Legion</option>
+                        {kelasOptions.map(k => <option key={k} value={k}>{k}</option>)}
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label className="c-label">ABSENT NO.</label>
+                      <input type="number" className="c-input" name="nomorAbsen" value={formData.nomorAbsen} onChange={handleInput} required />
+                    </div>
+                  </div>
 
-            <div className="step-content">
-              <div className="payment-summary">
-                <h5>Ringkasan Pesanan</h5>
-                <div className="summary-items">
-                  {cart.map((item, index) => (
-                    <div key={index} className="summary-item">
-                      <span className="summary-name">{item.name}</span>
-                      <span className="summary-price">Rp{item.price.toLocaleString('id-ID')} × {item.quantity}</span>
+                  <div className="input-group">
+                    <label className="c-label">EMAIL SCROLL</label>
+                    <input type="email" className="c-input" name="email" value={formData.email} onChange={handleInput} placeholder="name@domain.com" required />
+                  </div>
+                  
+                  <div className="input-group">
+                    <label className="c-label">WHATSAPP</label>
+                    <input type="tel" className="c-input" name="nomorTelepon" value={formData.nomorTelepon} onChange={handleInput} placeholder="08..." required />
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 2: SPECS */}
+              {step === 2 && (
+                <div className="fade-slide-up">
+                  {cart.map((item, idx) => (
+                    <div key={idx} className={`config-item ${activeConfig === idx ? 'active' : ''}`}>
+                      <div className="config-header" onClick={() => setActiveConfig(activeConfig === idx ? -1 : idx)}>
+                        <h4 style={{textTransform:'uppercase'}}>{item.name} (x{item.quantity})</h4>
+                        <FiChevronDown className="config-icon" />
+                      </div>
+                      
+                      <div className="config-body">
+                         {Array.from({length: item.quantity}).map((_, i) => {
+                           const key = `${idx}_${i}`;
+                           return (
+                             <div key={i} style={{marginBottom: i === item.quantity - 1 ? 0 : 25}}>
+                               <div style={{fontSize:'0.75rem', color:'var(--portal-accent-dim)', marginBottom:10, borderBottom:'1px solid var(--portal-border)', paddingBottom:5}}>
+                                 ITEM #{i+1} CONFIGURATION
+                               </div>
+                               
+                               {item.hasTshirt && (
+                                 <div className="c-row">
+                                   <div className="input-group" style={{marginBottom:15}}>
+                                     <label className="c-label">SIZE</label>
+                                     <select className="c-select" name={`sizeTshirt_${key}`} value={formData[`sizeTshirt_${key}`]} onChange={handleInput} required>
+                                       <option value="">Select Size</option>
+                                       {sizes.map(s => <option key={s} value={s}>{s}</option>)}
+                                     </select>
+                                   </div>
+                                   <div className="input-group" style={{marginBottom:15}}>
+                                     <label className="c-label">COLOR</label>
+                                     <select className="c-select" name={`warnaTshirt_${key}`} value={formData[`warnaTshirt_${key}`]} onChange={handleInput} required>
+                                       <option value="">Select Color</option>
+                                       {colors.map(c => <option key={c} value={c}>{c}</option>)}
+                                     </select>
+                                   </div>
+                                 </div>
+                               )}
+                               
+                               <div className="input-group" style={{marginBottom:0}}>
+                                 <label className="c-label">WRISTBAND</label>
+                                 <select className="c-select" name={`warnaGelang_${key}`} value={formData[`warnaGelang_${key}`]} onChange={handleInput} required>
+                                   <option value="">Select Color</option>
+                                   {bracelets.map(c => <option key={c} value={c}>{c}</option>)}
+                                 </select>
+                               </div>
+                             </div>
+                           )
+                         })}
+                      </div>
                     </div>
                   ))}
                 </div>
-                <div className="summary-total">
-                  <span>Total Pembayaran:</span>
-                  <span>{formatRupiah(cartTotal)}</span>
-                </div>
-              </div>
+              )}
 
-              <div className="form-group">
-                <label htmlFor="metodePembayaran">Metode Pembayaran</label>
-                <select
-                  id="metodePembayaran"
-                  name="metodePembayaran"
-                  value={formData.metodePembayaran}
-                  onChange={onInputChange}
-                  required
-                  className="form-select"
-                >
-                  <option value="">Pilih Metode Pembayaran</option>
-                  {paymentMethods.map(method => (
-                    <option key={method.id} value={method.id}>{method.name}</option>
-                  ))}
-                </select>
-              </div>
+              {/* STEP 3: TRIBUTE */}
+              {step === 3 && (
+                <div className="fade-slide-up">
+                  <div style={{marginBottom:15, fontFamily:'var(--font-heading)', color:'var(--portal-accent)', fontSize:'0.9rem'}}>
+                    SELECT METHOD
+                  </div>
+                  
+                  <div className="payment-grid">
+                    <div 
+                      className={`payment-card ${formData.metodePembayaran === 'transfer' ? 'selected' : ''}`}
+                      onClick={() => handleInput({target: {name: 'metodePembayaran', value: 'transfer'}})}
+                    >
+                      <FiCreditCard size={24} />
+                      <span>TRANSFER</span>
+                    </div>
+                    <div 
+                      className={`payment-card ${formData.metodePembayaran === 'qris' ? 'selected' : ''}`}
+                      onClick={() => handleInput({target: {name: 'metodePembayaran', value: 'qris'}})}
+                    >
+                      <FiDollarSign size={24} />
+                      <span>QRIS</span>
+                    </div>
+                    <div 
+                      className={`payment-card ${formData.metodePembayaran === 'cod' ? 'selected' : ''}`}
+                      onClick={() => handleInput({target: {name: 'metodePembayaran', value: 'cod'}})}
+                    >
+                      <FiTruck size={24} />
+                      <span>COD</span>
+                    </div>
+                  </div>
 
-              {formData.metodePembayaran === 'qris' && (
-                <div className="payment-method-details">
-                  <div className="payment-info">
-                    <img
-                      src="./assets/recup/bundles/qris.jpeg"
-                      alt="QRIS Code"
-                      className="payment-method-image"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <p>Silakan lakukan pembayaran menggunakan QRIS di atas dan simpan bukti pembayaran Anda. Anda akan diminta untuk menunjukkan bukti pembayaran saat pengambilan barang.</p>
-                  </div>
+                  {formData.metodePembayaran === 'transfer' && (
+                     <div style={{background:'var(--portal-left-bg)', padding:15, borderRadius:4, marginBottom:20, textAlign:'center'}}>
+                       <p style={{margin:0, color:'var(--portal-accent)', fontFamily:'var(--font-heading)'}}>BCA: 0950477491</p>
+                       <p style={{margin:0, fontSize:'0.8rem', color:'var(--portal-text-muted)'}}>a.n. Frans Indroyono</p>
+                     </div>
+                  )}
+
+                  {formData.metodePembayaran === 'qris' && (
+                     <div style={{textAlign:'center', marginBottom:20}}>
+                       <img src="./assets/recup/bundles/qris.jpeg" style={{width:180, borderRadius:8, border:'1px solid var(--portal-border)'}} alt="QRIS" />
+                     </div>
+                  )}
+
+                  {(formData.metodePembayaran === 'transfer' || formData.metodePembayaran === 'qris') && (
+                    <div className="input-group">
+                       <label className="upload-area">
+                         <input type="file" hidden accept="image/*" onChange={handlePaymentProof} />
+                         <FiUpload size={30} style={{marginBottom:10, color:'var(--portal-accent-dim)'}} />
+                         <div style={{fontFamily:'var(--font-heading)', color:'var(--portal-text-main)'}}>
+                           {preview ? 'IMAGE SELECTED' : 'UPLOAD PROOF'}
+                         </div>
+                         <div style={{fontSize:'0.75rem', marginTop:5}}>Click to browse gallery</div>
+                       </label>
+                       {preview && (
+                         <div style={{marginTop:10, textAlign:'center'}}>
+                           <img src={preview} alt="Proof" style={{height:100, border:'1px solid var(--portal-border)', borderRadius:4}} />
+                         </div>
+                       )}
+                    </div>
+                  )}
                 </div>
               )}
 
-              {formData.metodePembayaran === 'transfer' && (
-                <div className="payment-method-details">
-                  <div className="payment-info">
-                    <h5>Silahkan transfer ke rekening ini: Frans Indroyono</h5>
-                    <p>BCA</p>
-                    <p>0950477491</p>
-                  </div>
-                  <div className="form-group">
-                    <p>Silakan lakukan transfer ke rekening di atas dan simpan bukti pembayaran Anda. Anda akan diminta untuk menunjukkan bukti pembayaran saat pengambilan barang.</p>
-                  </div>
-                </div>
-              )}
-
-              {(formData.metodePembayaran === 'qris' || formData.metodePembayaran === 'transfer') && (
-                <div className="form-group">
-                  <label>Upload Bukti Pembayaran</label>
-                  <div className="file-upload">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={onPaymentProofChange}
-                      required
-                      disabled={isSubmitting}
-                      id="paymentProof"
-                    />
-                    <label htmlFor="paymentProof" className="file-upload-label">
-                      <div className="file-upload-icon">📷</div>
-                      <div className="file-upload-text">
-                        {paymentProof ? paymentProof.name : 'Pilih file bukti pembayaran'}
-                      </div>
-                    </label>
-                  </div>
-                  <p className="file-upload-note">
-                    <small>
-                      <strong>Catatan:</strong> File akan disimpan dengan nama yang berformat: 
-                      NAMA_EMAIL_NOMOR_TELEPON_TIMESTAMP. Contoh: JOHNDOE_john_gmail_081234567890_1698765432100.jpg
-                    </small>
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="step-actions">
-              <button type="button" className="prev-btn" onClick={prevStep}>
-                Kembali
-              </button>
-              <button type="submit" className="submit-btn" disabled={isSubmitting}>
-                {isSubmitting ? 'Mengirim...' : 'Kirim Pesanan'}
-              </button>
-            </div>
+            </form>
           </div>
-        </form>
-      </div>
 
-      {/* Fullscreen Image Overlay */}
-      {fullscreenImage && (
-        <div className="fullscreen-image-overlay" onClick={closeFullscreenImage}>
-          <div className="fullscreen-image-container" onClick={(e) => e.stopPropagation()}>
-            <img src={fullscreenImage} alt="Size Chart Fullscreen" className="fullscreen-image" />
-            <button className="fullscreen-close-btn" onClick={closeFullscreenImage}>✕</button>
+          <div className="portal-footer">
+            {step > 1 ? (
+              <button className="btn-portal" onClick={back}>BACK</button>
+            ) : (
+              <div />
+            )}
+
+            {step < 3 ? (
+              <button className="btn-portal primary" onClick={next}>NEXT STEP</button>
+            ) : (
+              <button className="btn-portal primary" onClick={onSubmit} disabled={isSubmitting}>
+                {isSubmitting ? 'SEALING...' : 'CONFIRM TRIBUTE'}
+              </button>
+            )}
           </div>
+
         </div>
-      )}
+      </div>
     </div>
   );
 };

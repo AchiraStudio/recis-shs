@@ -50,13 +50,13 @@ const RecupCompetitions = () => {
       desc: "Cinematic storytelling. Theme: 'Ascension'.",
       img: "./assets/recup/comps/sfilm.jpg", date: "Day 3", fee: "30k"
     },
+    // {
+    //   id: 8, title: "Science Fair", category: "academic",
+    //   desc: "Scientific innovation competition for young minds.",
+    //   img: "./assets/recup/comps/kir.jpg", date: "Day 2", fee: "25k"
+    // },
     {
-      id: 8, title: "Science Fair", category: "academic",
-      desc: "Scientific innovation competition for young minds.",
-      img: "./assets/recup/comps/kir.jpg", date: "Day 2", fee: "25k"
-    },
-    {
-      id: 9, title: "English Debate", category: "academic",
+      id: 8, title: "English Debate", category: "academic",
       desc: "Critical thinking and public speaking showdown.",
       img: "./assets/recup/comps/debate.jpg", date: "Day 3", fee: "30k"
     }

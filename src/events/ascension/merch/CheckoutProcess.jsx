@@ -124,19 +124,19 @@ const CheckoutProcess = ({
                     <input className="c-input" name="namaLengkap" value={formData.namaLengkap} onChange={handleInput} placeholder="e.g. JONATHAN JOESTAR" style={{textTransform:'uppercase'}} required />
                   </div>
                   
-                  <div className="c-row">
-                    {/* <div className="input-group">
+                  {/* <div className="c-row">
+                    <div className="input-group">
                       <label className="c-label">CLASS</label>
                       <select className="c-select" name="kelas" value={formData.kelas} onChange={handleInput} required>
                         <option value="">Select Legion</option>
                         {kelasOptions.map(k => <option key={k} value={k}>{k}</option>)}
                       </select>
-                    </div> */}
+                    </div>
                     <div className="input-group">
                       <label className="c-label">ABSENT NO.</label>
                       <input type="number" className="c-input" name="nomorAbsen" value={formData.nomorAbsen} onChange={handleInput} required />
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="input-group">
                     <label className="c-label">EMAIL SCROLL</label>

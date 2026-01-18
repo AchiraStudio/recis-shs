@@ -14,8 +14,8 @@ import RecupSpecialPerformance from "./recup-tulus";
 
 const SCHEDULE_API =
   "https://script.google.com/macros/s/AKfycbxcR39xEqBTH8Rq8lAE2hLvZXKzwWOdG8LK0qqWm7m7kjyYlrm2QAHx2L2XxE-TRJQ3/exec";
-  
-const RECUP_FAVICON_PATH = "/iascension.png";
+
+const RECUP_FAVICON_PATH = "/ascension.png";
 
 const formatDate = (dateStr) => {
   try {

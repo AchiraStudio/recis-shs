@@ -15,7 +15,11 @@ import RecupSpecialPerformance from "./recup-tulus";
 const SCHEDULE_API =
   "https://script.google.com/macros/s/AKfycbxcR39xEqBTH8Rq8lAE2hLvZXKzwWOdG8LK0qqWm7m7kjyYlrm2QAHx2L2XxE-TRJQ3/exec";
 
+// ✅ Put your PNG in: /public/icons/recup-icon.png
 const RECUP_FAVICON_PATH = "/ascension.png";
+
+// ✅ Page title only for this page
+const RECUP_PAGE_TITLE = "Ascension Cup — Official Website";
 
 const formatDate = (dateStr) => {
   try {
@@ -31,7 +35,6 @@ const formatDate = (dateStr) => {
 
 // --- favicon helpers (page-specific) ---
 const ensureFaviconLink = () => {
-  // Prefer rel="icon", but also handle shortcut icon
   let link =
     document.querySelector("link[rel='icon']") ||
     document.querySelector("link[rel='shortcut icon']");
@@ -42,27 +45,34 @@ const ensureFaviconLink = () => {
     document.head.appendChild(link);
   }
 
-  // Ensure correct type
   link.type = "image/png";
   return link;
 };
 
-const setFavicon = (href) => {
+const setFavicon = (href, cacheBust = true) => {
   const link = ensureFaviconLink();
+  if (!href) return;
 
-  // Cache-bust to ensure it updates when navigating (esp. in SPA)
-  const cacheBusted = href.includes("?")
-    ? `${href}&v=${Date.now()}`
-    : `${href}?v=${Date.now()}`;
+  const finalHref = cacheBust
+    ? href.includes("?")
+      ? `${href}&v=${Date.now()}`
+      : `${href}?v=${Date.now()}`
+    : href;
 
-  link.href = cacheBusted;
+  link.href = finalHref;
 };
 
 const getCurrentFaviconHref = () => {
   const link =
     document.querySelector("link[rel='icon']") ||
     document.querySelector("link[rel='shortcut icon']");
-  return link?.getAttribute("href") || null; // keep as attribute value
+  return link?.getAttribute("href") || null;
+};
+
+// --- title helpers (page-specific) ---
+const getCurrentTitle = () => document.title;
+const setTitle = (title) => {
+  if (typeof title === "string") document.title = title;
 };
 
 const OracleCard = ({ match }) => {
@@ -120,18 +130,20 @@ function Recup() {
   const [activeDate, setActiveDate] = useState("");
   const [activeFilter, setActiveFilter] = useState("ALL");
 
-  // ✅ Recup page-specific favicon: set on mount, restore on unmount
+  // ✅ Recup page-specific favicon + title: set on mount, restore on unmount
   useEffect(() => {
-    const prevHref = getCurrentFaviconHref();
-    setFavicon(RECUP_FAVICON_PATH);
+    const prevFaviconHref = getCurrentFaviconHref();
+    const prevTitle = getCurrentTitle();
+
+    setFavicon(RECUP_FAVICON_PATH, true);
+    setTitle(RECUP_PAGE_TITLE);
 
     return () => {
-      // restore previous favicon when leaving page
-      if (prevHref) {
-        // restore without cache-busting to keep original as-is
-        const link = ensureFaviconLink();
-        link.href = prevHref;
-      }
+      // restore favicon
+      if (prevFaviconHref) setFavicon(prevFaviconHref, false);
+
+      // restore title
+      if (prevTitle) setTitle(prevTitle);
     };
   }, []);
 
@@ -141,7 +153,6 @@ function Recup() {
         const res = await fetch(SCHEDULE_API);
         const data = await res.json();
         if (Array.isArray(data)) {
-          // Filter logic
           const valid = data
             .filter((m) => m.team1 && m.team2)
             .sort(

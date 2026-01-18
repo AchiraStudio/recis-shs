@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { FaInstagram, FaSearch, FaGlobe, FaRedo, FaMoon, FaSun } from "react-icons/fa"; 
+import { GiLaurels, GiGreekTemple } from "react-icons/gi";
 import * as XLSX from 'xlsx';
 import './DynamicIsland.css';
 
@@ -8,12 +9,12 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
   const [isScrolled, setIsScrolled] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   
-  // Search States
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [pages, setPages] = useState([]);
   const [filteredPages, setFilteredPages] = useState([]);
   
+  const isRecupPage = window.location.pathname.toLowerCase().includes('ascension');
   const islandRef = useRef(null);
   const searchInputRef = useRef(null);
 
@@ -26,7 +27,6 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
     if (onToggle) onToggle(isActive);
   }, [isActive, onToggle]);
 
-  // Load Data
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -45,7 +45,6 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
     loadData();
   }, []);
 
-  // Scroll & Click Outside
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     const handleClickOutside = (e) => {
@@ -109,9 +108,14 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
     setFilteredPages(results);
   }, [searchQuery, pages]);
 
+  // --- CLASS LOGIC ---
+  // 1. If Recup: Add 'greek-theme'
+  // 2. If Recup AND Light Mode: Add 'light-mode'
+  const wrapperClass = `di-wrapper ${isScrolled ? 'scrolled' : ''} ${theme} ${isRecupPage ? 'greek-theme' : ''} ${!isDarkMode && isRecupPage ? 'light-mode' : ''}`;
+
   return (
     <div 
-      className={`di-wrapper ${isScrolled ? 'scrolled' : ''} ${theme}`} 
+      className={wrapperClass}
       ref={islandRef}
       style={{ zIndex: zIndexOverride ? 10005 : 9999 }} 
     >
@@ -121,13 +125,17 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
       >
         <div className="di-content">
           <div className="di-idle">
-            <div className="di-signal"></div>
+            <div className="di-status-icon">
+              {isRecupPage ? <GiLaurels /> : <div className="di-signal"></div>}
+            </div>
             <span className="di-label">RSHS</span>
           </div>
+
           <div className="di-menu">
-            <button onClick={(e) => handleAction(e, 'home')} aria-label="Home"><FaGlobe /></button>
+            <button onClick={(e) => handleAction(e, 'home')} aria-label="Home">
+              {isRecupPage ? <GiGreekTemple /> : <FaGlobe />}
+            </button>
             
-            {/* THEME TOGGLE */}
             {onThemeToggle && (
                <>
                  <div className="di-divider"></div>
@@ -138,7 +146,9 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
             )}
 
             <div className="di-divider"></div>
-            <button onClick={(e) => handleAction(e, 'search')} aria-label="Search"><FaSearch /></button>
+            <button onClick={(e) => handleAction(e, 'search')} aria-label="Search">
+              <FaSearch />
+            </button>
           </div>
         </div>
       </div>
@@ -148,7 +158,7 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
            <input 
             ref={searchInputRef}
             type="text" 
-            placeholder="Search events..." 
+            placeholder={isRecupPage ? "Search Oracle..." : "Search events..."} 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onClick={(e) => e.stopPropagation()} 
@@ -167,13 +177,9 @@ const DynamicIsland = forwardRef(({ onInstagramClick, theme = '', onToggle, zInd
           ))}
 
           {(!searchQuery || 'tutorial'.includes(searchQuery.toLowerCase())) && (
-            <div 
-              className="di-result-row tutorial-reset-row" 
-              onClick={handleResetTutorial}
-              style={{ marginTop: '10px', borderTop: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}
-            >
+            <div className="di-result-row tutorial-reset-row" onClick={handleResetTutorial}>
               <div className="res-left">
-                <span className="res-name" style={{ color: '#4ade80', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="res-name" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <FaRedo size={12}/> Reset Tutorial
                 </span>
                 <span className="res-cat">System</span>

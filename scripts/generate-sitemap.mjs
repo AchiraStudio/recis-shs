@@ -4,9 +4,16 @@ import { writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 
 // ✅ CHANGE THIS
-const SITE_URL = "https://yourdomain.com";
+const SITE_URL = "https://recisascension.com";
 
-const staticRoutes = ["/", "/about", "/pricing", "/contact"];
+const staticRoutes = [
+  "/",
+  "/r-shs",
+  "/ascension-cup",
+  "/jingle-joyce",
+  "/easter-charity",
+  "/slither-sweetheart"
+];
 
 async function getDynamicRoutes() {
   // return ["/blog/hello-world", "/blog/my-second-post"];

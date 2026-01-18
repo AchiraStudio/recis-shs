@@ -19,14 +19,9 @@ const CheckoutProcess = ({
     { id: 3, title: 'OFFERING' }
   ];
 
-  // Class List Generation
-  const kelasOptions = ['X', 'XI', 'XII'].flatMap(grade => 
-    Array.from({ length: 9 }, (_, i) => `${grade}-${i + 1}`)
-  );
-
-  // --- SIZE LOGIC BASED ON REQUEST ---
-  const sizesBlack = ['M', 'L', 'XL', '2XL']; // Limited stock
-  const sizesWhite = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL']; // Full stock
+  // Class List is no longer needed, removed.
+  const sizesBlack = ['M', 'L', 'XL', '2XL']; 
+  const sizesWhite = ['XS', 'S', 'M', 'L', 'XL', '2XL']; 
   const bracelets = ['Hitam', 'Cream', 'Maroon', 'Light Blue'];
 
   useEffect(() => {
@@ -50,13 +45,14 @@ const CheckoutProcess = ({
   }, [step]);
 
   const next = () => {
-    // FIX: Added validation for !formData.nomorAbsen
-    if(step === 1 && (!formData.namaLengkap || !formData.email || !formData.kelas || !formData.nomorTelepon || !formData.nomorAbsen)) {
+    // FIXED: Removed validation for 'kelas' and 'nomorAbsen'
+    if(step === 1 && (!formData.namaLengkap || !formData.email || !formData.nomorTelepon)) {
        alert("Please complete all identity details.");
        return;
     }
     setStep(s => s + 1);
   };
+  
   const back = () => setStep(s => s - 1);
 
   if (!isOpen) return null;
@@ -124,20 +120,6 @@ const CheckoutProcess = ({
                     <input className="c-input" name="namaLengkap" value={formData.namaLengkap} onChange={handleInput} placeholder="e.g. JONATHAN JOESTAR" style={{textTransform:'uppercase'}} required />
                   </div>
                   
-                  {/* <div className="c-row">
-                    <div className="input-group">
-                      <label className="c-label">CLASS</label>
-                      <select className="c-select" name="kelas" value={formData.kelas} onChange={handleInput} required>
-                        <option value="">Select Legion</option>
-                        {kelasOptions.map(k => <option key={k} value={k}>{k}</option>)}
-                      </select>
-                    </div>
-                    <div className="input-group">
-                      <label className="c-label">ABSENT NO.</label>
-                      <input type="number" className="c-input" name="nomorAbsen" value={formData.nomorAbsen} onChange={handleInput} required />
-                    </div>
-                  </div> */}
-
                   <div className="input-group">
                     <label className="c-label">EMAIL SCROLL</label>
                     <input type="email" className="c-input" name="email" value={formData.email} onChange={handleInput} placeholder="name@domain.com" required />

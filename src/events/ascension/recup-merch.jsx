@@ -76,9 +76,9 @@ const RecupMerch = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   
-  // Checkout Form
+  // Checkout Form - Removed kelas and nomorAbsen
   const [formData, setFormData] = useState({
-    email: '', namaLengkap: '', nomorTelepon: '', kelas: '', nomorAbsen: '', metodePembayaran: ''
+    email: '', namaLengkap: '', nomorTelepon: '', metodePembayaran: ''
   });
   const [paymentProof, setPaymentProof] = useState(null);
 
@@ -125,8 +125,8 @@ const RecupMerch = () => {
     e.preventDefault();
     if(isSubmitting) return;
 
-    // VALIDATION: Ensure all fields are filled before submitting
-    if (!formData.email || !formData.namaLengkap || !formData.nomorAbsen || !formData.kelas || !formData.nomorTelepon) {
+    // VALIDATION: Removed checks for kelas and nomorAbsen
+    if (!formData.email || !formData.namaLengkap || !formData.nomorTelepon) {
         alert("Please complete all identity fields.");
         return;
     }
@@ -155,7 +155,7 @@ const RecupMerch = () => {
         proofUrl = uploadData.fileUrl || uploadData.url;
       }
 
-      // 2. Submit Rows - Matching Google Script "setRowData" PRECISELY
+      // 2. Submit Rows
       const rows = [];
       cart.forEach((item, idx) => {
         for(let i=0; i<item.quantity; i++) {
@@ -177,14 +177,12 @@ const RecupMerch = () => {
 
           const specificGelang = formData[`warnaGelang_${key}`] || '-';
 
-          // --- FIX: EXACT KEYS FROM GOOGLE SCRIPT ---
+          // --- DATA MAPPING: Removed 'Kelas' and 'Nomor Absen' keys ---
           rows.push({
             'Timestamp': new Date().toLocaleString('id-ID'), 
             'Email': formData.email, 
             'Nama lengkap (KAPITAL SEMUA)': formData.namaLengkap.toUpperCase(), 
             'Nomor Telepon (cth. 081287198857)': formData.nomorTelepon,
-            'Kelas': formData.kelas,
-            'Nomor Absen': formData.nomorAbsen,
             'Pilih Bundle': item.name, 
             'Warna T-Shirt': specificColor,
             'Size T-Shirt': specificSize,

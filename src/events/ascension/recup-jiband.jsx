@@ -1,9 +1,20 @@
-import React from 'react';
-import './css/jiband-greek.css';
+import React, { useState } from 'react';
+import '../css/jiband-greek.css'; // Ensure path is correct based on your folder structure
 import { FaInstagram } from "react-icons/fa";
 
 const RecupGuestStar = () => {
-  // Use high-res images if possible
+  // State to handle mobile tap interactions
+  const [activeCard, setActiveCard] = useState(null);
+
+  const handleCardClick = (id) => {
+    // If clicking the already active card, close it. Otherwise, open the new one.
+    if (activeCard === id) {
+      setActiveCard(null);
+    } else {
+      setActiveCard(id);
+    }
+  };
+
   const guestStars = [
     { id: 1, name: "Renata", title: "Vocals", image: "./assets/recup/renata.jpg", symbol: "α" },
     { id: 2, name: "Joshua", title: "Keys", image: "./assets/recup/joshua.jpg", symbol: "β" },
@@ -22,7 +33,7 @@ const RecupGuestStar = () => {
           
           {/* Visual Side */}
           <div className="hl-visual">
-            <img src="./assets/recup/jiband.jpg" alt="Jiband" className="hl-img" />
+            <img src="./assets/recup/jiband.png" alt="Jiband" className="hl-img" />
             <div className="hl-badge">MAIN ACT</div>
           </div>
 
@@ -49,7 +60,11 @@ const RecupGuestStar = () => {
         {/* ENSEMBLE GRID */}
         <div className="gs-grid">
           {guestStars.map(guest => (
-            <div key={guest.id} className="member-card">
+            <div 
+              key={guest.id} 
+              className={`member-card ${activeCard === guest.id ? 'active' : ''}`}
+              onClick={() => handleCardClick(guest.id)}
+            >
               <img src={guest.image} alt={guest.name} className="mc-bg" />
               <span className="mc-symbol">{guest.symbol}</span>
               

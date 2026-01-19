@@ -11,6 +11,10 @@ const CheckoutProcess = ({
   const [activeConfig, setActiveConfig] = useState(0); 
   const [preview, setPreview] = useState(null);
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
+  
+  // NEW: State for QRIS Fullscreen
+  const [isQrisModalOpen, setIsQrisModalOpen] = useState(false);
+
   const contentRef = useRef(null);
 
   const steps = [
@@ -239,7 +243,14 @@ const CheckoutProcess = ({
 
                   {formData.metodePembayaran === 'QRIS' && (
                      <div className="qris-display">
-                       <img src="./assets/recup/bundles/qris.jpeg" alt="QRIS" />
+                       {/* CLICKABLE QRIS IMAGE */}
+                       <img 
+                          src="./assets/recup/bundles/qris.jpeg" 
+                          alt="QRIS" 
+                          onClick={() => setIsQrisModalOpen(true)}
+                          className="qris-thumb-clickable"
+                       />
+                       <div className="qris-hint">Click image to enlarge</div>
                      </div>
                   )}
 
@@ -274,6 +285,15 @@ const CheckoutProcess = ({
           </div>
         </div>
       </div>
+
+      {/* NEW: QRIS FULLSCREEN MODAL */}
+      {isQrisModalOpen && (
+        <div className="qris-modal-overlay" onClick={() => setIsQrisModalOpen(false)}>
+          <img src="./assets/recup/bundles/qris.jpeg" alt="QRIS Fullscreen" onClick={(e) => e.stopPropagation()} />
+          <div className="qris-modal-close-text">TAP ANYWHERE TO CLOSE</div>
+        </div>
+      )}
+
     </div>
   );
 };

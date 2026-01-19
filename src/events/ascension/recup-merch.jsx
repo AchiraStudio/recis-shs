@@ -12,14 +12,14 @@ const RecupMerch = () => {
   const sampleProducts = useMemo(() => [
         // --- NEW ITEMS ---
     {
-      id: 7, name: "Official T-Shirt: White Edition", price: 150000,
-      image: "./assets/recup/bundles/white-shirt.png", 
+      id: 7, name: "Official T-Shirt:Black Edition", price: 150000,
+      image: "./assets/recup/bundles/black-shirt.png", 
       description: "Limited Edition Black T-Shirt. High quality cotton.",
       soldOut: false, type: 'shirt_black', featured: true
     },
     {
-      id: 8, name: "Official T-Shirt: Black Edition", price: 150000,
-      image: "./assets/recup/bundles/black-shirt.png",
+      id: 8, name: "Official T-Shirt:White Edition", price: 150000,
+      image: "./assets/recup/bundles/white-shirt.png",
       description: "Standard Edition White T-Shirt. Full size range available.",
       soldOut: false, type: 'shirt_white', featured: true
     },

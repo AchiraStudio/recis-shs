@@ -1,55 +1,73 @@
 // jingle-joyce.jsx
-import React from 'react';
-import { Snowflake, Calendar, MapPin, ArrowRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Snowflake, ArrowRight } from 'lucide-react';
 import './css/style.css';
-import './css/sections.css'
+import './css/sections.css';
 import JingleSchedule from './jingle-schedule';
 import JingleGallery from './jingle-gallery';
 import JingleFooter from './jingle-footer';
 
 const JingleJoyce = () => {
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => setOffset(window.pageYOffset);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="jingle-wrapper">
+      <div className="jingle-noise-overlay"></div>
+
+      {/* Hero Section */}
       <section className="jingle-hero">
-        <div className="jingle-ambient-glow" />
+        <div className="jingle-hero-bg" style={{ transform: `translateY(${offset * 0.5}px)` }}>
+          <div className="jingle-aurora-glow"></div>
+        </div>
+
         <div className="jingle-content">
           <div className="jingle-badge">
-            <Snowflake size={16} />
-            <span>Seasonal Gathering</span>
+            <Snowflake size={14} className="jingle-spin-slow" />
+            <span>Winter Gala 2024</span>
           </div>
-          <h1 className="jingle-title">Winter <br />Elegance.</h1>
+
+          <h1 className="jingle-title">
+            <span className="jingle-serif-font jingle-italic jingle-text-gold">Winter</span>
+            <br />
+            <span className="jingle-tracking-wide">Elegance</span>
+          </h1>
+
           <p className="jingle-subtitle">
-            A celebration of harmony and light amidst the cold season.
+            An evening of harmony, light, and shared warmth amidst the season's chill.
           </p>
+
           <div className="jingle-actions">
             <button className="jingle-btn primary">
-              Reserve Seat <ArrowRight size={18} className="btn-icon" />
+              <span>Reserve Presence</span>
+              <div className="jingle-btn-glow"></div>
             </button>
-            <button className="jingle-btn secondary">Learn More</button>
+            <button className="jingle-btn secondary">
+              Details
+            </button>
           </div>
+        </div>
+
+        {/* Floating Decorative Elements */}
+        <div className="jingle-floating-crystals">
+          <div className="jingle-crystal jingle-c1"></div>
+          <div className="jingle-crystal jingle-c2"></div>
+          <div className="jingle-crystal jingle-c3"></div>
         </div>
       </section>
 
-      <section className="jingle-details">
-        <div className="jingle-card">
-          <Calendar className="card-icon" />
-          <div className="card-text">
-            <h3>December 20th</h3>
-            <p>18:00 PM</p>
-          </div>
-        </div>
-        <div className="jingle-card">
-          <MapPin className="card-icon" />
-          <div className="card-text">
-            <h3>Main Hall</h3>
-            <p>Regina Pacis Bogor</p>
-          </div>
-        </div>
-      </section>
+      {/* Main Content */}
+      <main className="jingle-main">
+        <JingleSchedule />
+        <JingleGallery />
+      </main>
 
-      <JingleSchedule></JingleSchedule>
-      <JingleGallery></JingleGallery>
-      <JingleFooter></JingleFooter>
+      <JingleFooter />
     </div>
   );
 };

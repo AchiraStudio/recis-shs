@@ -1,172 +1,263 @@
-/* jingle-joyce.css */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+/* jingle-joyce.css (style.css) */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Inter:wght@300;400;500&display=swap');
+
+:root {
+  --jj-dark: #020617;
+  --jj-blue: #1e1b4b;
+  --jj-gold: #fbbf24;
+  --jj-gold-dim: #b45309;
+  --jj-ice: #f0f9ff;
+  --jj-font-head: 'Cinzel', serif;
+  --jj-font-body: 'Inter', sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--jj-dark);
+}
 
 .jingle-wrapper {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #050510;
-  color: #ffffff;
+  font-family: var(--jj-font-body);
+  color: var(--jj-ice);
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  position: relative;
   overflow-x: hidden;
 }
 
-.jingle-hero {
-  position: relative;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  z-index: 1;
+.jingle-noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 999;
 }
 
-.jingle-ambient-glow {
+/* Hero Section */
+.jingle-hero {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.jingle-hero-bg {
   position: absolute;
-  top: -20%;
+  top: -10%;
+  left: 0;
+  width: 100%;
+  height: 120%;
+  background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #020617 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.jingle-aurora-glow {
+  position: absolute;
+  top: 20%;
   left: 50%;
   transform: translateX(-50%);
-  width: 80vw;
-  height: 80vh;
-  background: radial-gradient(circle, rgba(76, 29, 149, 0.25) 0%, rgba(15, 23, 42, 0) 70%);
+  width: 60vw;
+  height: 60vh;
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.15), transparent 70%);
   filter: blur(80px);
-  z-index: -1;
-  animation: pulse 10s ease-in-out infinite alternate;
+  animation: aurora 10s infinite alternate;
 }
 
 .jingle-content {
   text-align: center;
-  max-width: 800px;
-  animation: fadeIn 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  z-index: 10;
+  padding: 0 2rem;
 }
 
 .jingle-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #d8b4fe;
-  margin-bottom: 24px;
-  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 8px 16px;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(5px);
+  margin-bottom: 2rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--jj-gold);
+}
+
+.jingle-spin-slow {
+  animation: spin 8s linear infinite;
 }
 
 .jingle-title {
-  font-size: clamp(3rem, 8vw, 6rem);
-  font-weight: 600;
+  font-family: var(--jj-font-head);
+  font-size: 5rem;
   line-height: 1.1;
-  letter-spacing: -0.03em;
-  margin-bottom: 24px;
-  background: linear-gradient(180deg, #ffffff 0%, #a5b4fc 100%);
+  margin-bottom: 1.5rem;
+}
+
+.jingle-serif-font {
+  font-family: var(--jj-font-head);
+}
+
+.jingle-italic {
+  font-style: italic;
+}
+
+.jingle-tracking-wide {
+  letter-spacing: 0.1em;
+}
+
+.jingle-text-gold {
+  color: var(--jj-gold);
+  background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #d97706 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .jingle-subtitle {
-  font-size: 1.25rem;
-  font-weight: 300;
+  font-size: 1.1rem;
+  max-width: 500px;
+  margin: 0 auto 3rem auto;
   color: #94a3b8;
-  margin-bottom: 40px;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .jingle-actions {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   justify-content: center;
 }
 
 .jingle-btn {
-  padding: 14px 32px;
-  border-radius: 30px;
-  font-size: 1rem;
-  font-weight: 500;
+  padding: 16px 32px;
+  border-radius: 2px;
+  /* Sharp edges for elegance */
+  font-family: var(--jj-font-head);
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: none;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .jingle-btn.primary {
-  background: #ffffff;
-  color: #0f172a;
+  background: transparent;
+  color: var(--jj-gold);
+  border: 1px solid var(--jj-gold);
 }
 
 .jingle-btn.primary:hover {
-  transform: scale(1.02);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  background: var(--jj-gold);
+  color: var(--jj-dark);
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
 }
 
 .jingle-btn.secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid transparent;
 }
 
 .jingle-btn.secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
+  color: white;
 }
 
-.btn-icon {
-  vertical-align: middle;
-  margin-left: 6px;
+/* Floating Crystals */
+.jingle-floating-crystals {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
-.jingle-details {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding: 4rem 2rem;
-  flex-wrap: wrap;
+.jingle-crystal {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(3px);
+  z-index: 1;
 }
 
-.jingle-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 20px 32px;
-  border-radius: 20px;
-  min-width: 240px;
-  transition: transform 0.3s ease;
+.jingle-c1 {
+  top: 20%;
+  left: 15%;
+  transform: rotate(45deg);
+  animation: float 6s ease-in-out infinite;
 }
 
-.jingle-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(255, 255, 255, 0.1);
+.jingle-c2 {
+  bottom: 20%;
+  right: 15%;
+  width: 150px;
+  height: 150px;
+  transform: rotate(30deg);
+  animation: float 8s ease-in-out infinite reverse;
 }
 
-.card-icon {
-  color: #818cf8;
+.jingle-c3 {
+  top: 60%;
+  left: 5%;
+  width: 60px;
+  height: 60px;
+  transform: rotate(15deg);
+  opacity: 0.5;
 }
 
-.card-text h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #ffffff;
+/* Keyframes */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.card-text p {
-  font-size: 0.9rem;
-  color: #94a3b8;
+@keyframes aurora {
+  0% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: translateX(-50%) scale(1.1);
+    opacity: 0.8;
+  }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+@keyframes float {
 
-@keyframes pulse {
-  0% { opacity: 0.5; transform: translateX(-50%) scale(0.9); }
-  100% { opacity: 0.8; transform: translateX(-50%) scale(1.1); }
+  0%,
+  100% {
+    transform: translateY(0) rotate(45deg);
+  }
+
+  50% {
+    transform: translateY(-20px) rotate(45deg);
+  }
 }
 
 @media (max-width: 768px) {
-  .jingle-actions { flex-direction: column; }
-  .jingle-btn { width: 100%; }
+  .jingle-title {
+    font-size: 3rem;
+  }
+
+  .jingle-actions {
+    flex-direction: column;
+    width: 80%;
+    margin: 0 auto;
+  }
 }

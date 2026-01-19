@@ -16,10 +16,10 @@ const Icon = ({ name, size = 20, className = '' }) => {
   };
 
   return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width={size} height={size} 
-      fill="none" viewBox="0 0 24 24" 
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size} height={size}
+      fill="none" viewBox="0 0 24 24"
       stroke="currentColor" strokeWidth={2}
       strokeLinecap="round" strokeLinejoin="round"
       className={className}
@@ -30,13 +30,13 @@ const Icon = ({ name, size = 20, className = '' }) => {
 };
 
 function Gallery() {
-  const [currentView, setCurrentView] = useState('albums'); 
+  const [currentView, setCurrentView] = useState('albums');
   const [selectedAlbumKey, setSelectedAlbumKey] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   const audioRef = useRef(null);
 
   // Memoize album selection to prevent recalc
@@ -71,7 +71,6 @@ function Gallery() {
 
   const handleBack = () => {
     setCurrentView('albums');
-    // Small timeout to allow transition before clearing state
     setTimeout(() => setSelectedAlbumKey(null), 300);
     setIsPlaying(false);
   };
@@ -106,69 +105,62 @@ function Gallery() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [isLightboxOpen, navigateImage, closeLightbox]);
 
-  const filteredAlbums = Object.entries(galleryData?.events || {}).filter(([_, album]) => 
+  const filteredAlbums = Object.entries(galleryData?.events || {}).filter(([_, album]) =>
     album.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (!galleryData?.events) return <div className="loader">Loading Archive...</div>;
 
+  // Gallery.jsx
   return (
     <>
       <DynamicIsland />
-      
-      <div className="gallery-layout">
-        <div className="ambient-background">
-          <div className="gradient-orb orb-1"></div>
-          <div className="gradient-orb orb-2"></div>
-          {/* Noise overlay removed on mobile via CSS for performance */}
-          <div className="noise-overlay"></div>
+
+      <div className="gallery-view-layout">
+        <div className="gallery-ambient-background">
+          <div className="gallery-mesh-gradient"></div>
         </div>
 
         {/* --- ALBUMS LIST --- */}
-        <main className={`view-container ${currentView === 'albums' ? 'active' : 'hidden'}`}>
-          <header className="gallery-header">
-            <div>
-              <span className="brand-subtitle">R-SHS ARCHIVE</span>
-              <h1 className="brand-title">Collections</h1>
+        <main className={`gallery-view-container ${currentView === 'albums' ? 'active' : 'hidden'}`}>
+          <header className="gallery-sticky-header-glass">
+            <div className="gallery-header-top">
+              <h1 className="gallery-brand-title">ARCHIVES</h1>
+              <div className="gallery-header-decoration"></div>
             </div>
-            
-            <div className="search-wrapper">
-              <Icon name="search" className="search-icon" />
+
+            <div className="gallery-search-pill">
+              <Icon name="search" className="gallery-search-icon" />
               <input
                 type="text"
-                placeholder="Find a memory..."
+                placeholder="Search collections..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
+                className="gallery-search-input"
               />
             </div>
           </header>
 
-          <div className="albums-grid">
+          <div className="gallery-albums-mosaic">
             {filteredAlbums.map(([key, album]) => (
-              <article 
-                key={key} 
-                className="album-card"
+              <article
+                key={key}
+                className="gallery-album-card-premium"
                 onClick={() => handleOpenAlbum(key)}
               >
-                <div className="card-media-wrapper">
-                  <img 
-                    src={album.coverImage} 
-                    alt={album.title} 
+                <div className="gallery-card-media">
+                  <img
+                    src={album.coverImage}
+                    alt={album.title}
                     loading="lazy"
                     onError={(e) => e.target.src = 'https://placehold.co/600x400/1a1a2e/FFF?text=No+Image'}
                   />
-                  <div className="card-overlay">
-                    <span>Open Album</span>
-                  </div>
+                  <div className="gallery-media-overlay"></div>
                 </div>
-                <div className="card-content">
-                  <div className="card-meta">
-                    <span className="date-badge">{album.date || 'Archives'}</span>
-                    <span className="count-badge">{album.galleryImages?.length || 0} Items</span>
-                  </div>
-                  <h2 className="card-title">{album.title}</h2>
-                  <p className="card-desc">{album.description}</p>
+                <div className="gallery-card-info">
+                  <span className="gallery-album-date">{album.date || '2024'}</span>
+                  <h2 className="gallery-album-name">{album.title}</h2>
+                  <div className="gallery-album-count-badge">{album.galleryImages?.length || 0}</div>
                 </div>
               </article>
             ))}
@@ -176,39 +168,43 @@ function Gallery() {
         </main>
 
         {/* --- SINGLE ALBUM --- */}
-        <main className={`view-container ${currentView === 'album' ? 'active' : 'hidden'}`}>
+        <main className={`gallery-view-container ${currentView === 'album' ? 'active' : 'hidden'}`}>
           {selectedAlbum && (
             <>
-              <nav className="sticky-nav">
-                <button onClick={handleBack} className="glass-btn back-btn">
-                  <Icon name="arrowLeft" /> Back
+              <nav className="gallery-album-nav gallery-glass-nav">
+                <button onClick={handleBack} className="gallery-nav-btn back">
+                  <Icon name="arrowLeft" />
+                  <span className="gallery-nav-text">Back to Archives</span>
                 </button>
-                
+
                 {selectedAlbum.audioSrc && (
-                  <button 
-                    className={`glass-btn audio-btn ${isPlaying ? 'active' : ''}`}
+                  <button
+                    className={`gallery-nav-btn audio ${isPlaying ? 'playing' : ''}`}
                     onClick={() => setIsPlaying(!isPlaying)}
                   >
+                    {isPlaying && <div className="gallery-audio-wave"><span></span><span></span><span></span></div>}
+                    <span className="gallery-nav-text">{isPlaying ? 'Playing Ambient' : 'Play Ambient'}</span>
                     <Icon name={isPlaying ? "pause" : "play"} size={16} />
-                    <span className="desktop-only">{isPlaying ? 'Playing...' : 'Soundtrack'}</span>
-                    {isPlaying && <div className="mini-eq"><span></span><span></span><span></span></div>}
                   </button>
                 )}
               </nav>
 
-              <header className="album-header">
-                <h1 className="album-title">{selectedAlbum.title}</h1>
-                <p className="album-meta">{selectedAlbum.description}</p>
+              <header className="gallery-album-hero">
+                <div className="gallery-hero-text-content">
+                  <h1 className="gallery-hero-title">{selectedAlbum.title}</h1>
+                  <p className="gallery-hero-desc">{selectedAlbum.description}</p>
+                </div>
               </header>
 
-              <div className="masonry-grid">
+              <div className="gallery-masonry-grid">
                 {selectedAlbum.galleryImages?.map((img, index) => (
-                  <div key={index} className="masonry-item" onClick={() => openLightbox(index)}>
-                    <img 
-                      src={img.src} 
+                  <div key={index} className="gallery-pm-item" onClick={() => openLightbox(index)}>
+                    <img
+                      src={img.src}
                       alt={img.alt || `Photo ${index}`}
-                      loading="lazy" 
+                      loading="lazy"
                     />
+                    <div className="gallery-item-hover-indicator"></div>
                   </div>
                 ))}
               </div>
@@ -222,24 +218,26 @@ function Gallery() {
 
         {/* --- LIGHTBOX --- */}
         {isLightboxOpen && selectedAlbum && (
-          <div className="lightbox" onClick={closeLightbox}>
-            <button className="lb-close"><Icon name="close" size={24} /></button>
-            
-            <div className="lb-content" onClick={e => e.stopPropagation()}>
-              <img 
-                src={selectedAlbum.galleryImages[selectedImageIndex]?.src} 
+          <div className="gallery-lightbox-premium" onClick={closeLightbox}>
+            <div className="gallery-lightbox-backdrop"></div>
+            <button className="gallery-lb-close-btn"><Icon name="close" size={24} /></button>
+
+            <div className="gallery-lb-stage" onClick={e => e.stopPropagation()}>
+              <img
+                src={selectedAlbum.galleryImages[selectedImageIndex]?.src}
                 alt="Full screen"
-                className="lb-img"
+                className="gallery-lb-image-main"
               />
-              <div className="lb-controls">
-                <button className="lb-arrow" onClick={() => navigateImage('prev')}>
-                  <Icon name="arrowLeft" size={28} />
+
+              <div className="gallery-lb-navigation-bar">
+                <button className="gallery-nav-arrow prev" onClick={() => navigateImage('prev')}>
+                  <Icon name="arrowLeft" size={24} />
                 </button>
-                <div className="lb-text">
-                  {selectedImageIndex + 1} / {selectedAlbum.galleryImages.length}
-                </div>
-                <button className="lb-arrow" onClick={() => navigateImage('next')}>
-                  <Icon name="arrowRight" size={28} />
+                <span className="gallery-image-counter">
+                  {selectedImageIndex + 1} <span className="gallery-divider">/</span> {selectedAlbum.galleryImages.length}
+                </span>
+                <button className="gallery-nav-arrow next" onClick={() => navigateImage('next')}>
+                  <Icon name="arrowRight" size={24} />
                 </button>
               </div>
             </div>

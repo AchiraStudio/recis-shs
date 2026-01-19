@@ -1,41 +1,38 @@
 // JingleSchedule.jsx
 import React from 'react';
-import { Clock, Music, Utensils, Star } from 'lucide-react';
+import { Clock, Star, Music, GlassWater } from 'lucide-react';
 import './css/jingle-schedule.css';
 
 const scheduleData = [
-  { time: '18:00', title: 'Doors Open', desc: 'Welcome drinks & registration', icon: <Clock size={20} /> },
-  { time: '18:45', title: 'Opening Remarks', desc: 'A warm welcome by the committee', icon: <Star size={20} /> },
-  { time: '19:15', title: 'Dinner Service', desc: 'Gourmet dining experience', icon: <Utensils size={20} /> },
-  { time: '20:30', title: 'Live Performance', desc: 'Orchestra & Choir harmony', icon: <Music size={20} /> },
+  { time: '18:00', title: 'Arrival & Cocktails', desc: 'Warm cider and registration', icon: <Clock size={18} /> },
+  { time: '19:00', title: 'Opening Toast', desc: 'Welcome by the Principal', icon: <GlassWater size={18} /> },
+  { time: '19:30', title: 'Gala Dinner', desc: 'Fine dining experience', icon: <Star size={18} /> },
+  { time: '21:00', title: 'Symphony', desc: 'Orchestra performance', icon: <Music size={18} /> },
 ];
 
 const JingleSchedule = () => {
   return (
-    <section className="jingle-section">
-      <div className="jingle-glow-spot left" />
-      
-      <div className="section-header">
-        <h2 className="section-title">The Evening.</h2>
-        <p className="section-desc">A curated flow of events for the night.</p>
+    <section className="jingle-section jingle-dark-glass" id="schedule">
+      <div className="jingle-section-header">
+        <span className="jingle-section-eyebrow">The Timeline</span>
+        <h2 className="jingle-section-title">Evening Flow</h2>
+        <div className="jingle-gold-separator"></div>
       </div>
 
-      <div className="timeline-container">
-        <div className="timeline-line" />
+      <div className="jingle-schedule-container">
+        <div className="jingle-center-line"></div>
+
         {scheduleData.map((item, index) => (
-          <div className="timeline-item" key={index}>
-            <div className="timeline-marker">
-              <div className="marker-dot" />
+          <div className={`jingle-schedule-item ${index % 2 === 0 ? 'left' : 'right'}`} key={index}>
+            <div className="jingle-schedule-dot">
+              <div className="jingle-dot-inner"></div>
             </div>
-            <div className="timeline-card">
-              <div className="timeline-time">{item.time}</div>
-              <div className="timeline-content">
-                <div className="timeline-icon">{item.icon}</div>
-                <div>
-                  <h3>{item.title}</h3>
-                  <p>{item.desc}</p>
-                </div>
-              </div>
+
+            <div className="jingle-schedule-content jingle-glass-card">
+              <div className="jingle-time-badge">{item.time}</div>
+              <h3 className="jingle-item-title">{item.title}</h3>
+              <p className="jingle-item-desc">{item.desc}</p>
+              <div className="jingle-item-icon-bg">{item.icon}</div>
             </div>
           </div>
         ))}

@@ -1,103 +1,105 @@
-/* css/jingle-gallery.css */
-
-.gallery-section {
-  position: relative;
-  padding: 6rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-/* Ambient Glow (Right Side) */
-.gallery-glow {
-  position: absolute;
-  top: 10%;
-  right: -20%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(216, 180, 254, 0.15) 0%, rgba(5, 5, 16, 0) 70%);
-  filter: blur(100px);
-  z-index: -1;
-  pointer-events: none;
-}
-
-.gallery-grid {
+/* jingle-gallery.css */
+.jingle-gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
-  margin-top: 3rem;
-  margin-bottom: 3rem;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 300px;
+  gap: 20px;
+  margin-bottom: 4rem;
 }
 
-.gallery-card {
+.jingle-gallery-card {
   position: relative;
-  border-radius: 24px;
   overflow: hidden;
-  height: 320px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
   cursor: pointer;
-  background: #0f172a;
 }
 
-/* Feature the first image (Masonry effect) */
-.gallery-card.featured {
-  grid-column: span 2;
-}
-
-.gallery-card img {
+.jingle-gallery-card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.7s ease;
 }
 
-/* Overlay gradient */
-.gallery-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(0deg, rgba(5,5,16,0.8) 0%, transparent 60%);
-  z-index: 1;
-  opacity: 0.8;
-  transition: opacity 0.3s ease;
-}
-
-/* Hover Effects */
-.gallery-card:hover img {
+.jingle-gallery-card:hover img {
   transform: scale(1.05);
 }
 
-.gallery-card:hover .gallery-overlay {
-  opacity: 0.6;
+.jingle-tall {
+  grid-column: span 1;
+  grid-row: span 2;
 }
 
-.gallery-cta {
+.jingle-wide {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+.jingle-box {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+.jingle-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.4);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--jj-gold);
+  margin: 10px;
+  /* Inset border effect */
+}
+
+.jingle-gallery-card:hover .jingle-overlay {
+  opacity: 1;
+}
+
+.jingle-overlay span {
+  font-family: var(--jj-font-head);
+  color: white;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.jingle-center-action {
   display: flex;
   justify-content: center;
-  padding-top: 1rem;
 }
 
-/* Ensure Button matches Main Page even if isolated */
-.gallery-btn {
-  padding: 14px 32px;
-  border-radius: 30px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  background: #ffffff;
-  color: #0f172a;
+.jingle-link-btn {
+  background: transparent;
+  color: white;
   border: none;
-  display: inline-flex;
+  font-family: var(--jj-font-head);
+  font-size: 1rem;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  gap: 10px;
+  cursor: pointer;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--jj-gold);
+  transition: gap 0.3s ease;
 }
 
-.gallery-btn:hover {
-  transform: scale(1.02);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+.jingle-link-btn:hover {
+  gap: 15px;
+  color: var(--jj-gold);
 }
 
 @media (max-width: 768px) {
-  .gallery-card.featured { grid-column: span 1; }
-  .gallery-grid { grid-template-columns: 1fr; }
+  .jingle-gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 200px;
+  }
+
+  .jingle-tall,
+  .jingle-wide,
+  .jingle-box {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
 }

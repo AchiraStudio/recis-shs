@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../css/jiband-greek.css'; // Ensure path is correct based on your folder structure
+import './css/jiband-greek.css';
 import { FaInstagram } from "react-icons/fa";
 
 const RecupGuestStar = () => {

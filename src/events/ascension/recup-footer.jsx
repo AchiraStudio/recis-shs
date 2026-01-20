@@ -36,7 +36,7 @@ const RecupFooter = () => {
         <div className="fc-col">
           <h4>CONNECT</h4>
           <div className="social-grid">
-            <a href="https://instagram.com/recisshs" target="_blank" rel="noreferrer" className="social-btn">
+            <a href="https://www.instagram.com/recisascension?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noreferrer" className="social-btn">
               <FaInstagram />
             </a>
             <a href="#" className="social-btn">

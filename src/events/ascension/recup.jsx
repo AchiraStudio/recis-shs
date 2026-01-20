@@ -236,8 +236,6 @@ function Recup() {
           <span className="est-tag">EST. MMXXVI</span>
           <h1 className="hero-title">
             ASCENSION
-            <br />
-            CUP
           </h1>
           <span className="hero-subtitle">VIVA RECIS!</span>
           <div className="hero-buttons">

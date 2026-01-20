@@ -1,6 +1,6 @@
 // / src/components/Timeline.jsx /
 import React, { useEffect, useRef, useState } from 'react';
-import { FiClock, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiClock, FiChevronDown, FiChevronUp, FiCalendar } from 'react-icons/fi';
 import timelineData from '../data/timelineData.json';
 import '../styles/Timeline.css';
 
@@ -26,12 +26,18 @@ const Timeline = () => {
     return () => observer.disconnect();
   }, []);
 
-  // TIMELINE SCROLL
+  // TIMELINE SCROLL OBSERVER
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const observerOptions = { root: container, rootMargin: "-10% 0px -10% 0px", threshold: 0.5 };
+    // Observer for internal container scroll
+    const observerOptions = {
+      root: container,
+      rootMargin: "-45% 0px -45% 0px", // Trigger when element is near center
+      threshold: 0
+    };
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -57,41 +63,62 @@ const Timeline = () => {
 
   return (
     <section className={`timeline-section ${isVisible ? 'is-visible' : ''}`} id="timeline" ref={sectionRef}>
-      {/* No internal liquid-bg */}
-      
       <div className="container timeline-layout">
+
+        {/* Sticky Sidebar */}
         <div className="timeline-sidebar">
           <div className="sidebar-sticky">
-            <span className="section-tag reveal-item delay-1">Archive</span>
-            <h2 className="reveal-item delay-2">Event<br />History</h2>
-            <p className="reveal-item delay-3">Swipe through our past celebrations and academic milestones.</p>
-            
+            <span className="section-tag reveal-item delay-1">Legacy</span>
+            <h2 className="reveal-item delay-2">Our<br />Journey</h2>
+            <p className="reveal-item delay-3">From humble beginnings to a legacy of excellence. Explore the milestones that define us.</p>
+
             <div className="timeline-controls reveal-item delay-4">
-               <button onClick={() => scrollToIndex(activeIndex - 1)} disabled={activeIndex === 0} className="control-btn btn-secondary" aria-label="Previous Event"><FiChevronUp /></button>
-               <span className="control-count">{String(activeIndex + 1).padStart(2, '0')} <span className="divider">/</span> {String(timelineData.length).padStart(2, '0')}</span>
-               <button onClick={() => scrollToIndex(activeIndex + 1)} disabled={activeIndex === timelineData.length - 1} className="control-btn btn-secondary" aria-label="Next Event"><FiChevronDown /></button>
+              <button onClick={() => scrollToIndex(activeIndex - 1)} disabled={activeIndex === 0} className="control-btn btn-glass" aria-label="Previous Event"><FiChevronUp /></button>
+              <span className="control-count">{String(activeIndex + 1).padStart(2, '0')} <span className="divider">/</span> {String(timelineData.length).padStart(2, '0')}</span>
+              <button onClick={() => scrollToIndex(activeIndex + 1)} disabled={activeIndex === timelineData.length - 1} className="control-btn btn-glass" aria-label="Next Event"><FiChevronDown /></button>
             </div>
           </div>
         </div>
 
+        {/* Scrollable Track */}
         <div className="timeline-track-wrapper" ref={containerRef}>
-          <div className="timeline-line"></div>
+          <div className="timeline-line-track">
+            <div className="timeline-progress-bar" style={{ height: `${(activeIndex / (timelineData.length - 1)) * 100}%` }}></div>
+          </div>
+
           <div className="timeline-nodes">
             {timelineData.map((event, index) => (
-              <div key={event.id} className={`timeline-node ${index === activeIndex ? 'is-active' : ''} reveal-item`} data-index={index} style={{ transitionDelay: `${index * 0.1}s` }} ref={el => itemsRef.current[index] = el} onClick={() => scrollToIndex(index)}>
-                <div className="node-dot" style={{ borderColor: event.color }}><div className="dot-inner" style={{ background: event.color }}></div></div>
+              <div
+                key={event.id}
+                className={`timeline-node ${index === activeIndex ? 'is-active' : ''} reveal-item`}
+                data-index={index}
+                style={{ transitionDelay: `${index * 0.1}s` }}
+                ref={el => itemsRef.current[index] = el}
+                onClick={() => scrollToIndex(index)}
+              >
+                {/* Node Indicator */}
+                <div className="node-marker">
+                  <div className="node-dot" style={{ borderColor: event.color, background: index === activeIndex ? event.color : 'transparent' }}></div>
+                  <span className="node-date">{event.year || event.date.split(' ')[2]}</span>
+                </div>
+
+                {/* Event Card */}
                 <div className="glass-panel event-card">
                   <div className="card-bg-layer" style={{ backgroundImage: `url(${event.backgroundImage})` }}></div>
                   <div className="card-overlay"></div>
+
                   <div className="card-content-wrapper">
                     <div className="card-header">
-                      <div className="event-icon-box" style={{ background: event.color }}><i className={event.icon || 'ri-calendar-line'}></i></div>
-                      <span className="event-date-badge"><FiClock /> {event.date}</span>
+                      <div className="event-icon-box" style={{ background: `rgba(15, 23, 42, 0.6)`, color: event.color, border: `1px solid ${event.color}40` }}>
+                        <i className={event.icon || 'ri-calendar-line'}></i>
+                      </div>
+                      <span className="event-date-badge"><FiCalendar /> {event.date}</span>
                     </div>
+
                     <div className="card-body">
-                      <span className="event-type" style={{ color: event.color }}>{event.type}</span>
-                      <h3>{event.title}</h3>
-                      <p>{event.description}</p>
+                      <span className="event-type" style={{ color: event.color, textShadow: `0 0 10px ${event.color}40` }}>{event.type}</span>
+                      <h3 className="event-title">{event.title}</h3>
+                      <p className="event-desc">{event.description}</p>
                     </div>
                   </div>
                 </div>

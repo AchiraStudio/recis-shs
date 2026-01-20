@@ -1,6 +1,6 @@
 // / src/components/Crew.jsx /
-import React, { useState, useEffect, useRef } from 'react'; // FIXED IMPORT
-import { FiUsers, FiChevronUp, FiInfo } from 'react-icons/fi';
+import React, { useState, useEffect, useRef } from 'react';
+import { FiUsers, FiChevronUp, FiInfo, FiAward } from 'react-icons/fi';
 import crewData from '../data/crew.json';
 import '../styles/Crew.css';
 
@@ -9,10 +9,10 @@ const Crew = () => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [expandedCard, setExpandedCard] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
-  const sectionRef = useRef(null); // ADDED
-  const [isVisible, setIsVisible] = useState(false); // ADDED
+  const sectionRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
 
-  // 1. Section Scroll Observer (ADDED)
+  // Section Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -41,58 +41,89 @@ const Crew = () => {
   const activeGroup = crewData.groups.find(g => g.id === activeTab);
 
   const handleCardClick = (index) => {
+    // On desktop, hover works. On mobile, click to expand.
     if (!isMobile) return;
     setExpandedCard(expandedCard === index ? null : index);
   };
 
   return (
     <section id="crew" className={`crew-section ${isVisible ? 'is-visible' : ''}`} ref={sectionRef}>
-      {/* No internal liquid-bg */}
-      
       <div className="container">
         <div className="crew-header">
           <span className="pill-badge reveal-item delay-1">Organization</span>
-          <h1 className="main-title reveal-item delay-2">{crewData.title}</h1>
+          <h1 className="main-title reveal-item delay-2">{crewData.title || "The Crew"}</h1>
           <p className="sub-title reveal-item delay-3">{crewData.description}</p>
         </div>
 
+        {/* Navigation Tabs */}
         <div className="nav-wrapper reveal-item delay-4">
-          <div className="liquid-nav">
+          <div className="glass-nav">
             {crewData.tabs.map((tab) => (
-              <button key={tab.id} className={`liquid-tab ${activeTab === tab.id ? 'active' : ''}`} onClick={() => setActiveTab(tab.id)}>
+              <button
+                key={tab.id}
+                className={`nav-tab ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
                 {tab.name}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="crew-grid">
+        {/* Cards Grid */}
+        <div className="crew-grid" key={activeTab}>
           {activeGroup && activeGroup.members.map((member, index) => (
-            <div 
-              key={`${activeTab}-${index}`} 
-              className={`liquid-card ${expandedCard === index ? 'is-expanded' : ''} reveal-item`}
-              style={{ animationDelay: `${isMobile ? 0 : index * 0.1}s` }}
+            <div
+              key={`${activeTab}-${index}`}
+              className={`member-card ${expandedCard === index ? 'is-expanded' : ''} reveal-item`}
+              style={{ transitionDelay: `${index * 0.05}s` }}
               onClick={() => handleCardClick(index)}
             >
-              <div className="card-bg-layer">
-                 <img src={member.image} alt={member.title} className="bg-img main-img" loading="lazy" decoding="async" />
-                 {!isMobile && (
-                   <img src={member.altImage} alt="Alt View" className="bg-img hover-img" loading="lazy" decoding="async" />
-                 )}
+              {/* Background Image Layer */}
+              <div className="card-image-wrapper">
+                <img
+                  src={member.image}
+                  alt={member.title}
+                  className="bg-img main-img"
+                  loading="lazy"
+                  decoding="async"
+                />
+                {/* Secondary image on hover if available */}
+                {!isMobile && member.altImage && (
+                  <img
+                    src={member.altImage}
+                    alt="Alt View"
+                    className="bg-img hover-img"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
+                <div className="card-gradient-overlay"></div>
               </div>
-              <div className="card-overlay"></div>
-              <div className="mobile-hint"><FiInfo /> <span>Tap for Roster</span></div>
-              <div className="card-content">
-                <h3 className="card-title">{member.subtitle || member.title}</h3>
-                {member.subtitle && <span className="division-name">{member.title}</span>}
-                <div className="member-badge"><FiUsers /> {member.membersList.length}</div>
+
+              {/* Mobile Hint */}
+              <div className="mobile-hint"><FiInfo /> <span>Tap for Details</span></div>
+
+              {/* Default Content */}
+              <div className="card-content-default">
+                <div className="content-top">
+                  <div className="division-badge"><FiAward /> {member.title.split(' ')[0]}</div>
+                </div>
+                <div className="content-bottom">
+                  <h3 className="card-title">{member.subtitle || member.title}</h3>
+                  <div className="member-count"><FiUsers /> {member.membersList.length} Members</div>
+                </div>
               </div>
-              <div className="details-glass">
+
+              {/* Expanded/Hover Details (Glass Overlay) */}
+              <div className="details-overlay">
                 <div className="details-header">
-                  <h4>Roster List</h4>
-                  <button className="close-btn" onClick={(e) => { e.stopPropagation(); setExpandedCard(null); }}>
-                    <FiChevronUp style={{ transform: 'rotate(180deg)' }}/>
-                  </button>
+                  <h4>Roster</h4>
+                  {isMobile && (
+                    <button className="close-btn" onClick={(e) => { e.stopPropagation(); setExpandedCard(null); }}>
+                      <FiChevronUp />
+                    </button>
+                  )}
                 </div>
                 <ul className="roster-list">
                   {member.membersList.map((name, i) => (<li key={i}>{name}</li>))}

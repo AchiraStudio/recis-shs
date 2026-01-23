@@ -27,8 +27,8 @@ const RecupFooter = () => {
         {/* LINKS COLUMN */}
         <div className="fc-col">
           <h4>EXPLORE</h4>
-          <a href="#" className="footer-link"><FaCalendarAlt size={14} /> Schedule</a>
-          <a href="#" className="footer-link"><FaMapMarkerAlt size={14} /> Venue Map</a>
+          <a href="#rundown" className="footer-link"><FaCalendarAlt size={14} /> Schedule</a>
+          <a href="#map" className="footer-link"><FaMapMarkerAlt size={14} /> Venue Map</a>
           <a href="#merch" className="footer-link">The Armory (Merch)</a>
         </div>
 
@@ -39,7 +39,7 @@ const RecupFooter = () => {
             <a href="https://www.instagram.com/recisascension?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noreferrer" className="social-btn">
               <FaInstagram />
             </a>
-            <a href="#" className="social-btn">
+            <a href="https://www.tiktok.com/@recisshs?is_from_webapp=1&sender_device=pc" className="social-btn">
               <FaTiktok />
             </a>
           </div>

@@ -11,6 +11,8 @@ import RecupCompetitions from "./recup-list-lomba";
 import RecupMerch from "./recup-merch";
 import RecupFooter from "./recup-footer";
 import RecupSpecialPerformance from "./recup-tulus";
+import RecupMap from "./recup-map";
+import RecupRundown from "./recup-rundown";
 
 const SCHEDULE_API =
   "https://script.google.com/macros/s/AKfycbxcR39xEqBTH8Rq8lAE2hLvZXKzwWOdG8LK0qqWm7m7kjyYlrm2QAHx2L2XxE-TRJQ3/exec";
@@ -355,6 +357,8 @@ function Recup() {
         <RecupSpecialPerformance />
         <RecupGuestStar />
         <RecupCompetitions />
+        <RecupMap />
+        <RecupRundown />
         <RecupMerch />
         <RecupFooter />
       </div>

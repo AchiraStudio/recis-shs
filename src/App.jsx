@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 // Components
 import DynamicIsland from './components/DynamicI';
-import OnboardingTutorial from './components/OnboardingTutorial'; 
+import OnboardingTutorial from './components/OnboardingTutorial';
 
 import Hero from './components/Hero';
 import Timeline from './components/Timeline';
@@ -22,45 +22,46 @@ import JingleJoyce from './events/jingle-joyce/jingle-joyce';
 import EasterCharity from './events/easter-charity/easter-charity';
 import SlitherSweetheart from './events/slither-sweetheart/slither-sweetheart';
 import Mpls from './events/mpls/mpls';
+import TicketQR from './events/ascension/ticket/TicketQR';
 
 // --- DATA STEP TUTORIAL ---
 const TUTORIAL_STEPS = [
-  { 
-    text: "Halo! Perkenalkan, aku Achira! Dan aku akan menjadi tour guide kamu", 
-    action: null, 
-    islandMode: false 
+  {
+    text: "Halo! Perkenalkan, aku Achira! Dan aku akan menjadi tour guide kamu",
+    action: null,
+    islandMode: false
   },
-  { 
-    text: "Selamat datang di website official ASCENSION CUP! Tekan untuk melanjutkan", 
-    action: null, 
-    islandMode: false 
+  {
+    text: "Selamat datang di website official ASCENSION CUP! Tekan untuk melanjutkan",
+    action: null,
+    islandMode: false
   },
-  { 
-    text: "Disini kalian bisa scroll-scroll biasa mencari info mengenai perlombaan, schedule, rundown, merch, dan juga guest stars. Tekan untuk melanjutkan", 
-    action: null, 
-    islandMode: false 
+  {
+    text: "Disini kalian bisa scroll-scroll biasa mencari info mengenai perlombaan, schedule, rundown, merch, dan juga guest stars. Tekan untuk melanjutkan",
+    action: null,
+    islandMode: false
   },
-  { 
-    text: "Sekarang coba kalian tekan tombol RSHS yang ada di atas layar...", 
-    action: 'WAIT_ISLAND_ACTIVE', 
+  {
+    text: "Sekarang coba kalian tekan tombol RSHS yang ada di atas layar...",
+    action: 'WAIT_ISLAND_ACTIVE',
     islandMode: true // Z-Index Tinggi agar bisa diklik
   },
   // --- STEP BARU: PENJELASAN SAAT ISLAND TERBUKA ---
-  { 
-    text: "Nah, disini kalian bisa explore menu navigasi seperti Instagram, Home, dan Search. Tekan untuk melanjutkan", 
+  {
+    text: "Nah, disini kalian bisa explore menu navigasi seperti Instagram, Home, dan Search. Tekan untuk melanjutkan",
     action: null, // Jangan close dulu! Biarkan user melihatnya.
     islandMode: true // PENTING: Tetap True agar Z-Index tetap tinggi dan tidak ketutupan overlay
   },
   // --------------------------------------------------
-  { 
-    text: "Sekarang Have fun! Sampai bertemu di perlombaan, dan juga di tanggal 24 Januari nanti. Tekan untuk melanjutkan", 
+  {
+    text: "Sekarang Have fun! Sampai bertemu di perlombaan, dan juga di tanggal 24 Januari nanti. Tekan untuk melanjutkan",
     action: 'CLOSE_ISLAND', // Baru tutup disini
     islandMode: false // Kembalikan ke normal
   },
-  { 
-    text: "Hati-hati di jalan uuuuuuu... yup, BYE", 
-    action: 'FINISH', 
-    islandMode: false 
+  {
+    text: "Hati-hati di jalan uuuuuuu... yup, BYE",
+    action: 'FINISH',
+    islandMode: false
   }
 ];
 
@@ -82,8 +83,8 @@ function App() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [islandActive, setIslandActive] = useState(false);
-  
-  const islandRef = useRef(null); 
+
+  const islandRef = useRef(null);
 
   // --- EFFECT: SHOW TUTORIAL ON LOAD ---
   useEffect(() => {
@@ -97,13 +98,13 @@ function App() {
   // --- LOGIC: AUTO-NEXT SAAT ISLAND DITEKAN ---
   useEffect(() => {
     const currentStep = TUTORIAL_STEPS[tutorialStep];
-    
+
     // Jika sedang menunggu user klik island, dan island aktif...
     if (showTutorial && currentStep?.action === 'WAIT_ISLAND_ACTIVE' && islandActive) {
       // Delay sedikit agar animasi island terbuka selesai dulu baru teks tutorial berubah
       setTimeout(() => {
         setTutorialStep((prev) => prev + 1);
-      }, 600); 
+      }, 600);
     }
   }, [islandActive, tutorialStep, showTutorial]);
 
@@ -137,9 +138,9 @@ function App() {
   return (
     <Router>
       <div className="app-wrapper">
-        
+
         {/* Dynamic Island */}
-        <DynamicIsland 
+        <DynamicIsland
           ref={islandRef}
           onToggle={handleIslandToggle}
           // Z-Index Override aktif jika step tutorial memintanya (islandMode: true)
@@ -148,7 +149,7 @@ function App() {
 
         {/* Tutorial Overlay */}
         {showTutorial && (
-          <OnboardingTutorial 
+          <OnboardingTutorial
             stepData={TUTORIAL_STEPS[tutorialStep]}
             onNext={handleNextStep}
             isLastStep={tutorialStep === TUTORIAL_STEPS.length - 1}
@@ -160,6 +161,7 @@ function App() {
           <Route path="/r-shs" element={<LandingPage />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/ascension-cup" element={<Recup />} />
+          <Route path="/ascension-cup/ticket" element={<TicketQR />} />
           <Route path="/jingle-joyce" element={<JingleJoyce />} />
           <Route path="/easter-charity" element={<EasterCharity />} />
           <Route path="/slither-sweetheart" element={<SlitherSweetheart />} />

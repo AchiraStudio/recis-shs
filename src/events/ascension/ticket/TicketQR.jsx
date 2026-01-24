@@ -9,9 +9,18 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyE8H_B8Tj-wwVYcZJtKQvw
 function normalizeName(s) {
     return (s || "").trim().toUpperCase().replace(/\s+/g, " ");
 }
+
+// UPDATED: Removes non-digits AND removes leading '0'
+// 0812 -> 812
+// 812  -> 812
 function normalizePhone(s) {
-    return (s || "").replace(/\D/g, "");
+    let clean = (s || "").replace(/\D/g, ""); 
+    if (clean.startsWith("0")) {
+        clean = clean.substring(1);
+    }
+    return clean;
 }
+
 function normalizeClass(s) {
     return (s || "").trim().toUpperCase().replace(/\s+/g, "");
 }
@@ -22,9 +31,13 @@ export default function TicketQR() {
     const [sheetData, setSheetData] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // We still store these, but they are filled automatically now
     const [fullName, setFullName] = useState("");
-    const [phone, setPhone] = useState("");
     const [kelas, setKelas] = useState("");
+    
+    // Only Phone is entered by user
+    const [phone, setPhone] = useState("");
+    
     const [status, setStatus] = useState({ type: "idle", msg: "" });
     const [matchedRow, setMatchedRow] = useState(null);
     const [ready, setReady] = useState(false);
@@ -44,15 +57,13 @@ export default function TicketQR() {
             .finally(() => setLoading(false));
     }, []);
 
-    // Fast lookup map
-    const index = useMemo(() => {
+    // UPDATED: Index by Phone Number ONLY
+    const phoneIndex = useMemo(() => {
         const m = new Map();
         for (const row of sheetData) {
-            const key = [
-                normalizeName(row.name),
-                normalizePhone(row.phone),
-                normalizeClass(row.class),
-            ].join("|");
+            // Normalize the sheet phone (remove 0, remove non-digits)
+            const key = normalizePhone(row.phone);
+            // Store the whole row, keyed by the clean number
             m.set(key, row);
         }
         return m;
@@ -80,7 +91,6 @@ export default function TicketQR() {
     }
 
     async function generateTicketCanvas(row) {
-        // 2.75in x 8.5in
         const DPI = 300;
         const widthPx = Math.round(2.75 * DPI);
         const heightPx = Math.round(8.5 * DPI);
@@ -90,39 +100,30 @@ export default function TicketQR() {
         canvas.height = heightPx;
         const ctx = canvas.getContext("2d");
 
-        // 1) Background
         try {
-            // Use the new manually uploaded background
             const bg = await loadImage("/ticket-bg.png");
             ctx.drawImage(bg, 0, 0, widthPx, heightPx);
         } catch (e) {
-            // Fallback
             ctx.fillStyle = "#1b263b";
             ctx.fillRect(0, 0, widthPx, heightPx);
         }
 
         await ensureFontLoaded();
         const fontName = "NSEC";
-        const fontSizePx = (14 * DPI) / 72; // Slightly larger for readability?
+        const fontSizePx = (14 * DPI) / 72;
 
-        // We need to place text in the BOTTOM area of the ticket, typically
-        // Let's assume the bottom 1/4th is where the personal data goes based on usual designs
-
-        // TEXT CONFIG
-        ctx.fillStyle = "#ffffff"; // White text usually pops on dark/gold backgrounds
-        // Shadow for text to ensure readability on complex backgrounds
+        ctx.fillStyle = "#ffffff"; 
         ctx.shadowColor = "rgba(0,0,0,0.8)";
         ctx.shadowBlur = 4;
         ctx.textAlign = "center";
 
         const centerX = widthPx / 2;
 
-        // NAME (Approx position: 75% down)
+        // NAME
         ctx.font = `bold ${fontSizePx}px "${fontName}", serif`;
         const nameY = heightPx * 0.78;
         const name = normalizeName(row.name);
 
-        // Auto-scale font if name is too long
         let scaledFontSize = fontSizePx;
         let textWidth = ctx.measureText(name).width;
         const maxTextWidth = widthPx * 0.8;
@@ -133,34 +134,24 @@ export default function TicketQR() {
 
         ctx.fillText(name, centerX, nameY);
 
-        // CLASS (Approx position: under name)
+        // CLASS
         ctx.font = `${fontSizePx * 0.8}px "${fontName}", serif`;
         const classY = nameY + (scaledFontSize * 1.5);
         ctx.fillText(`CLASS: ${normalizeClass(row.class)}`, centerX, classY);
 
-        // QR CODE (Bottom area)
-        const qrSize = widthPx * 0.55; // 55% of width
-        const qrY = heightPx * 0.85; // Very bottom
-        // Actually, usually QR is in the middle or specific spot. 
-        // Let's guess it's near bottom for "Gate Scan".
-        // Or if the design has a specific box.
-        // Safe bet: Place it in the bottom 20% area.
-
-        // Let's adjust:
-        // Name at 65%
-        // Class at 68%
-        // QR at 75% -> 95%
-
-        // Reset shadow for QR
+        // QR CODE
+        const qrSize = widthPx * 0.55; 
+        
         ctx.shadowBlur = 0;
 
-        const qrFinalY = heightPx - qrSize - (0.5 * DPI); // 0.5 inch margin from bottom
+        const qrFinalY = heightPx - qrSize - (0.5 * DPI); 
         const qrFinalX = (widthPx - qrSize) / 2;
 
+        // QR Payload: Use the database phone number (or normalized)
         const payload = normalizePhone(row.phone);
         const qrDataUrl = await QRCode.toDataURL(payload, {
             margin: 1,
-            color: { dark: "#000000", light: "#ffffff" } // White bg for QR to ensure contrast
+            color: { dark: "#000000", light: "#ffffff" } 
         });
 
         const qrImg = await loadImage(qrDataUrl);
@@ -173,37 +164,45 @@ export default function TicketQR() {
     const [otpCode, setOtpCode] = useState("");
     const [maskedEmail, setMaskedEmail] = useState("");
 
-    // 1. Request OTP
+    // 1. Request OTP (UPDATED LOGIC)
     async function handleRequestOtp() {
         setReady(false);
         setMatchedRow(null);
         setStatus({ type: "idle", msg: "" });
 
-        const n = normalizeName(fullName);
-        const p = normalizePhone(phone);
-        const k = normalizeClass(kelas);
+        // 1. Clean the user input (remove 0, remove non-digits)
+        const inputPhoneClean = normalizePhone(phone);
 
-        if (!n || !p || !k) {
-            setStatus({ type: "error", msg: "Please fill all fields." });
+        if (!inputPhoneClean) {
+            setStatus({ type: "error", msg: "Please enter a phone number." });
             return;
         }
 
-        // Local check first (optional, but good for UX)
-        const key = [n, p, k].join("|");
-        const row = index.get(key);
+        // 2. Look up in the Map
+        const row = phoneIndex.get(inputPhoneClean);
+
         if (!row) {
-            setStatus({ type: "error", msg: "No match found in list. Check spelling." });
+            setStatus({ type: "error", msg: "Phone number not found in database." });
             return;
         }
 
-        setStatus({ type: "loading", msg: "Sending verification code..." });
+        // 3. Auto-fill state for API use
+        const n = normalizeName(row.name);
+        const p = normalizePhone(row.phone); // Send the database version or normalized version
+        const k = normalizeClass(row.class);
+
+        // Update visual state (optional, just to show found user)
+        setFullName(row.name);
+        setKelas(row.class);
+
+        setStatus({ type: "loading", msg: `Found ${row.name}. Sending code...` });
 
         try {
             const res = await fetch(`${API_URL}?action=send_code&name=${encodeURIComponent(n)}&phone=${encodeURIComponent(p)}&kelas=${encodeURIComponent(k)}`);
             const data = await res.json();
 
             if (data.ok) {
-                setMatchedRow(row); // Keep the local row data for generation later
+                setMatchedRow(row); 
                 setMaskedEmail(data.sent_to);
                 setOtpSent(true);
                 setStatus({ type: "success", msg: "Code sent! Check your email." });
@@ -225,9 +224,15 @@ export default function TicketQR() {
 
         setStatus({ type: "loading", msg: "Verifying code..." });
 
-        const n = normalizeName(fullName);
-        const p = normalizePhone(phone);
-        const k = normalizeClass(kelas);
+        // Use the matched row data, not manual input
+        if (!matchedRow) {
+             setStatus({ type: "error", msg: "Session expired. Search again." });
+             return;
+        }
+
+        const n = normalizeName(matchedRow.name);
+        const p = normalizePhone(matchedRow.phone);
+        const k = normalizeClass(matchedRow.class);
 
         try {
             const res = await fetch(`${API_URL}?action=verify_code&name=${encodeURIComponent(n)}&phone=${encodeURIComponent(p)}&kelas=${encodeURIComponent(k)}&code=${encodeURIComponent(otpCode)}`);
@@ -235,14 +240,8 @@ export default function TicketQR() {
 
             if (data.ok) {
                 setStatus({ type: "success", msg: "Verified! Generating Ticket..." });
-                // Generate using the matched Row (or we could fetch fresh data, but local is fine if we trust it matches)
-                if (matchedRow) {
-                    await generateTicketCanvas(matchedRow);
-                    setStatus({ type: "success", msg: "Ticket Ready!" });
-                } else {
-                    // Should not start here usually, but fallback
-                    setStatus({ type: "error", msg: "Session lost. Please try again." });
-                }
+                await generateTicketCanvas(matchedRow);
+                setStatus({ type: "success", msg: "Ticket Ready!" });
             } else {
                 setStatus({ type: "error", msg: data.error || "Invalid code." });
             }
@@ -277,59 +276,31 @@ export default function TicketQR() {
 
     return (
         <div className="ticket-page-container">
-            {/* BACKGROUND ELEMENTS REMOVED */}
-
-            {/* CONTENT */}
             <div className="ticket-content">
                 <h1 className="ticket-title">ASCENSION</h1>
                 <p className="ticket-subtitle">GET YOUR TICKET NOW</p>
 
                 <div className="ticket-form-card">
-                    {loading && <div style={{ textAlign: 'center', marginBottom: 10, color: '#ffd700' }}>Loading data...</div>}
-                    <div className="form-group">
-                        <label className="form-label">FULL NAME</label>
-                        <input
-                            className="form-input"
-                            value={fullName}
-                            onChange={e => {
-                                const val = e.target.value;
-                                setFullName(val);
-                                // Smart Autofill Logic
-                                const normVal = normalizeName(val);
-                                const match = sheetData.find(r => normalizeName(r.name) === normVal);
-                                if (match) {
-                                    setPhone(match.phone);
-                                    setKelas(match.class);
-                                    setStatus({ type: "success", msg: "Data Autofilled!" });
-                                }
-                            }}
-                            placeholder="YOUR FULL NAME"
-                            list="name-options"
-                            autoComplete="off"
-                        />
-                        <datalist id="name-options">
-                            {sheetData.map((row, idx) => (
-                                <option key={idx} value={row.name} />
-                            ))}
-                        </datalist>
-                    </div>
+                    {loading && <div style={{ textAlign: 'center', marginBottom: 10, color: '#ffd700' }}>Loading Database...</div>}
+                    
+                    {/* ONLY PHONE INPUT VISIBLE */}
                     <div className="form-group">
                         <label className="form-label">PHONE NUMBER</label>
                         <input
                             className="form-input"
-                            value={phone} onChange={e => setPhone(e.target.value)}
-                            placeholder="08..."
+                            value={phone} 
+                            onChange={e => setPhone(e.target.value)}
+                            placeholder="e.g. 08123456789"
                             autoComplete="tel"
                         />
                     </div>
-                    <div className="form-group">
-                        <label className="form-label">CLASS</label>
-                        <input
-                            className="form-input"
-                            value={kelas} onChange={e => setKelas(e.target.value)}
-                            placeholder="e.g. X-1"
-                        />
-                    </div>
+
+                    {/* Show Found Name (Optional Feedback) */}
+                    {matchedRow && otpSent && (
+                        <div style={{textAlign:'center', marginBottom: '15px', color: '#fff'}}>
+                            <small>Found: {matchedRow.name} ({matchedRow.class})</small>
+                        </div>
+                    )}
 
                     {/* OTP SECTION */}
                     {otpSent ? (
@@ -348,10 +319,17 @@ export default function TicketQR() {
                             <button className="btn-generate" onClick={handleVerify} disabled={status.type === 'loading'}>
                                 {status.type === 'loading' ? 'VERIFYING...' : 'VERIFY & GENERATE'}
                             </button>
+                            <button 
+                                className="btn-link" 
+                                style={{background:'none', border:'none', color:'#ccc', marginTop:'10px', cursor:'pointer'}}
+                                onClick={() => { setOtpSent(false); setOtpCode(""); setMatchedRow(null); }}
+                            >
+                                Wrong number? Go back
+                            </button>
                         </div>
                     ) : (
                         <button className="btn-generate" onClick={handleRequestOtp} disabled={status.type === 'loading'}>
-                            {status.type === 'loading' ? 'SENDING CODE...' : 'SEND VERIFICATION CODE'}
+                            {status.type === 'loading' ? 'SEARCHING...' : 'FIND MY TICKET'}
                         </button>
                     )}
 
